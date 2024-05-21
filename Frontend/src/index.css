@@ -1,0 +1,61 @@
+@import 'tailwindcss/tailwind.css';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b9b5b5;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #919191;
+}
+
+.ag-theme-alpine {
+  --ag-header-foreground-color: #2f3b52; 
+  --ag-header-background-color: #e3f2fd; 
+  --ag-row-hover-color: #e8f5e9; 
+  --ag-alpine-active-color: #ef9a9a; 
+  --ag-alpine-active-foreground-color: #fff;
+  --ag-border-color: #cfd8dc; 
+  font-size: 1rem;
+}
+
+.ag-cell {
+  border-right: 1px solid var(--ag-border-color);
+}
+
+.ag-cell:last-child {
+  border-right: none;
+}
+
+.ag-header-cell-label {
+  font-size: 1.1rem;
+  justify-content: center;
+}
+
+.btn-details {
+  background-color: var(--ag-alpine-active-color);
+  color: var(--ag-alpine-active-foreground-color);
+  border: none;
+  padding:  0px 20px 0px 20px;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: auto;
+}
+
+.btn-details:hover {
+  background-color: #3243fb; 
+}
+
