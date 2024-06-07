@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -9,6 +9,7 @@ import GridViewer from './GridViewer';
 const NodeSelection = () => {
   const [rowData, setRowData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedNode, setSelectedNode] = useState(null);
   const navigate = useNavigate();
 
   const onButtonClick = (uuid) => {
@@ -44,20 +45,40 @@ const NodeSelection = () => {
     },
   ];
 
-  const handleNodeSelect = (data) => {
+  const handleNodeSelect = (data, page = 1) => {
     setRowData(data);
+    setCurrentPage(page);
   };
 
   const onPaginationChanged = (params) => {
-    if (params.api.paginationGetCurrentPage() + 1 !== currentPage) {
-      setCurrentPage(params.api.paginationGetCurrentPage() + 1);
+    const newPage = params.api.paginationGetCurrentPage() + 1;
+    if (newPage !== currentPage) {
+      setCurrentPage(newPage);
+      if (selectedNode) {
+        fetchPageData(selectedNode, newPage);
+      }
     }
   };
+
+  const fetchPageData = async (node, page) => {
+    let fullType = node.full_type.replace(/\|/g, '');
+    const isProcessType = node.full_type.includes('process');
+    fullType = isProcessType ? fullType.replace('%%', '%') : fullType;
+    const url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}25%7C"${isProcessType ? processUrlEnd : urlEnd}`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      handleNodeSelect(data.data.nodes, page);
+    } catch (error) {
+      console.error(`Error fetching data for ${node.full_type} on page ${page}:`, error);
+    }
+  };
+
 
   return (
     <div className="flex w-[98%] mx-auto py-2 px-0">
       <div className="w-1/5 mr-2 bg-green-100">
-        <GridViewer onSelectNode={handleNodeSelect} currentPage={currentPage} />
+        <GridViewer onSelectNode={handleNodeSelect} currentPage={currentPage} setSelectedNode={setSelectedNode} />
       </div>
       <div className="w-4/5 ml-2">
         <div className="ag-theme-alpine text-center" style={{ width: '100%', height: '100%' }}>

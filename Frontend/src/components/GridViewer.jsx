@@ -10,45 +10,31 @@ const buildTree = (node) => {
   const full_type = node.full_type || '';
   const subspaces = node.subspaces || [];
   const children = subspaces.map(buildTree);
-  return { label, full_type, children };
+  return { label, full_type, children, counter: node.counter };
 };
 
-const fetchAllPages = async (fullType, onDataFetch) => {
-  let allData = [];
-  let page = 1;
-  let hasMoreData = true;
+const fetchPageData = async (fullType, page, onDataFetch) => {
   const isProcessType = fullType.includes('process');
   const fullTypeEncoded = fullType.replace(/\|/g, '');
-  console.log(fullTypeEncoded)
-
-  while (hasMoreData) {
-    try {
-      const url = `${baseUrl}${page}?&perpage=50&full_type="${fullTypeEncoded}25%7C"${isProcessType ? processUrlEnd : urlEnd}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.data.nodes.length > 0) {
-        allData = [...allData, ...data.data.nodes];
-        page++;
-      } else {
-        hasMoreData = false;
-      }
-    } catch (error) {
-      console.error(`Error fetching data for ${fullType} on page ${page}:`, error);
-      hasMoreData = false;
-    }
+  fullType = isProcessType ? fullType.replace('%%', '%') : fullType;
+  const url = `${baseUrl}${page}?&perpage=50&full_type="${fullTypeEncoded}25%7C"${isProcessType ? processUrlEnd : urlEnd}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    onDataFetch(data.data.nodes, page);
+  } catch (error) {
+    console.error(`Error fetching data for ${fullType} on page ${page}:`, error);
   }
-  console.log(allData);
-
-  onDataFetch(allData);
 };
 
-const TreeNode = ({ node, onSelectNode, level = 0 }) => {
+const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
-      fetchAllPages(node.full_type, onSelectNode);
+      fetchPageData(node.full_type, currentPage, onSelectNode);
+      setSelectedNode(node);
     }
   };
 
@@ -64,7 +50,7 @@ const TreeNode = ({ node, onSelectNode, level = 0 }) => {
       {isExpanded && (
         <div className="ml-4 mt-2">
           {node.children.map((child, index) => (
-            <TreeNode key={index} node={child} onSelectNode={onSelectNode} level={level + 1} />
+            <TreeNode key={index} node={child} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
           ))}
         </div>
       )}
@@ -72,7 +58,7 @@ const TreeNode = ({ node, onSelectNode, level = 0 }) => {
   );
 };
 
-const TreeView = ({ onSelectNode,currentPage }) => {
+const TreeView = ({ onSelectNode, currentPage, setSelectedNode }) => {
   const [tree, setTree] = useState(null);
 
   useEffect(() => {
@@ -90,15 +76,15 @@ const TreeView = ({ onSelectNode,currentPage }) => {
     return <div className="text-center text-gray-700 bg-blue-100">Loading...</div>;
   }
 
-  return <TreeNode node={tree} onSelectNode={onSelectNode} />;
+  return <TreeNode node={tree} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />;
 };
 
-const GridViewer = ({ onSelectNode , currentPage }) => {
+const GridViewer = ({ onSelectNode, currentPage, setSelectedNode }) => {
   return (
     <div className="p-4 bg-white border-2 border-gray-300 overflow-auto h-[98vh]">
-      <TreeView onSelectNode={onSelectNode} currentPage={currentPage} />
+      <TreeView onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
     </div>
   );
-}
+};
 
 export default GridViewer;
