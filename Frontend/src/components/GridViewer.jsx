@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 
 const baseUrl = 'https://aiida.materialscloud.org/mc3d/api/v4/nodes/page/';
-const urlEnd = '&orderby=-ctime';
+const urlEnd = '25%7C"&orderby=-ctime';
 const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
 
 const buildTree = (node) => {
@@ -14,10 +14,21 @@ const buildTree = (node) => {
 };
 
 const fetchPageData = async (fullType, page, onDataFetch) => {
-  const isProcessType = fullType.includes('process');
-  const fullTypeEncoded = fullType.replace(/\|/g, '');
-  fullType = isProcessType ? fullType.replace('%%', '%') : fullType;
-  const url = `${baseUrl}${page}?&perpage=50&full_type="${fullTypeEncoded}25%7C"${isProcessType ? processUrlEnd : urlEnd}`;
+//   const isProcessType = fullType.includes('process');
+//   const fullTypeEncoded = fullType.replace(/\|/g, '');
+//   fullType = isProcessType ? fullType.replace('%%', '%') : fullType;
+fullType = fullType.replace(/\|/g, '');
+fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
+  let url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}${urlEnd}`;
+  console.log(url);
+    if (fullType.includes('process')) {
+        fullType = fullType.replace(/\%/g,'');
+        fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
+        url = `${baseUrl}${page}?&perpage=20&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}%25%7C%25"&orderby=-ctime`;
+        console.log(url);
+    }
+
+//   const url = `${baseUrl}${page}?&perpage=20&full_type="${fullTypeEncoded}25%7C"${isProcessType ? processUrlEnd : urlEnd}`;
   try {
     const response = await fetch(url);
     const data = await response.json();
@@ -81,7 +92,7 @@ const TreeView = ({ onSelectNode, currentPage, setSelectedNode }) => {
 
 const GridViewer = ({ onSelectNode, currentPage, setSelectedNode }) => {
   return (
-    <div className="p-4 bg-white border-2 border-gray-300 overflow-auto h-[98vh]">
+    <div className="p-4 bg-white border-2 border-gray-300 overflow-auto h-full">
       <TreeView onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
     </div>
   );
