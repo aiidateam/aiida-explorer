@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
+import { CiSearch } from "react-icons/ci";
 
 const baseUrl = 'https://aiida.materialscloud.org/mc3d/api/v4/nodes/page/';
 const urlEnd = '25%7C"&orderby=-ctime';
@@ -62,7 +63,7 @@ const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode }) => {
   return (
     <div className="ml-0 mt-1">
       <div
-        className="cursor-pointer text-gray-900 mr-2 bg-gray-100 min-w-fit p-2 rounded hover:bg-gray-200 flex items-center"
+        className="cursor-pointer text-gray-900  bg-gray-100 min-w-fit p-2 rounded hover:bg-gray-200 flex items-center"
         onClick={toggleExpand}
       >
         <FiChevronDown className={`w-4 h-4 mr-2 transform transition-transform duration-200 ${isExpanded ? '-rotate-90' : ''}`} />
@@ -101,8 +102,25 @@ const TreeView = ({ onSelectNode, currentPage, setSelectedNode }) => {
 };
 
 const GridViewer = ({ onSelectNode, currentPage, setSelectedNode }) => {
+    const [searchValue, setSearchValue] = useState('');
   return (
     <div className="p-4 bg-white border-2 border-gray-300 overflow-auto h-full">
+        <div className='w-full flex items-center border-2 mb-3 border-gray-400 hover:border-gray-600'>
+        <input type='search' placeholder='Search UUID' className=' w-full p-2 border-0 border-white outline-none' 
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                window.location.href = `/details/${searchValue}`;
+              }
+            }}
+        />
+            <CiSearch className='text-center size-6 item-center mr-2' 
+            onClick={() => {
+                window.location.href = `/details/${searchValue}`;
+            }}/>
+        </div>
+
       <TreeView onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
     </div>
   );
