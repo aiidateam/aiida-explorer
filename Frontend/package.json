@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "homepage": "https://aiidateam.github.io/aiida-explorer/",
   "type": "module",
-  "proxy":"https://aiida.materialscloud.org/",
+  "proxy": "https://aiida.materialscloud.org/",
   "scripts": {
     "dev": "vite",
     "predeploy": "npm run build",
@@ -16,7 +16,7 @@
   "dependencies": {
     "ag-grid-community": "^31.3.2",
     "ag-grid-react": "^31.3.2",
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
     "html-to-image": "^1.11.11",
     "http-proxy-middleware": "^3.0.0",
     "react": "^18.2.0",

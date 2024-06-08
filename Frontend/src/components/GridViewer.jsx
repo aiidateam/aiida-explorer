@@ -5,14 +5,24 @@ const baseUrl = 'https://aiida.materialscloud.org/mc3d/api/v4/nodes/page/';
 const urlEnd = '25%7C"&orderby=-ctime';
 const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
 
+const memo = new Map();
+
 const buildTree = (node) => {
+  if (memo.has(node)) {
+    return memo.get(node);
+  }
+
   const label = node.label || 'No Label';
   const full_type = node.full_type || '';
   const subspaces = node.subspaces || [];
   const children = subspaces.map(buildTree);
-  return { label, full_type, children, counter: node.counter };
-};
+  console.log(node.counter);
 
+  const result = { label, full_type, children, counter: node.counter };
+  memo.set(node, result);
+  return result;
+};
+    
 const fetchPageData = async (fullType, page, onDataFetch) => {
 //   const isProcessType = fullType.includes('process');
 //   const fullTypeEncoded = fullType.replace(/\|/g, '');
@@ -24,7 +34,7 @@ fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
     if (fullType.includes('process')) {
         fullType = fullType.replace(/\%/g,'');
         fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
-        url = `${baseUrl}${page}?&perpage=20&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}%25%7C%25"&orderby=-ctime`;
+        url = `${baseUrl}${page}?&perpage=20&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}25%7C%25"&orderby=-ctime`;
         console.log(url);
     }
 

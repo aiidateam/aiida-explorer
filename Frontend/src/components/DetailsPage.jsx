@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { stackoverflowLight} from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import DownloadButton from './DownloadButton';
+import Attributes from './Attributes';
+import Files from './FIles';
 
 const DetailsPage = () => {
   const { uuid } = useParams();
@@ -101,15 +103,14 @@ const DetailsPage = () => {
         </div>
         <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[90%] ">
           {view === 'raw' ? (
-            <div class="grid grid-cols-2 grid-rows-[auto_auto_1fr] gap-2">
-            <div class="col-span-1 row-span-2 bg-gray-100 p-1"><span className=' font-semibold font-mono'>INFO:</span></div>
+            <div>
+            {/* <div class="col-span-1 row-span-2 bg-gray-100 p-1"><span className=' font-semibold font-mono'>INFO:</span></div>
             <div class="bg-gray-100 p-1"><span className='font-semibold font-mono'>Input Files :</span></div>
-            <div class="bg-gray-100 p-1"><span className='font-semibold font-mono'>Output files :</span></div>
-            <div class="col-span-2 ">
+            <div class="bg-gray-100 p-1"><span className='font-semibold font-mono'>Output files :</span></div> */}
+            <Files uuid={uuid} />
+            <div classname="col-span-2 ">
                 <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
-              <SyntaxHighlighter language="json" style={stackoverflowLight}>
-                {JSON.stringify(nodeData, null, 2)}
-              </SyntaxHighlighter>
+              <Attributes uuid={uuid}/>
             </div>
           </div>
           ) : (

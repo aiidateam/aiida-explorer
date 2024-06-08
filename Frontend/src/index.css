@@ -48,7 +48,7 @@
   background-color: var(--ag-alpine-active-color);
   color: var(--ag-alpine-active-foreground-color);
   border: none;
-  padding:  0px 20px 0px 20px;
+  padding:  0px 8px 0px 8px;
   border-radius: 0.25rem;
   cursor: pointer;
   transition: background-color 0.3s;

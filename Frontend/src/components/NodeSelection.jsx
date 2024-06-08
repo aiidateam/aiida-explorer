@@ -6,10 +6,15 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'tailwindcss/tailwind.css';
 import GridViewer from './GridViewer';
 
+const baseUrl = 'https://aiida.materialscloud.org/mc3d/api/v4/nodes/page/';
+const urlEnd = '25%7C"&orderby=-ctime';
+
 const NodeSelection = () => {
   const [rowData, setRowData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [totalEntries, setTotalEntries] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const navigate = useNavigate();
 
   const onButtonClick = (uuid) => {
@@ -45,9 +50,11 @@ const NodeSelection = () => {
     },
   ];
 
-  const handleNodeSelect = (data, page = 1) => {
+  const handleNodeSelect = (data, page = 1,totalEntries,totalPages) => {
     setRowData(data);
     setCurrentPage(page);
+    setTotalEntries(totalEntries);
+    setTotalPages(totalPages);
   };
 
   const onPaginationChanged = (params) => {
@@ -61,13 +68,20 @@ const NodeSelection = () => {
   };
 
   const fetchPageData = async (node, page) => {
-    let fullType = node.full_type.replace(/\|/g, '');
-    const isProcessType = node.full_type.includes('process');
-    fullType = isProcessType ? fullType.replace('%%', '%') : fullType;
-    const url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}25%7C"${isProcessType ? processUrlEnd : urlEnd}`;
+    fullType = fullType.replace(/\|/g, '');
+    fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
+    let url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}${urlEnd}`;
+    console.log(url);
+      if (fullType.includes('process')) {
+          fullType = fullType.replace(/\%/g,'');
+          fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
+          url = `${baseUrl}${page}?&perpage=20&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}%25%7C%25"&orderby=-ctime`;
+          console.log(url);
+      }
     try {
       const response = await fetch(url);
       const data = await response.json();
+      console.log(data);
       handleNodeSelect(data.data.nodes, page);
     } catch (error) {
       console.error(`Error fetching data for ${node.full_type} on page ${page}:`, error);
@@ -81,13 +95,15 @@ const NodeSelection = () => {
         <GridViewer onSelectNode={handleNodeSelect} currentPage={currentPage} setSelectedNode={setSelectedNode} />
       </div>
       <div className="w-4/5 ml-2">
-        <div className="ag-theme-alpine text-center" style={{ width: '100%', height: '100%' }}>
+        <div className="ag-theme-alpine text-center" style={{ width: '100%', height: '98%' }}>
         <AgGridReact
             rowData={rowData}
             columnDefs={columnDefs}
             pagination={true}
             paginationPageSize={20}
             domLayout="autoHeight"
+            paginationTotalPages={totalPages}
+            paginationTotalRowCount={totalEntries}          
             onPaginationChanged={onPaginationChanged}
           />
         </div>
