@@ -17,6 +17,7 @@ import { stackoverflowLight} from 'react-syntax-highlighter/dist/esm/styles/hljs
 import DownloadButton from './DownloadButton';
 import Attributes from './Attributes';
 import Files from './FIles';
+import Contents from './Contents';
 
 const DetailsPage = () => {
   const { uuid } = useParams();
@@ -104,14 +105,12 @@ const DetailsPage = () => {
         <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[90%] ">
           {view === 'raw' ? (
             <div>
-            {/* <div class="col-span-1 row-span-2 bg-gray-100 p-1"><span className=' font-semibold font-mono'>INFO:</span></div>
-            <div class="bg-gray-100 p-1"><span className='font-semibold font-mono'>Input Files :</span></div>
-            <div class="bg-gray-100 p-1"><span className='font-semibold font-mono'>Output files :</span></div> */}
             <Files uuid={uuid} />
             <div classname="col-span-2 ">
                 <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
               <Attributes uuid={uuid}/>
             </div>
+            <Contents uuid={uuid} />
           </div>
           ) : (
             <div>

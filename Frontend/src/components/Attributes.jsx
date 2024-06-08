@@ -6,6 +6,7 @@ import axios from 'axios';
 const Attributes = ({ uuid }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastJob , setLastJob] = useState([]);
   const [derivedProperties, setDerivedProperties] = useState(null);
   const [error, setError] = useState(null);
 
@@ -18,6 +19,7 @@ const Attributes = ({ uuid }) => {
         }
         const data = await res.json();
         setData(data.data.nodes[0].attributes);
+        setLastJob(data.data.nodes[0].attributes.last_job_info);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -123,6 +125,14 @@ const Attributes = ({ uuid }) => {
       <div>
         {renderDerivedPropertiesTable()}    
       </div>
+      {lastJob && (
+        <div>
+            <span className='font-mono font-bold text-md'>Last Job Details :</span>
+        <SyntaxHighlighter language="json" style={stackoverflowLight}>
+            {JSON.stringify(lastJob, null, 2)}
+        </SyntaxHighlighter>
+        </div>
+      )}
     </div>
   );
 };

@@ -5,7 +5,9 @@ import { FaFileAlt } from "react-icons/fa";
 const Files = ({ uuid }) => {
   const [inputFiles, setInputFiles] = useState([]);
   const [outputFiles, setOutputFiles] = useState([]);
+  const [Loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchInputFiles = async () => {
@@ -27,7 +29,21 @@ const Files = ({ uuid }) => {
         setError(true);
       }
     };
-
+    const getData = async () => {
+        try {
+          const res = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}?attributes=true`);
+          if (!res.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await res.json();
+          setData(data.data.nodes[0].attributes);
+        } catch (error) {
+          setError(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+    getData()
     fetchInputFiles();
     fetchOutputFiles();
   }, [uuid]);
@@ -38,10 +54,22 @@ const Files = ({ uuid }) => {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-    <div className="col-span-1 bg-gray-100 p-1">
-      <span className='font-semibold font-mono'>INFO:</span>
-      {/* INFO content goes here */}
-    </div>
+       <div className="col-span-1 bg-gray-100 p-4  overflow-auto">
+        <h2 className='font-semibold font-mono text-lg mb-2'>INFO:</h2>
+        <div className="space-y-2 text-blue-900">
+            <p className="font-mono text-sm break-all">
+            <span className='font-semibold text-black'>JobID:</span> {data.job_id}
+            </p>
+            <p className="font-mono text-sm break-all">
+            <span className='font-semibold text-black'>Scheduler State:</span> {data.scheduler_state}
+            </p>
+            <p className="font-mono text-sm break-all">
+            <span className='font-semibold text-black'>Remote WorkDir:</span> {data.remote_workdir}
+            </p>
+        </div>
+        </div>
+
+
     <div className="col-span-1 grid grid-rows-2 gap-4">
       <div className="row-span-1 bg-gray-100 p-1">
         <span className='font-semibold font-mono'>Input Files:</span>
