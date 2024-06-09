@@ -17,6 +17,7 @@ const RepoFiles = ({ uuid }) => {
             return { name: file.name, content: fileContentResponse.data };
           } catch (error) {
             console.error(`Error fetching content for file ${file.name}:`, error);
+            setError(true);
             return { name: file.name, content: 'Error fetching content' };
           }
         }));
@@ -36,7 +37,7 @@ const RepoFiles = ({ uuid }) => {
 
   return (
     <div>
-      <div className="col-span-1 row-span-2 bg-gray-100 p-1">
+      <div className="col-span-1 mt-2 row-span-2 bg-gray-100 p-1">
         <span className='font-semibold font-mono'>Repository Files:</span>
       </div>
       <div className="bg-gray-100 p-1">
