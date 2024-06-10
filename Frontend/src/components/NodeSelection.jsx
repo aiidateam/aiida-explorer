@@ -90,7 +90,7 @@ const NodeSelection = () => {
 
 
   return (
-    <div className="flex w-[98%] mx-auto py-2 px-0">
+    <div className="flex w-[100%] mx-auto py-2 px-0">
       <div className="w-1/5 mr-2 bg-green-100">
         <GridViewer onSelectNode={handleNodeSelect} currentPage={currentPage} setSelectedNode={setSelectedNode} />
       </div>
