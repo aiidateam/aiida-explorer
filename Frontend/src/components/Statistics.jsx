@@ -77,7 +77,7 @@ const Statistics = () => {
           />
         </div>
       </div>
-      <div className="flex border-r-2 border-gray-300 space-x-4">
+      <div className="flex  space-x-4">
         <div className="flex-1">
           <ResponsiveContainer width="100%" height={400}>
             <BarChart
