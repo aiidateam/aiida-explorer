@@ -89,8 +89,8 @@ const Statistics = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="nodes" fill="#8884d8" />
-              <Brush dataKey="date" height={30} stroke="#8884d8"/>
+              <Bar dataKey="nodes" fill="#ADD8E8" />
+              <Brush dataKey="date" height={30} stroke="#ADD8E8"/>
             </BarChart>
           </ResponsiveContainer>
         </div>
