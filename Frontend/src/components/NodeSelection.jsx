@@ -6,17 +6,19 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'tailwindcss/tailwind.css';
 import GridViewer from './GridViewer';
 
-const baseUrl = 'https://aiida.materialscloud.org/mc3d/api/v4/nodes/page/';
-const urlEnd = '25%7C"&orderby=-ctime';
 
-const NodeSelection = () => {
+const NodeSelection = ({moduleName}) => {
+  const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/page/`;
+  const urlEnd = '25%7C"&orderby=-ctime';
+
+
   const [rowData, setRowData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedNode, setSelectedNode] = useState(null);
   const [totalEntries, setTotalEntries] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const navigate = useNavigate();
-
+  
   const onButtonClick = (uuid) => {
     navigate(`/details/${uuid}`);
   };
@@ -92,7 +94,7 @@ const NodeSelection = () => {
   return (
     <div className="flex w-[100%] mx-auto py-2 px-0">
       <div className="w-1/5 mr-2 bg-green-100">
-        <GridViewer onSelectNode={handleNodeSelect} currentPage={currentPage} setSelectedNode={setSelectedNode} />
+        <GridViewer onSelectNode={handleNodeSelect} moduleName={moduleName} currentPage={currentPage} setSelectedNode={setSelectedNode} />
       </div>
       <div className="w-4/5 ml-2">
         <div className="ag-theme-alpine text-center" style={{ width: '100%', height: '98%' }}>

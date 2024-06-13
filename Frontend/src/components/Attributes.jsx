@@ -3,7 +3,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
 
-const Attributes = ({ uuid }) => {
+const Attributes = ({ uuid , moduleName }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastJob , setLastJob] = useState([]);
@@ -13,7 +13,7 @@ const Attributes = ({ uuid }) => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}?attributes=true`);
+        const res = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}?attributes=true`);
         if (!res.ok) {
           throw new Error('Network response was not ok');
         }
@@ -28,7 +28,7 @@ const Attributes = ({ uuid }) => {
     };
     const fetchDerivedProperties = async () => {
         try {
-          const response = await axios.get(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}/contents/derived_properties/`);
+          const response = await axios.get(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}/contents/derived_properties/`);
           setDerivedProperties(response.data);
         } catch (error) {
           console.error('Error fetching derived properties:', error);

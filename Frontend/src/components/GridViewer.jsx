@@ -2,28 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { CiSearch } from 'react-icons/ci';
 
-const baseUrl = 'https://aiida.materialscloud.org/mc3d/api/v4/nodes/page/';
-const urlEnd = '25%7C"&orderby=-ctime';
-const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
 
 const memo = new Map();
 
 const buildTree = (node) => {
   if (memo.has(node)) {
     return memo.get(node);
-  }
-
-  const label = node.label || 'No Label';
-  const full_type = node.full_type || '';
-  const subspaces = node.subspaces || [];
-  const children = subspaces.map(buildTree);
-
-  const result = { label, full_type, children, counter: node.counter };
-  memo.set(node, result);
-  return result;
-};
-
-const fetchPageData = async (fullType, page, onDataFetch) => {
+    }
+    
+    const label = node.label || 'No Label';
+    const full_type = node.full_type || '';
+    const subspaces = node.subspaces || [];
+    const children = subspaces.map(buildTree);
+    
+    const result = { label, full_type, children, counter: node.counter };
+    memo.set(node, result);
+    return result;
+    };
+    
+const fetchPageData = async (fullType, page, onDataFetch, moduleName) => {
+  const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/page/`;
+  const urlEnd = '25%7C"&orderby=-ctime';
+  const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
   fullType = fullType.replace(/\|/g, '');
   fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
   let url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}${urlEnd}`;
@@ -43,13 +43,13 @@ const fetchPageData = async (fullType, page, onDataFetch) => {
   }
 };
 
-const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode }) => {
+const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode, moduleName }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
-      fetchPageData(node.full_type, currentPage, onSelectNode);
+      fetchPageData(node.full_type, currentPage, onSelectNode, moduleName);
       setSelectedNode(node);
     }
   };
@@ -66,7 +66,7 @@ const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode }) => {
       {isExpanded && (
         <div className="ml-4 mt-2">
           {node.children.map((child, index) => (
-            <TreeNode key={index} node={child} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
+            <TreeNode key={index} node={child}  onSelectNode={onSelectNode} moduleName={moduleName} currentPage={currentPage} setSelectedNode={setSelectedNode} />
           ))}
         </div>
       )}
@@ -74,15 +74,15 @@ const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode }) => {
   );
 };
 
-const TreeView = ({ onSelectNode, currentPage, setSelectedNode }) => {
+const TreeView = ({ onSelectNode, currentPage, setSelectedNode , moduleName }) => {
   const [tree, setTree] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('https://aiida.materialscloud.org/mc3d/api/v4/nodes/full_types_count/');
+      const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/full_types_count/`);
       const data = await response.json();
       const rootNode = buildTree(data.data);
-      setTree(rootNode.children);  // Set the initial state to the children of the root node
+      setTree(rootNode.children); 
     };
 
     fetchData();
@@ -95,13 +95,13 @@ const TreeView = ({ onSelectNode, currentPage, setSelectedNode }) => {
   return (
     <div>
       {tree.map((child, index) => (
-        <TreeNode key={index} node={child} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
+        <TreeNode key={index} node={child} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} moduleName={moduleName} />
       ))}
     </div>
   );
 };
 
-const GridViewer = ({ onSelectNode, currentPage, setSelectedNode }) => {
+const GridViewer = ({ onSelectNode, currentPage, setSelectedNode , moduleName }) => {
   const [searchValue, setSearchValue] = useState('');
 
   return (
@@ -127,7 +127,7 @@ const GridViewer = ({ onSelectNode, currentPage, setSelectedNode }) => {
         />
       </div>
 
-      <TreeView onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} />
+      <TreeView onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} moduleName={moduleName} />
     </div>
   );
 };

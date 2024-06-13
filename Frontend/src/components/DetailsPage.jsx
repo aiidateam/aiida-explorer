@@ -12,14 +12,14 @@ import ReactFlow, {
 import 'tailwindcss/tailwind.css';
 import 'reactflow/dist/style.css';
 import { useNavigate } from 'react-router-dom'; 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { stackoverflowLight} from 'react-syntax-highlighter/dist/esm/styles/hljs';
+// import SyntaxHighlighter from 'react-syntax-highlighter';
+// import { stackoverflowLight} from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import DownloadButton from './DownloadButton';
 import Attributes from './Attributes';
 import Files from './FIles';
 import Contents from './Contents';
 
-const DetailsPage = () => {
+const DetailsPage = ({moduleName}) => {
   const { uuid } = useParams();
   const [view, setView] = useState('raw');
   const navigate = useNavigate();
@@ -105,12 +105,12 @@ const DetailsPage = () => {
         <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[90%] ">
           {view === 'raw' ? (
             <div>
-            <Files uuid={uuid} />
+            <Files moduleName={moduleName} uuid={uuid} />
             <div classname="col-span-2 ">
                 <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
-              <Attributes uuid={uuid}/>
+              <Attributes moduleName={moduleName} uuid={uuid}/>
             </div>
-            <Contents uuid={uuid} />
+            <Contents moduleName={moduleName} uuid={uuid} />
           </div>
           ) : (
             <div>
