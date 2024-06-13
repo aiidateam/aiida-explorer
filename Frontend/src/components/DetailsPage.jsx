@@ -14,10 +14,10 @@ import 'reactflow/dist/style.css';
 import { useNavigate } from 'react-router-dom'; 
 // import SyntaxHighlighter from 'react-syntax-highlighter';
 // import { stackoverflowLight} from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import DownloadButton from './DownloadButton';
 import Attributes from './Attributes';
 import Files from './FIles';
 import Contents from './Contents';
+import GraphBrowser from './GraphBrowser';
 
 const DetailsPage = ({moduleName}) => {
   const { uuid } = useParams();
@@ -53,26 +53,26 @@ const DetailsPage = ({moduleName}) => {
   //   }
   // };
 
-  const initialNodes = [
-    { id: '1', data: { label: 'Node 1' }, position: { x: 250, y: 50 }, style: { background: '#A5D6A7', color: '#333', border: '1px solid #333' } },
-    { id: '2', data: { label: 'Node 2' }, position: { x: 100, y: 200 }, style: { background: '#C8E6C9' } },
-    { id: '3', data: { label: 'Node 3' }, position: { x: 400, y: 200 }, style: { background: '#C8E6C9' } },
-    { id: '4', data: { label: 'Node 4' }, position: { x: 250, y: 350 }, style: { background: '#FFCC80' } },
-  ];
+  // const initialNodes = [
+  //   { id: '1', data: { label: 'Node 1' }, position: { x: 250, y: 50 }, style: { background: '#A5D6A7', color: '#333', border: '1px solid #333' } },
+  //   { id: '2', data: { label: 'Node 2' }, position: { x: 100, y: 200 }, style: { background: '#C8E6C9' } },
+  //   { id: '3', data: { label: 'Node 3' }, position: { x: 400, y: 200 }, style: { background: '#C8E6C9' } },
+  //   { id: '4', data: { label: 'Node 4' }, position: { x: 250, y: 350 }, style: { background: '#FFCC80' } },
+  // ];
 
-  const initialEdges = [
-    { id: 'e1-2', source: '1', target: '2', animated: true },
-    { id: 'e1-3', source: '1', target: '3', animated: true },
-    { id: 'e3-4', source: '3', target: '4', animated: true },
-  ];
+  // const initialEdges = [
+  //   { id: 'e1-2', source: '1', target: '2', animated: true },
+  //   { id: 'e1-3', source: '1', target: '3', animated: true },
+  //   { id: 'e3-4', source: '3', target: '4', animated: true },
+  // ];
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  // const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  // const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
  
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
+  // const onConnect = useCallback(
+  //   (params) => setEdges((eds) => addEdge(params, eds)),
+  //   [setEdges],
+  // );
 
   return (
     <div className="flex h-[100vh] mx-4 p-5">
@@ -122,8 +122,11 @@ const DetailsPage = ({moduleName}) => {
       <div className="w-1/2 p-6 relative border-2 ml-2 rounded-lg border-gray-200">
       <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
         <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
+      </div >
+      <div className='h-full w-full'>
+      <GraphBrowser uuid={uuid} moduleName={moduleName} />
       </div>
-        <ReactFlowProvider>
+        {/* <ReactFlowProvider>
           <ReactFlow 
           style={{ width: '100%', height: '100%' }}
           nodes={nodes}
@@ -146,7 +149,7 @@ const DetailsPage = ({moduleName}) => {
             />
           </div>
         <DownloadButton />
-        </ReactFlowProvider>
+        </ReactFlowProvider> */}
       </div>
     </div>
   );
