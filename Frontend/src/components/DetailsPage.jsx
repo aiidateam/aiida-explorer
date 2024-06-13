@@ -23,35 +23,35 @@ const DetailsPage = ({moduleName}) => {
   const { uuid } = useParams();
   const [view, setView] = useState('raw');
   const navigate = useNavigate();
-  const nodeData = {
-    data: {
-      attributes: {
-        CONTROL: {
-          calculation: "scf",
-          etot_conv_thr: 0.00036,
-          forc_conv_thr: 0.0001,
-          max_seconds: 41040.0,
-          restart_mode: "from_scratch",
-          tprnfor: true,
-          tstress: true
-        },
-        ELECTRONS: {
-          conv_thr: 7.2e-9,
-          electron_maxstep: 80,
-          mixing_beta: 0.4
-        },
-        SYSTEM: {
-          degauss: 0.01,
-          ecutrho: 400.0,
-          ecutwfc: 50.0,
-          nbnd: 144,
-          nosym: false,
-          occupations: "smearing",
-          smearing: "cold"
-        }
-      }
-    }
-  };
+  // const nodeData = {
+  //   data: {
+  //     attributes: {
+  //       CONTROL: {
+  //         calculation: "scf",
+  //         etot_conv_thr: 0.00036,
+  //         forc_conv_thr: 0.0001,
+  //         max_seconds: 41040.0,
+  //         restart_mode: "from_scratch",
+  //         tprnfor: true,
+  //         tstress: true
+  //       },
+  //       ELECTRONS: {
+  //         conv_thr: 7.2e-9,
+  //         electron_maxstep: 80,
+  //         mixing_beta: 0.4
+  //       },
+  //       SYSTEM: {
+  //         degauss: 0.01,
+  //         ecutrho: 400.0,
+  //         ecutwfc: 50.0,
+  //         nbnd: 144,
+  //         nosym: false,
+  //         occupations: "smearing",
+  //         smearing: "cold"
+  //       }
+  //     }
+  //   }
+  // };
 
   const initialNodes = [
     { id: '1', data: { label: 'Node 1' }, position: { x: 250, y: 50 }, style: { background: '#A5D6A7', color: '#333', border: '1px solid #333' } },
