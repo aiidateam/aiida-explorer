@@ -22,38 +22,47 @@ const GraphBrowser = ({ uuid, moduleName}) => {
     return parts[parts.length - 2];
   };
 
-  const fetchNodes = async (nodeUuid, isInitial = false) => {
+  const fetchNodes = async (nodeUuid, isInitial = false, parentNodeId = null) => {
     try {
-      const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${nodeUuid}/links/tree?`);
+      const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${nodeUuid}/links/tree?`);
       const data = await response.json();
-
-      console.log('API Response Data:', data); 
-
+  
+      console.log('API Response Data:', data); // Debugging
+  
+      const parentNode = nodes.find(n => n.id === parentNodeId);
+  
       const middleNode = {
         id: nodeUuid,
         data: { label: extractLabel(data.data.nodes[0].node_type) || nodeUuid },
-        position: { x: 0, y: 0 },
-        style: { background: '#FFCC80', color: '#333', border: '1px solid #333' },
+        position: parentNode
+          ? { x: parentNode.position.x, y: parentNode.position.y + 200 }
+          : { x: 0, y: 0 },
+        style: { background: '#FFCC80', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
       };
-
+  
       const incomingNodes = data.data.nodes[0].incoming.map((node, index) => ({
         id: node.uuid,
         data: { label: extractLabel(node.node_type) || node.uuid },
-        position: { x: -400, y: (index - (data.data.nodes[0].incoming.length / 2)) * 100 },
-        style: { background: '#C8E6C9', color: '#333', border: '1px solid #333' },
+        position: {
+          x: middleNode.position.x - 400,
+          y: middleNode.position.y + (index - (data.data.nodes[0].incoming.length / 2)) * 100,
+        },
+        style: { background: '#C8E6C9', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
       }));
   
       const outgoingNodes = data.data.nodes[0].outgoing.map((node, index) => ({
         id: node.uuid,
         data: { label: extractLabel(node.node_type) || node.uuid },
-        position: { x: 400, y: (index - (data.data.nodes[0].outgoing.length / 2)) * 100 },
-        style: { background: '#FFAB91', color: '#333', border: '1px solid #333' },
+        position: {
+          x: middleNode.position.x + 400,
+          y: middleNode.position.y + (index - (data.data.nodes[0].outgoing.length / 2)) * 100,
+        },
+        style: { background: '#FFAB91', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
       }));
-
+  
       const newNodes = [middleNode, ...incomingNodes, ...outgoingNodes];
       const newEdges = [
         ...incomingNodes.map((node) => ({
-          type: 'straight',
           id: `e${node.id}-${nodeUuid}`,
           source: node.id,
           target: nodeUuid,
@@ -62,7 +71,6 @@ const GraphBrowser = ({ uuid, moduleName}) => {
           label: data.data.nodes[0].incoming.find(n => n.uuid === node.id).link_label,
         })),
         ...outgoingNodes.map((node) => ({
-          type: 'straight',
           id: `e${nodeUuid}-${node.id}`,
           source: nodeUuid,
           target: node.id,
@@ -71,7 +79,7 @@ const GraphBrowser = ({ uuid, moduleName}) => {
           label: data.data.nodes[0].outgoing.find(n => n.uuid === node.id).link_label,
         })),
       ];
-
+  
       if (isInitial) {
         setNodes(newNodes);
         setEdges(newEdges);
@@ -83,13 +91,13 @@ const GraphBrowser = ({ uuid, moduleName}) => {
       console.error('Error fetching nodes:', error);
     }
   };
-
+  
   useEffect(() => {
     fetchNodes(uuid, true);
   }, [uuid]);
 
   const onNodeClick = useCallback((event, node) => {
-    fetchNodes(node.id);
+    fetchNodes(node.id, false, node.id);
   }, []);
 
   const onConnect = useCallback(
