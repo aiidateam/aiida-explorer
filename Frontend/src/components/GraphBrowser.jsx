@@ -12,9 +12,10 @@ import 'tailwindcss/tailwind.css';
 import 'reactflow/dist/style.css';
 import DownloadButton from './DownloadButton';
 
-const GraphBrowser = ({ uuid, moduleName}) => {
+const GraphBrowser = ({ uuid, moduleName }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [customNodeCounter, setCustomNodeCounter] = useState(0);
 
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
@@ -22,12 +23,44 @@ const GraphBrowser = ({ uuid, moduleName}) => {
     return parts[parts.length - 2];
   };
 
+  const generateUniqueId = (prefix = 'id') => {
+    return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  const layoutNodes = (nodes) => {
+    let maxX = 0;
+    let minX = 0;
+    let maxY = 0;
+    let minY = 0;
+
+    nodes.forEach((node, index) => {
+      node.position = {
+        x: node.position.x * 1.1,
+        y: index * 75,
+      };
+      maxX = Math.max(maxX, node.position.x);
+      minX = Math.min(minX, node.position.x);
+      maxY = Math.max(maxY, node.position.y);
+      minY = Math.min(minY, node.position.y);
+    });
+
+    const offsetX = (maxX - minX) / 2;
+    const offsetY = (maxY - minY) / 2;
+
+    nodes.forEach((node) => {
+      node.position.x -= offsetX;
+      node.position.y -= offsetY;
+    });
+
+    return nodes;
+  };
+
   const fetchNodes = async (nodeUuid, isInitial = false, parentNodeId = null) => {
     try {
-      const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${nodeUuid}/links/tree?`);
+      const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${nodeUuid}/links/tree?`);
       const data = await response.json();
   
-      console.log('API Response Data:', data); // Debugging
+      console.log('API Response Data:', data);
   
       const parentNode = nodes.find(n => n.id === parentNodeId);
   
@@ -35,35 +68,62 @@ const GraphBrowser = ({ uuid, moduleName}) => {
         id: nodeUuid,
         data: { label: extractLabel(data.data.nodes[0].node_type) || nodeUuid },
         position: parentNode
-          ? { x: parentNode.position.x, y: parentNode.position.y + 200 }
+          ? { x: parentNode.position.x, y: parentNode.position.y + 100 }
           : { x: 0, y: 0 },
         style: { background: '#FFCC80', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
       };
   
-      const incomingNodes = data.data.nodes[0].incoming.map((node, index) => ({
+      const incomingNodes = data.data.nodes[0].incoming.slice(0, 10).map((node, index) => ({
         id: node.uuid,
         data: { label: extractLabel(node.node_type) || node.uuid },
         position: {
-          x: middleNode.position.x - 400,
-          y: middleNode.position.y + (index - (data.data.nodes[0].incoming.length / 2)) * 100,
+          x: middleNode.position.x - 500,
+          y: middleNode.position.y + (index - (data.data.nodes[0].incoming.length / 2)) * 70,
         },
         style: { background: '#C8E6C9', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
       }));
   
-      const outgoingNodes = data.data.nodes[0].outgoing.map((node, index) => ({
+      const outgoingNodes = data.data.nodes[0].outgoing.slice(0, 10).map((node, index) => ({
         id: node.uuid,
         data: { label: extractLabel(node.node_type) || node.uuid },
         position: {
-          x: middleNode.position.x + 400,
-          y: middleNode.position.y + (index - (data.data.nodes[0].outgoing.length / 2)) * 100,
+          x: middleNode.position.x + 500,
+          y: middleNode.position.y + (index - (data.data.nodes[0].outgoing.length / 2)) * 70,
         },
         style: { background: '#FFAB91', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
       }));
   
+      const customIncomingNode = {
+        id: generateUniqueId('incoming-custom'),
+        data: { label: `(+${data.data.nodes[0].incoming.length - 10}) nodes` },
+        position: {
+          x: middleNode.position.x - 400,
+          y: middleNode.position.y + ((data.data.nodes[0].incoming.length - 1) / 2) * 75,
+        },
+        style: { background: '#C8E6C9', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      };
+  
+      const customOutgoingNode = {
+        id: generateUniqueId('outgoing-custom'),
+        data: { label: `(+${data.data.nodes[0].outgoing.length - 10}) nodes` },
+        position: {
+          x: middleNode.position.x + 400,
+          y: middleNode.position.y + ((data.data.nodes[0].outgoing.length - 1) / 2) * 75,
+        },
+        style: { background: '#FFAB91', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      };
+  
       const newNodes = [middleNode, ...incomingNodes, ...outgoingNodes];
+      if (data.data.nodes[0].incoming.length > 10) {
+        newNodes.push(customIncomingNode);
+      }
+      if (data.data.nodes[0].outgoing.length > 10) {
+        newNodes.push(customOutgoingNode);
+      }
+  
       const newEdges = [
         ...incomingNodes.map((node) => ({
-          id: `e${node.id}-${nodeUuid}`,
+          id: generateUniqueId(`e${node.id}-${nodeUuid}`),
           source: node.id,
           target: nodeUuid,
           animated: true,
@@ -71,27 +131,43 @@ const GraphBrowser = ({ uuid, moduleName}) => {
           label: data.data.nodes[0].incoming.find(n => n.uuid === node.id).link_label,
         })),
         ...outgoingNodes.map((node) => ({
-          id: `e${nodeUuid}-${node.id}`,
+          id: generateUniqueId(`e${nodeUuid}-${node.id}`),
           source: nodeUuid,
           target: node.id,
           animated: true,
           arrowHeadType: 'arrowclosed',
           label: data.data.nodes[0].outgoing.find(n => n.uuid === node.id).link_label,
         })),
+        ...(data.data.nodes[0].incoming.length > 10 ? [{
+          id: generateUniqueId(`e${customIncomingNode.id}-${nodeUuid}`),
+          source: customIncomingNode.id,
+          target: nodeUuid,
+          animated: true,
+          arrowHeadType: 'arrowclosed',
+          label: 'More Incoming Nodes',
+        }] : []),
+        ...(data.data.nodes[0].outgoing.length > 10 ? [{
+          id: generateUniqueId(`e${nodeUuid}-${customOutgoingNode.id}`),
+          source: nodeUuid,
+          target: customOutgoingNode.id,
+          animated: true,
+          arrowHeadType: 'arrowclosed',
+          label: 'More Outgoing Nodes',
+        }] : []),
       ];
   
       if (isInitial) {
-        setNodes(newNodes);
+        setNodes(layoutNodes(newNodes));
         setEdges(newEdges);
       } else {
-        setNodes((nds) => [...nds, ...newNodes]);
+        setNodes((nds) => layoutNodes([...nds, ...newNodes]));
         setEdges((eds) => [...eds, ...newEdges]);
       }
     } catch (error) {
       console.error('Error fetching nodes:', error);
     }
   };
-  
+
   useEffect(() => {
     fetchNodes(uuid, true);
   }, [uuid]);
