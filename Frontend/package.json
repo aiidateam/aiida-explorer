@@ -17,6 +17,7 @@
     "ag-grid-community": "^31.3.2",
     "ag-grid-react": "^31.3.2",
     "axios": "^1.7.2",
+    "d3": "^7.9.0",
     "d3-hierarchy": "^3.1.2",
     "html-to-image": "^1.11.11",
     "http-proxy-middleware": "^3.0.0",
