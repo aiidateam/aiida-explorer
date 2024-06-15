@@ -18,6 +18,7 @@ import Attributes from './Attributes';
 import Files from './FIles';
 import Contents from './Contents';
 import GraphBrowser from './GraphBrowser';
+import BrowserSelection from '../BrowserSelection';
 
 const DetailsPage = ({moduleName}) => {
   const { uuid } = useParams();
@@ -124,7 +125,8 @@ const DetailsPage = ({moduleName}) => {
         <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
       </div >
       <div className='h-full w-full'>
-      <GraphBrowser uuid={uuid} moduleName={moduleName} />
+          <BrowserSelection uuid={uuid} moduleName={moduleName} />
+      {/* <GraphBrowser uuid={uuid} moduleName={moduleName} /> */}
       </div>
         {/* <ReactFlowProvider>
           <ReactFlow 
