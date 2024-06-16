@@ -22,6 +22,7 @@
     "dagre": "^0.8.5",
     "html-to-image": "^1.11.11",
     "http-proxy-middleware": "^3.0.0",
+    "lodash.debounce": "^4.0.8",
     "react": "^18.2.0",
     "react-datepicker": "^6.9.0",
     "react-dom": "^18.2.0",

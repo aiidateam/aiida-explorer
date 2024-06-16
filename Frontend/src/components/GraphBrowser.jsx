@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import ReactFlow, { 
     MiniMap, 
     Controls, 
@@ -7,12 +7,16 @@ import ReactFlow, {
     useNodesState,
     useEdgesState,
     addEdge,
+    MarkerType,
 } from 'reactflow';
 import 'tailwindcss/tailwind.css';
 import 'reactflow/dist/style.css';
 import dagre from 'dagre';
-import DownloadButton from './DownloadButton';
+import CustomNode from './CustomNode';
+// import DownloadButton from './DownloadButton';
 import Legend from './Legend';
+import Tooltip from './Tooltip';
+
 
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -20,7 +24,7 @@ const nodeWidth = 172;
 const nodeHeight = 36;
 
 const getLayoutedNodes = (nodes, edges) => {
-  dagreGraph.setGraph({ rankdir: 'LR' }); // Left-Right layout
+  dagreGraph.setGraph({ rankdir: 'LR' });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -37,7 +41,6 @@ const getLayoutedNodes = (nodes, edges) => {
     node.targetPosition = 'left';
     node.sourcePosition = 'right';
 
-    // Shifting dagre node position for center alignment
     node.position = {
       x: nodeWithPosition.x - nodeWidth / 2,
       y: nodeWithPosition.y - nodeHeight / 2,
@@ -52,7 +55,16 @@ const GraphBrowser = ({ uuid, moduleName }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [nodeCache, setNodeCache] = useState({});
   const [customNodeCounter, setCustomNodeCounter] = useState(0);
+  const [tooltipDetails, setTooltipDetails] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: null, y: null });
+  const tooltipTimeout = useRef(null);
 
+  // const nodeTypes = {
+  //   customNode: (props) => (
+  //     <CustomNode {...props} onMouseEnter={onNodeMouseEnter} onMouseLeave={onNodeMouseLeave} />
+  //   ),
+  // };
+  const containerRef = useRef(null);
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
     const parts = nodeType.split('.');
@@ -68,13 +80,13 @@ const GraphBrowser = ({ uuid, moduleName }) => {
       displayNodesFromCache(nodeUuid, isInitial, parentNodeId);
       return;
     }
-
+  
     try {
       const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${nodeUuid}/links/tree?`);
       const data = await response.json();
   
       const newCache = { ...nodeCache };
-      newCache[nodeUuid] = data.data.nodes[0];
+      newCache[nodeUuid] = { ...data.data.nodes[0], details: data.data.nodes[0] }; 
       setNodeCache(newCache);
   
       displayNodes(newCache[nodeUuid], nodeUuid, isInitial, parentNodeId);
@@ -82,6 +94,7 @@ const GraphBrowser = ({ uuid, moduleName }) => {
       console.error('Error fetching nodes:', error);
     }
   };
+  
 
   const displayNodesFromCache = (nodeUuid, isInitial, parentNodeId) => {
     const nodeData = nodeCache[nodeUuid];
@@ -96,7 +109,12 @@ const GraphBrowser = ({ uuid, moduleName }) => {
       position: parentNode
         ? { x: parentNode.position.x + 150, y: 0 }
         : { x: 0, y: 0 },
-      style: { background: '#FFCC80', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      style: { 
+        background: '#FFCC80', 
+        color: '#333', 
+        border: '1px solid #333', 
+        paddingLeft: '20px',
+        paddingRight: '20px' },
     };
 
     const incomingNodes = nodeData.incoming.slice(0, 10).map((node, index) => ({
@@ -106,7 +124,12 @@ const GraphBrowser = ({ uuid, moduleName }) => {
         x: middleNode.position.x , 
         y: middleNode.position.y - 200,
       },
-      style: { background: '#C8E6C9', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      style: { 
+        background: '#C8E6C9', 
+        color: '#333', 
+        border: '1px solid #333', 
+        paddingLeft: '20px', 
+        paddingRight: '20px' },
     }));
   
     const outgoingNodes = nodeData.outgoing.slice(0, 10).map((node, index) => ({
@@ -116,7 +139,12 @@ const GraphBrowser = ({ uuid, moduleName }) => {
         x: middleNode.position.x , 
         y: middleNode.position.y + 250, 
       },
-      style: { background: '#FFAB91', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      style: { 
+        background: '#FFAB91', 
+        color: '#333', 
+        border: '1px solid #333', 
+        paddingLeft: '20px', 
+        paddingRight: '20px' },
     }));
 
     const customIncomingNode = {
@@ -126,7 +154,13 @@ const GraphBrowser = ({ uuid, moduleName }) => {
         x: middleNode.position.x , 
         y: middleNode.position.y - 200, 
       },
-      style: { background: '#C8E6C9', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      style: { 
+        background: '#ADD8E6', 
+        color: '#333', 
+        border: '1px dashed #333',
+        paddingLeft: '20px', 
+        paddingRight: '20px' 
+      },
     };
     
     const customOutgoingNode = {
@@ -136,8 +170,15 @@ const GraphBrowser = ({ uuid, moduleName }) => {
         x: middleNode.position.x , 
         y: middleNode.position.y + 200, 
       },
-      style: { background: '#FFAB91', color: '#333', border: '1px solid #333', paddingLeft: '20px', paddingRight: '20px' },
+      style: { 
+        background: '#ADD8E6', 
+        color: '#333', 
+        border: '1px dashed #333', 
+        paddingLeft: '20px', 
+        paddingRight: '20px' 
+      },
     };
+    
 
     const newNodes = [middleNode, ...incomingNodes, ...outgoingNodes];
     if (nodeData.incoming.length > 10) {
@@ -153,7 +194,17 @@ const GraphBrowser = ({ uuid, moduleName }) => {
         source: node.id,
         target: nodeUuid,
         animated: true,
-        arrowHeadType: 'arrowclosed',
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#808080',
+        },
+        style: {
+          strokeWidth: 1,
+          stroke: '#808080',
+        },
+        // arrowHeadType: 'arrowclosed',
         label: nodeData.incoming.find(n => n.uuid === node.id).link_label,
       })),
       ...outgoingNodes.map((node) => ({
@@ -161,23 +212,53 @@ const GraphBrowser = ({ uuid, moduleName }) => {
         source: nodeUuid,
         target: node.id,
         animated: true,
-        arrowHeadType: 'arrowclosed',
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#808080',
+        },
+        style: {
+          strokeWidth: 1,
+          stroke: '#808080',
+        },
+        // arrowHeadType: 'arrowclosed',
         label: nodeData.outgoing.find(n => n.uuid === node.id).link_label,
       })),
       ...(nodeData.incoming.length > 10 ? [{
         id: generateUniqueId(`e${customIncomingNode.id}-${nodeUuid}`),
         source: customIncomingNode.id,
         target: nodeUuid,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#808080',
+        },
+        style: {
+          strokeWidth: 1,
+          stroke: '#808080',
+        },
         animated: true,
-        arrowHeadType: 'arrowclosed',
+        // arrowHeadType: 'arrowclosed',
         label: 'More Incoming Nodes',
       }] : []),
       ...(nodeData.outgoing.length > 10 ? [{
         id: generateUniqueId(`e${nodeUuid}-${customOutgoingNode.id}`),
         source: nodeUuid,
         target: customOutgoingNode.id,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#808080',
+        },
+        style: {
+          strokeWidth: 1,
+          stroke: '#808080',
+        },
         animated: true,
-        arrowHeadType: 'arrowclosed',
+        // arrowHeadType: 'arrowclosed',
         label: 'More Outgoing Nodes',
       }] : []),
     ];
@@ -205,6 +286,31 @@ const GraphBrowser = ({ uuid, moduleName }) => {
     }
   }, [nodeCache]);
 
+  const onNodeMouseEnter = useCallback(async (event, nodeId) => {
+    clearTimeout(tooltipTimeout.current);
+    tooltipTimeout.current = setTimeout(async () => {
+      try {
+        console.log(nodeId.id);
+        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${nodeId.id}`);
+        const data = await response.json();
+        setTooltipDetails(data.data.nodes[0]);
+        console.log(data.data.nodes[0]);
+        setTooltipPosition({ x: event.clientX, y: event.clientY });
+        console.log('x: ' + event.clientX, 'y:' + event.clientY);
+      } catch (error) {
+        console.error('Error fetching node details:', error);
+      }
+    }, 200); // Delay in milliseconds
+  }, []);
+
+  const onNodeMouseLeave = useCallback(() => {
+    clearTimeout(tooltipTimeout.current);
+    setTooltipDetails(null);
+  }, []);
+
+  
+  
+  
   const loadMoreNodes = (customNodeId) => {
     const parts = customNodeId.split('-');
     const direction = parts[0];
@@ -231,7 +337,17 @@ const GraphBrowser = ({ uuid, moduleName }) => {
       source: direction === 'incoming' ? node.id : parentId,
       target: direction === 'incoming' ? parentId : node.id,
       animated: true,
-      arrowHeadType: 'arrowclosed',
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 20,
+        height: 20,
+        color: '#808080',
+      },
+      style: {
+        strokeWidth: 1,
+        stroke: '#808080',
+      },
+      // arrowHeadType: 'arrowclosed',
       label: node.link_label,
     }));
 
@@ -244,7 +360,7 @@ const GraphBrowser = ({ uuid, moduleName }) => {
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full" ref={containerRef}>
       <Legend />
       <ReactFlowProvider>
         <ReactFlow
@@ -253,17 +369,24 @@ const GraphBrowser = ({ uuid, moduleName }) => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
+          onNodeMouseEnter={onNodeMouseEnter}
+          onNodeMouseLeave={onNodeMouseLeave}
           fitView
+          onlyRenderVisibleElements
         >
           <MiniMap />
           <Controls />
           <Background />
         </ReactFlow>
       </ReactFlowProvider>
+      {tooltipDetails && (
+        <Tooltip
+          details={tooltipDetails}
+          position={tooltipPosition}
+          containerRef={containerRef}
+        />
+      )}
       {/* <DownloadButton nodes={nodes} edges={edges} /> */}
-      {/* <div className="legend">
-        <p className="text-sm"><span className="bg-green-200 p-1">Incoming Nodes</span> | <span className="bg-orange-200 p-1">Outgoing Nodes</span> | <span className="bg-yellow-200 p-1">Current Node</span></p>
-      </div> */}
     </div>
   );
 };
