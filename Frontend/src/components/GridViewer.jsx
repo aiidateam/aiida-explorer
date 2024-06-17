@@ -2,28 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { CiSearch } from 'react-icons/ci';
 
-
 const memo = new Map();
 
 const buildTree = (node) => {
   if (memo.has(node)) {
     return memo.get(node);
-    }
-    
-    const label = node.label || 'No Label';
-    const full_type = node.full_type || '';
-    const subspaces = node.subspaces || [];
-    const children = subspaces.map(buildTree);
-    
-    const result = { label, full_type, children, counter: node.counter };
-    memo.set(node, result);
-    return result;
-    };
-    
+  }
+  
+  const label = node.label || 'No Label';
+  const full_type = node.full_type || '';
+  const subspaces = node.subspaces || [];
+  const children = subspaces.map(buildTree);
+  
+  const result = { label, full_type, children, counter: node.counter };
+  memo.set(node, result);
+  return result;
+};
+
 const fetchPageData = async (fullType, page, onDataFetch, moduleName) => {
   const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/page/`;
   const urlEnd = '25%7C"&orderby=-ctime';
   const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
+  
   fullType = fullType.replace(/\|/g, '');
   fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
   let url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}${urlEnd}`;
@@ -37,7 +37,7 @@ const fetchPageData = async (fullType, page, onDataFetch, moduleName) => {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    onDataFetch(data.data.nodes, page);
+    onDataFetch(data.data.nodes, page, data.data.total_entries, data.data.total_pages);
   } catch (error) {
     console.error(`Error fetching data for ${fullType} on page ${page}:`, error);
   }
@@ -66,7 +66,7 @@ const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode, moduleName
       {isExpanded && (
         <div className="ml-4 mt-2">
           {node.children.map((child, index) => (
-            <TreeNode key={index} node={child}  onSelectNode={onSelectNode} moduleName={moduleName} currentPage={currentPage} setSelectedNode={setSelectedNode} />
+            <TreeNode key={index} node={child} onSelectNode={onSelectNode} moduleName={moduleName} currentPage={currentPage} setSelectedNode={setSelectedNode} />
           ))}
         </div>
       )}
@@ -74,7 +74,7 @@ const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode, moduleName
   );
 };
 
-const TreeView = ({ onSelectNode, currentPage, setSelectedNode , moduleName }) => {
+const TreeView = ({ onSelectNode, currentPage, setSelectedNode, moduleName }) => {
   const [tree, setTree] = useState([]);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ const TreeView = ({ onSelectNode, currentPage, setSelectedNode , moduleName }) =
     };
 
     fetchData();
-  }, []);
+  }, [moduleName]);
 
   if (!tree.length) {
     return <div className="text-center text-gray-700 bg-blue-100">Loading...</div>;
@@ -101,7 +101,7 @@ const TreeView = ({ onSelectNode, currentPage, setSelectedNode , moduleName }) =
   );
 };
 
-const GridViewer = ({ onSelectNode, currentPage, setSelectedNode , moduleName }) => {
+const GridViewer = ({ onSelectNode, currentPage, setSelectedNode, moduleName }) => {
   const [searchValue, setSearchValue] = useState('');
 
   return (
