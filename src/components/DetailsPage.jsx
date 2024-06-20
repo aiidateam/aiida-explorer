@@ -1,14 +1,14 @@
 import React, { useState , useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactFlow, { 
-    MiniMap, 
-    Controls, 
-    Background, 
-    ReactFlowProvider ,
-    useNodesState,
-    useEdgesState,
-    addEdge,
-} from 'reactflow';
+// import ReactFlow, { 
+//     MiniMap, 
+//     Controls, 
+//     Background, 
+//     ReactFlowProvider ,
+//     useNodesState,
+//     useEdgesState,
+//     addEdge,
+// } from 'reactflow';
 import 'tailwindcss/tailwind.css';
 import 'reactflow/dist/style.css';
 import { useNavigate } from 'react-router-dom'; 
@@ -111,11 +111,18 @@ const DetailsPage = ({moduleName}) => {
                 <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
               <Attributes moduleName={moduleName} uuid={uuid}/>
             </div>
-            <Contents moduleName={moduleName} uuid={uuid} />
+            {/* <Contents moduleName={moduleName} uuid={uuid} /> */}
           </div>
           ) : (
             <div>
-              <p>Rich view content here...</p>
+              <div>
+            <Files moduleName={moduleName} uuid={uuid} />
+            {/* <div classname="col-span-2 ">
+                <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
+              <Attributes moduleName={moduleName} uuid={uuid}/>
+            </div> */}
+            <Contents moduleName={moduleName} uuid={uuid} />
+          </div>
             </div>
           )}
         </div>

@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState , useCallback } from 'react';
+import { ClipLoader } from 'react-spinners';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
+import { FaCopy } from 'react-icons/fa';
 
 const Attributes = ({ uuid , moduleName }) => {
   const [data, setData] = useState(null);
@@ -9,6 +12,12 @@ const Attributes = ({ uuid , moduleName }) => {
   const [lastJob , setLastJob] = useState([]);
   const [derivedProperties, setDerivedProperties] = useState(null);
   const [error, setError] = useState(null);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyClick = useCallback(() => {
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 1000);
+  }, []);
 
   useEffect(() => {
     const getData = async () => {
@@ -110,7 +119,11 @@ const Attributes = ({ uuid , moduleName }) => {
 
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>
+      <div className="loading-animation m-auto flex justify-center text-center">
+          <ClipLoader size={30} color="#007bff" />
+        </div>
+    </div>;
   }
 
   if (error) {
@@ -119,9 +132,20 @@ const Attributes = ({ uuid , moduleName }) => {
 
   return (
     <div>
-      <SyntaxHighlighter language="json" style={stackoverflowLight}>
-        {JSON.stringify(data, null, 2)}
-      </SyntaxHighlighter>
+      <div className="relative">
+            <SyntaxHighlighter language="json" style={stackoverflowLight}>
+              {JSON.stringify(data, null, 2)}
+            </SyntaxHighlighter>
+            <CopyToClipboard text={JSON.stringify(data, null, 2)} onCopy={handleCopyClick}>
+              <button className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200">
+                {isCopied ? (
+                  <FaCheck className="text-green-600" />
+                ) : (
+                  <FaCopy className="text-gray-600" />
+                )}
+              </button>
+            </CopyToClipboard>
+          </div>
       <div>
         {renderDerivedPropertiesTable()}    
       </div>
