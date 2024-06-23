@@ -4,7 +4,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
-import { FaCopy } from 'react-icons/fa';
+import { FaCopy , FaCheck } from 'react-icons/fa';
 
 const Attributes = ({ uuid , moduleName }) => {
   const [data, setData] = useState(null);

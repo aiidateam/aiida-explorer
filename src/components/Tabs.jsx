@@ -18,7 +18,7 @@ const Tabs = () => {
   const renderButton = (path, tabName) => (
     <button
       onClick={() => handleNavigation(path)}
-      className={`px-4 py-2 text-sm font-medium w-1/2 space-x-2 last:border-r-0 ${
+      className={`px-4 py-2 text-sm font-medium w-1/3 space-x-2 last:border-r-0 ${
         selectedTab === path ? 'text-white bg-gray-400' : 'text-gray-700 bg-white'
       }`}
     >
@@ -30,6 +30,7 @@ const Tabs = () => {
     <div className="border-2 text-center w-full border-gray-300 flex justify-between p-1">
       {renderButton('/', 'Grid')}
       {renderButton('/statistics', 'Statistics')}
+      {renderButton('/search', 'Details')}
     </div>
   );
 };
