@@ -4,6 +4,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
+import { JSONTree } from 'react-json-tree';
 import { FaCopy , FaCheck } from 'react-icons/fa';
 
 const Attributes = ({ uuid , moduleName }) => {
@@ -13,6 +14,27 @@ const Attributes = ({ uuid , moduleName }) => {
   const [derivedProperties, setDerivedProperties] = useState(null);
   const [error, setError] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  const theme = {
+    scheme: 'stackoverflow-light',
+    author: 'stackoverflow',
+    base00: '#f6f6f6',
+    base01: '#dcdcdc',
+    base02: '#c0c0c0',
+    base03: '#808080',
+    base04: '#808080',
+    base05: '#404040',
+    base06: '#404040',
+    base07: '#404040',
+    base08: '#f2777a',
+    base09: '#f99157',
+    base0A: '#ffcc66',
+    base0B: '#99cc99',
+    base0C: '#66cccc',
+    base0D: '#6699cc',
+    base0E: '#cc99cc',
+    base0F: '#d27b53'
+  };
 
   const handleCopyClick = useCallback(() => {
     setIsCopied(true);
@@ -133,9 +155,7 @@ const Attributes = ({ uuid , moduleName }) => {
   return (
     <div>
       <div className="relative">
-            <SyntaxHighlighter language="json" style={stackoverflowLight}>
-              {JSON.stringify(data, null, 2)}
-            </SyntaxHighlighter>
+      <JSONTree data={data} theme={theme} invertTheme={false} />
             <CopyToClipboard text={JSON.stringify(data, null, 2)} onCopy={handleCopyClick}>
               <button className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200">
                 {isCopied ? (
@@ -150,13 +170,11 @@ const Attributes = ({ uuid , moduleName }) => {
         {renderDerivedPropertiesTable()}    
       </div>
       {lastJob && (
-        <div>
+          <div>
             <span className='font-mono font-bold text-md'>Last Job Details :</span>
-        <SyntaxHighlighter language="json" style={stackoverflowLight}>
-            {JSON.stringify(lastJob, null, 2)}
-        </SyntaxHighlighter>
-        </div>
-      )}
+            <JSONTree data={lastJob} theme={theme} invertTheme={false} />
+          </div>
+        )}
     </div>
   );
 };
