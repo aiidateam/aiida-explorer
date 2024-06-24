@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo ,useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   createColumnHelper,
@@ -26,6 +26,7 @@ const NodeSelection = ({ moduleName }) => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
   const navigate = useNavigate();
+  const prevSelectedNode = useRef(null);
   const memo = useMemo(() => new Map(), []);
 
   const buildTree = useCallback((node) => {
@@ -57,15 +58,24 @@ const NodeSelection = ({ moduleName }) => {
   }, [buildTree]);
 
   const fetchData = useCallback(async (page) => {
-    if (!selectedNode || !selectedNode.full_type) {
+
+    const node = selectedNode || prevSelectedNode.current;
+    if (!node || !node.full_type) {
       setData([]);
       setTotalRows(0);
       return;
     }
+    console.log(node);
+
+    // if (!selectedNode || !selectedNode.full_type) {
+    //   setData([]);
+    //   setTotalRows(0);
+    //   return;
+    // }
 
     setLoading(true);
 
-    let fullType = selectedNode.full_type.replace(/\|/g, '');
+    let fullType = node.full_type.replace(/\|/g, '');
     fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
     let url = `${baseUrl}${page}?&perpage=${entriesPerPage}&full_type="${fullType}${urlEnd}`;
 
@@ -100,6 +110,7 @@ const NodeSelection = ({ moduleName }) => {
 
   useEffect(() => {
     if (selectedNode) {
+      prevSelectedNode.current = selectedNode;
       fetchData(currentPage);
     }
   }, [fetchData, currentPage, selectedNode]);
@@ -170,10 +181,13 @@ const NodeSelection = ({ moduleName }) => {
   });
 
   return (
-    <div className="flex w-full mx-auto py-2 px-0 font-mono text-sm">
+    <div className="flex w-full mx-auto py-2 px-0 text-sm">
       <div className="w-1/5 mr-2 bg-green-50">
         <GridViewer
-          onSelectNode={setSelectedNode}
+          onSelectNode={(node) => {
+            setSelectedNode(node);
+            setCurrentPage(1); 
+          }}
           moduleName={moduleName}
           currentPage={currentPage}
           setSelectedNode={setSelectedNode}
