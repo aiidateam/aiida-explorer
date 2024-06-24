@@ -4,6 +4,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import axios from 'axios';
+import { JsonViewer } from '@textea/json-viewer';
 import { JSONTree } from 'react-json-tree';
 import { FaCopy , FaCheck } from 'react-icons/fa';
 
@@ -153,29 +154,41 @@ const Attributes = ({ uuid , moduleName }) => {
   }
 
   return (
-    <div>
-      <div className="relative">
-      <JSONTree data={data} theme={theme} invertTheme={false} />
-            <CopyToClipboard text={JSON.stringify(data, null, 2)} onCopy={handleCopyClick}>
-              <button className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200">
-                {isCopied ? (
-                  <FaCheck className="text-green-600" />
-                ) : (
-                  <FaCopy className="text-gray-600" />
-                )}
-              </button>
-            </CopyToClipboard>
-          </div>
-      <div>
-        {renderDerivedPropertiesTable()}    
-      </div>
-      {lastJob && (
-          <div>
-            <span className='font-mono font-bold text-md'>Last Job Details :</span>
-            <JSONTree data={lastJob} theme={theme} invertTheme={false} />
-          </div>
-        )}
+<div>
+    <div className="relative border-2 border-gray-100 p-3 shadow-lg">
+      <JsonViewer 
+        value={data} 
+        theme="githubLight"
+        displayDataTypes={false}
+        displayObjectSize={false}
+        enableClipboard={false}
+      />
+      <CopyToClipboard text={JSON.stringify(data, null, 2)} onCopy={handleCopyClick}>
+        <button className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200">
+          {isCopied ? (
+            <FaCheck className="text-green-600" />
+          ) : (
+            <FaCopy className="text-gray-600" />
+          )}
+        </button>
+      </CopyToClipboard>
     </div>
+    <div>
+      {renderDerivedPropertiesTable()}
+    </div>
+    {lastJob && (
+      <div>
+        <span className='font-mono font-bold text-md'>Last Job Details :</span>
+        <JsonViewer 
+          value={lastJob} 
+          theme="githubLight"
+          displayDataTypes={false}
+          displayObjectSize={false}
+          enableClipboard={false}
+        />
+      </div>
+    )}
+  </div>
   );
 };
 

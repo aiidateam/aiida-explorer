@@ -19,25 +19,47 @@ const buildTree = (node) => {
   return result;
 };
 
-const fetchPageData = async (fullType, page, onDataFetch, moduleName) => {
+// const fetchPageData = async (fullType, page, onDataFetch, moduleName) => {
+//   const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/page/`;
+//   const urlEnd = '25%7C"&orderby=-ctime';
+//   const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
+  
+//   fullType = fullType.replace(/\|/g, '');
+//   fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
+//   let url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}${urlEnd}`;
+
+//   if (fullType.includes('process')) {
+//     fullType = fullType.replace(/\%/g, '');
+//     fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
+//     url = `${baseUrl}${page}?&perpage=20&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}25%7C%25"&orderby=-ctime`;
+//   }
+
+//   try {
+//     const response = await fetch(url);
+//     const data = await response.json();
+//     onDataFetch(data.data.nodes, page, data.data.total_entries, data.data.total_pages);
+//   } catch (error) {
+//     console.error(`Error fetching data for ${fullType} on page ${page}:`, error);
+//   }
+// };
+const fetchPageData = async (fullType, page, onDataFetch, moduleName, entriesPerPage = 20) => {
   const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/page/`;
   const urlEnd = '25%7C"&orderby=-ctime';
-  const processUrlEnd = '&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&orderby=-ctime';
   
   fullType = fullType.replace(/\|/g, '');
   fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
-  let url = `${baseUrl}${page}?&perpage=20&full_type="${fullType}${urlEnd}`;
+  let url = `${baseUrl}${page}?&perpage=${entriesPerPage}&full_type="${fullType}${urlEnd}`;
 
   if (fullType.includes('process')) {
     fullType = fullType.replace(/\%/g, '');
     fullType = fullType.endsWith('%') ? fullType : `${fullType}%`;
-    url = `${baseUrl}${page}?&perpage=20&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}25%7C%25"&orderby=-ctime`;
+    url = `${baseUrl}${page}?&perpage=${entriesPerPage}&attributes=true&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception&full_type="${fullType}25%7C%25"&orderby=-ctime`;
   }
 
   try {
     const response = await fetch(url);
     const data = await response.json();
-    onDataFetch(data.data.nodes, page, data.data.total_entries, data.data.total_pages);
+    onDataFetch(data.data.nodes, page, data.data.total_entries, Math.ceil(data.data.total_entries / entriesPerPage));
   } catch (error) {
     console.error(`Error fetching data for ${fullType} on page ${page}:`, error);
   }
