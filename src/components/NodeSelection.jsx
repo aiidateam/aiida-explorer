@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo ,useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   createColumnHelper,
@@ -58,20 +58,14 @@ const NodeSelection = ({ moduleName }) => {
   }, [buildTree]);
 
   const fetchData = useCallback(async (page) => {
-
     const node = selectedNode || prevSelectedNode.current;
+    console.log(node);
     if (!node || !node.full_type) {
       setData([]);
       setTotalRows(0);
       return;
     }
     console.log(node);
-
-    // if (!selectedNode || !selectedNode.full_type) {
-    //   setData([]);
-    //   setTotalRows(0);
-    //   return;
-    // }
 
     setLoading(true);
 
@@ -123,6 +117,12 @@ const NodeSelection = ({ moduleName }) => {
       setTotalPages(calculatedTotalPages);
     }
   }, [selectedNode, entriesPerPage]);
+
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchData(currentPage);
+    }
+  }, [currentPage, fetchData]);
 
   const onButtonClick = (uuid) => {
     navigate(`/details/${uuid}`);
@@ -252,7 +252,10 @@ const NodeSelection = ({ moduleName }) => {
         </div>
         <div className="flex justify-between items-center mt-4">
           <button
-            onClick={() => setCurrentPage(old => Math.max(old - 1, 1))}
+           onClick={() => {
+            setCurrentPage(old => Math.max(old - 1, 1));
+            fetchData(currentPage);
+          }}
             disabled={currentPage === 1}
             className="px-3 py-1 bg-green-100 text-green-800 rounded disabled:bg-gray-100 disabled:text-gray-400 text-xs"
           >
@@ -262,7 +265,10 @@ const NodeSelection = ({ moduleName }) => {
             Page {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() => setCurrentPage(old => Math.min(old + 1, totalPages))}
+            onClick={() => {
+            setCurrentPage(old => Math.max(old + 1, 1));
+            fetchData(currentPage);
+          }}
             disabled={currentPage === totalPages}
             className="px-3 py-1 bg-green-100 text-green-800 rounded disabled:bg-gray-100 disabled:text-gray-400 text-xs"
           >
