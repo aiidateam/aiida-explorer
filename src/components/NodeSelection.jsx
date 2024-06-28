@@ -24,6 +24,7 @@ const NodeSelection = ({ moduleName }) => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [columnFilters, setColumnFilters] = useState([]);
+  const [computersData, setComputersData] = useState([]);
   const [sorting, setSorting] = useState([]);
   const navigate = useNavigate();
   const prevSelectedNode = useRef(null);
@@ -127,6 +128,11 @@ const NodeSelection = ({ moduleName }) => {
   const onButtonClick = (uuid) => {
     navigate(`/details/${uuid}`);
   };
+  
+  const handleDataFetched = (data) => {
+    setComputersData(data);
+    console.log("Computers data received in parent:", data);
+  };
 
   const columnHelper = createColumnHelper();
 
@@ -191,6 +197,7 @@ const NodeSelection = ({ moduleName }) => {
           moduleName={moduleName}
           currentPage={currentPage}
           setSelectedNode={setSelectedNode}
+          onDataFetched={handleDataFetched}
         />
       </div>
       <div className="w-4/5 ml-2">
@@ -274,6 +281,17 @@ const NodeSelection = ({ moduleName }) => {
           >
             Next
           </button>
+
+          {computersData.length > 0 && (
+        <div>
+          <h2>Fetched Computers:</h2>
+          <ul>
+            {computersData.map(computer => (
+              <li key={computer.id}>{computer.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
         </div>
       </div>
     </div>

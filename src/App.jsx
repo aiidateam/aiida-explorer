@@ -7,6 +7,7 @@ import Tabs from './components/Tabs';
 import { IconContext } from "react-icons";
 import { FaArrowRight } from "react-icons/fa";
 import Search from './components/Search';
+import ComputersGrid from './components/ComputersGrid';
 
 const ModuleInput = ({ setModuleName }) => {
   const [inputValue, setInputValue] = useState('');
@@ -60,6 +61,7 @@ const App = () => {
             <Route path="/" element={<NodeSelection moduleName={moduleName} />} exact />
             <Route path="/details/:uuid" element={<DetailsPage moduleName={moduleName} />} />
             <Route path="/statistics" element={<Statistics moduleName={moduleName} />} />
+            <Route path="/computers"  element={<ComputersGrid moduleName={moduleName} />} />
           </Routes>
         )}
       </Router>

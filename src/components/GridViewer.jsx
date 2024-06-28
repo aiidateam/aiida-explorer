@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
-import { CiSearch } from 'react-icons/ci';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const memo = new Map();
 
@@ -42,12 +43,13 @@ const fetchPageData = async (fullType, page, onDataFetch, moduleName, entriesPer
   }
 };
 
-const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode, moduleName }) => {
+const TreeNode = ({setFlag, node, onSelectNode, currentPage, setSelectedNode, moduleName }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
+  const navigate = useNavigate();
   const toggleExpand = async () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
+      navigate('/')
       setSelectedNode(node);
       await fetchPageData(node.full_type, currentPage, onSelectNode, moduleName);
     }
@@ -73,7 +75,7 @@ const TreeNode = ({ node, onSelectNode, currentPage, setSelectedNode, moduleName
   );
 };
 
-const TreeView = ({ onSelectNode, currentPage, setSelectedNode, moduleName }) => {
+const TreeView = ({ setFlag, onSelectNode, currentPage, setSelectedNode, moduleName }) => {
   const [tree, setTree] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -105,33 +107,38 @@ const TreeView = ({ onSelectNode, currentPage, setSelectedNode, moduleName }) =>
   return (
     <div>
       {tree.map((child, index) => (
-        <TreeNode key={index} node={child} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} moduleName={moduleName} />
+        <TreeNode setFlag={setFlag} key={index} node={child} onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} moduleName={moduleName} />
       ))}
     </div>
   );
 };
 
-const GridViewer = ({ onSelectNode, currentPage,setCurrentPage, setSelectedNode, moduleName }) => {
-  const [searchValue, setSearchValue] = useState('');
-  const [selectedNodeState, setSelectedNodeState] = useState(null);
+const GridViewer = ({ onSelectNode, currentPage, setCurrentPage, setSelectedNode, moduleName, onDataFetched }) => {
+  const navigate = useNavigate();
+  const [flag, setFlag] = useState(false);
 
-  const handlePageChange = async (newPage) => {
-    setCurrentPage(newPage);
-    if (selectedNodeState) {
-      await fetchPageData(selectedNodeState.full_type, newPage, onSelectNode, moduleName);
+
+  // const handlePageChange = async (newPage) => {
+  //   setCurrentPage(newPage);
+  //   if (selectedNode) {
+  //     await fetchPageData(selectedNode.full_type, newPage, onSelectNode, moduleName);
+  //   }
+  // };
+
+  useEffect(() => {
+    if (flag) {
+      navigate('/computers');
     }
-  };
-
-  const handleNodeSelect = (node) => {
-    setSelectedNodeState(node);
-    setSelectedNode(node);
-  };
+  }, [flag, navigate]);
 
   return (
     <div className="p-4 bg-white border-2 border-gray-300 overflow-auto h-full">
-      <TreeView onSelectNode={onSelectNode} currentPage={currentPage} setSelectedNode={setSelectedNode} moduleName={moduleName} />
+      <TreeView onSelectNode={onSelectNode} setFlag={setFlag} currentPage={currentPage} setSelectedNode={setSelectedNode} moduleName={moduleName} />
       <hr className='my-4 text-gray-800  '/>
-      <div className='mt-2 border-2 rounded-sm bg-gray-200 hover:bg-gray-300 p-2 text-center text-md'>
+      <div 
+        className='mt-2 border-2 rounded-sm bg-gray-200 hover:bg-gray-300 p-2 text-center text-md cursor-pointer'
+        onClick={() => { setFlag(true); }}
+      >
         Computers
       </div>
     </div>
