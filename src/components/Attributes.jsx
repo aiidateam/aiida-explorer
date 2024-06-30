@@ -149,7 +149,8 @@ const Attributes = ({ uuid, moduleName }) => {
   }
 
   if (error) {
-    return <div className='bg-gray-100 p-4 rounded-lg'><JsonViewer
+    return <div className='bg-gray-100 p-4 rounded-lg'>
+    <JsonViewer
     value={{}}
     theme="githubLight"
     displayDataTypes={false}

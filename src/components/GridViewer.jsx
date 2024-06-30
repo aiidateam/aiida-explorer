@@ -61,11 +61,11 @@ const TreeNode = ({setFlag, node, onSelectNode, currentPage, setSelectedNode, mo
         className="cursor-pointer text-gray-900 bg-gray-100 min-w-fit p-2 rounded hover:bg-gray-200 flex items-center"
         onClick={toggleExpand}
       >
-        <FiChevronDown className={`w-4 h-4 mr-2 transform transition-transform duration-200 ${isExpanded ? '-rotate-90' : ''}`} />
+        <FiChevronDown className={`w-4 h-4 mr-2 transform transition-transform duration-200 ${isExpanded ? '-rotate-90 ' : ''}`} />
         {node.label}
       </div>
       {isExpanded && (
-        <div className="ml-4 mt-2">
+        <div className="ml-4 mt-2 focus:bg-gray-500 active:bg-gray-500">
           {node.children.map((child, index) => (
             <TreeNode key={index} node={child} onSelectNode={onSelectNode} moduleName={moduleName} currentPage={currentPage} setSelectedNode={setSelectedNode} />
           ))}
