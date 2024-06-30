@@ -154,7 +154,7 @@ const Attributes = ({ uuid, moduleName }) => {
     value={{}}
     theme="githubLight"
     displayDataTypes={false}
-    displayObjectSize={false}
+    displaySize={false}
     enableClipboard={false}
   /></div>;
   }
@@ -168,7 +168,7 @@ const Attributes = ({ uuid, moduleName }) => {
           value={jsonData}
           theme="githubLight"
           displayDataTypes={false}
-          displayObjectSize={false}
+          displaySize={false}
           enableClipboard={false}
         />
         <CopyToClipboard text={JSON.stringify(jsonData, null, 2)} onCopy={handleCopyClick}>
@@ -191,7 +191,7 @@ const Attributes = ({ uuid, moduleName }) => {
             value={lastJob}
             theme="githubLight"
             displayDataTypes={false}
-            displayObjectSize={false}
+            displaySize={false}
             enableClipboard={false}
           />
         </div>
