@@ -3,45 +3,53 @@ import { Handle, Position } from 'reactflow';
 
 const getNodeStyle = (label) => {
   switch (label.toLowerCase()) {
-    case 'calcjob':
-      return { 
-        background: '#FF9999', 
-        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-        width: '150px',
-        height: '100px',
+    case 'calcjobnode':
+      return {
+        background: '#FF9999',
+        borderRadius: '8px',
+        width: '120px',
+        height: '60px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        border: '1px solid #000', // Added black border
+        overflow: 'hidden', // Prevent text overflow
       };
     case 'structure':
-      return { 
-        background: '#99FF99', 
+      return {
+        background: '#99FF99',
         borderRadius: '50%',
-        width: '100px',
-        height: '100px',
+        width: '150px',
+        height: '60px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        border: '1px solid #000',
+        overflow: 'hidden',
       };
     case 'dict':
-      return { 
-        background: '#9999FF', 
-        clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-        width: '120px',
-        height: '100px',
+      return {
+        background: '#9999FF',
+        borderRadius: '8px',
+        width: '150px',
+        height: '60px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        border: '1px solid #000',
+        overflow: 'hidden',
       };
     default:
-      return { 
-        background: '#FFCC80', 
+      return {
+        background: '#FFCC80',
         borderRadius: '4px',
-        width: '120px',
+        width: '150px',
         height: '40px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        border: '1px solid #000',
+        overflow: 'hidden',
       };
   }
 };
@@ -58,7 +66,7 @@ const CustomNode = ({ data, isConnectable }) => {
         onConnect={(params) => console.log('handle onConnect', params)}
         isConnectable={isConnectable}
       />
-      <div>{data.label}</div>
+      <div style={{ fontSize: '14px' }}>{data.label}</div>
       <Handle
         type="source"
         position={Position.Right}
