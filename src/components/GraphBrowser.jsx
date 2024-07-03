@@ -1183,7 +1183,7 @@ import ReactFlow, {
     MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaArrowUp, FaEye, FaEyeSlash, FaShapes } from 'react-icons/fa';
 import dagre from 'dagre';
 import Legend from './Legend';
 import Tooltip from './Tooltip';
@@ -1235,9 +1235,12 @@ const GraphBrowser = ({ moduleName }) => {
   const [clickedNodes, setClickedNodes] = useState([]);
   const [tooltipDetails, setTooltipDetails] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: null, y: null });
-  const [showNodeTracker, setShowNodeTracker] = useState(false);
+  // const [showNodeTracker, setShowNodeTracker] = useState(false);
   const tooltipTimeout = useRef(null);
   const containerRef = useRef(null);
+  const [showButtons, setShowButtons] = useState(false);
+  const [showEdgeLabels, setShowEdgeLabels] = useState(false);
+  const [showNodeTracker, setShowNodeTracker] = useState(false);
 
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
@@ -1367,8 +1370,7 @@ const GraphBrowser = ({ moduleName }) => {
         label: node.link_label,
       });
     });
-  
-    // Custom outgoing node for extras
+
     if (nodeData.outgoing.length > 10) {
       const customOutgoingNode = {
         id: generateUniqueId(`outgoing-custom-${nodeUuid}`),
@@ -1392,8 +1394,7 @@ const GraphBrowser = ({ moduleName }) => {
         label: 'More Outgoing Nodes',
       });
     }
-  
-    // Add previous nodes in a linked list structure
+
     clickedNodes.forEach((prevNodeId, index) => {
       if (prevNodeId !== nodeUuid) {
         newNodes.push({
@@ -1402,8 +1403,7 @@ const GraphBrowser = ({ moduleName }) => {
           data: { label: extractLabel(nodeCache[prevNodeId].node_type) || prevNodeId },
           position: { x: -400 - index * 200, y: 0 },
         });
-  
-        // Determine if the previous node is incoming or outgoing
+
         const isIncoming = nodeData.incoming.some(node => node.uuid === prevNodeId);
         const isOutgoing = nodeData.outgoing.some(node => node.uuid === prevNodeId);
   
@@ -1423,7 +1423,6 @@ const GraphBrowser = ({ moduleName }) => {
             label: 'Previous',
           });
         } else if (index < clickedNodes.length - 1) {
-          // If not directly connected, maintain the previous chain
           newEdges.push({
             id: generateUniqueId(`e${prevNodeId}-${clickedNodes[index + 1]}`),
             source: prevNodeId,
@@ -1463,7 +1462,7 @@ const GraphBrowser = ({ moduleName }) => {
       id: node.uuid,
       type: 'custom',
       data: { label: extractLabel(node.node_type) || node.uuid },
-      position: { x: 0, y: 0 }, // The layout algorithm will adjust the position
+      position: { x: 0, y: 0 }, 
     }));
   
     const newEdges = nodesToLoad.map((node) => ({
@@ -1527,13 +1526,20 @@ const GraphBrowser = ({ moduleName }) => {
     setTooltipDetails(null);
   }, []);
 
+  const toggleEdgeLabels = () => setShowEdgeLabels(!showEdgeLabels);
+  const toggleNodeTracker = () => setShowNodeTracker(!showNodeTracker);
+  const toggleButtons = () => setShowButtons(!showButtons);
+
   return (
-    <div className="h-full w-full" ref={containerRef}>
+    <div className="h-full w-full relative" ref={containerRef}>
       <Legend />
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={edges.map((edge) => ({
+            ...edge,
+            label: showEdgeLabels ? edge.label : '',
+          }))}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
@@ -1554,21 +1560,44 @@ const GraphBrowser = ({ moduleName }) => {
           containerRef={containerRef}
         />
       )}
-       <div>
-      <div className="absolute bottom-4 right-auto left-auto">
-        <button
-          onClick={() => setShowNodeTracker(!showNodeTracker)}
-          className="text-black font-bold py-2 px-4 rounded"
-        >
-          {showNodeTracker ? <FaChevronDown /> : <FaChevronUp />}
-        </button>
-      </div>
-      <div
-        className={`transition-all duration-300 ease-in-out overflow-hidden ${showNodeTracker ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}
+      <button
+        onClick={toggleButtons}
+        className="fixed bottom-4 right-1/4 transform translate-x-1/2 bg-orange-200 hover:bg-orange-300 text-orange-700 font-bold py-2 px-4 rounded-full"
       >
-        {showNodeTracker && <NodeTracker nodes={clickedNodes} />}
-      </div>
-    </div>
+        <FaArrowUp />
+      </button>
+
+      {showButtons && (
+        <div className="fixed bottom-16 right-1/4 transform translate-x-1/2 flex justify-between items-center w-full max-w-xs bg-white p-4 rounded-lg shadow-lg">
+          <button
+            onClick={toggleEdgeLabels}
+            className="bg-green-200 hover:bg-green-300 text-green-700 font-bold py-2 px-4 rounded-full ml-2"
+          >
+            {showEdgeLabels ? <FaEyeSlash /> : <FaEye />}
+          </button>
+          <button
+            onClick={toggleNodeTracker}
+            className="bg-red-200 hover:bg-red-300 text-red-700 font-bold py-2 px-4 rounded-full ml-2"
+          >
+            {showNodeTracker ? <FaEyeSlash /> : <FaShapes />}
+          </button>
+        </div>
+      )}
+
+      {showNodeTracker && (
+        <div className="absolute w-full bottom-24 bg-blue-200 p-2 rounded-lg shadow-lg">
+          <div className="flex items-center space-x-2">
+          {clickedNodes.map((nodeId, index) => (
+              <span key={nodeId} className="text-blue-700 text-xs">
+                {nodeId}
+                {index < clickedNodes.length - 1 && <span className="mx-1">-&gt;</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      <Legend />
     </div>
   );
 };
