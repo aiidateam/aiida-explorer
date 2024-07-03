@@ -1423,6 +1423,7 @@ const GraphBrowser = ({ moduleName }) => {
             label: 'Previous',
           });
         } else if (index < clickedNodes.length - 1) {
+          // If not directly connected, maintain the previous chain
           newEdges.push({
             id: generateUniqueId(`e${prevNodeId}-${clickedNodes[index + 1]}`),
             source: prevNodeId,
@@ -1447,6 +1448,48 @@ const GraphBrowser = ({ moduleName }) => {
   };
 
   const loadMoreNodes = (customNodeId) => {
+    const parts = customNodeId.split('-');
+    const direction = parts[0];
+    const parentId = parts.slice(2, -1).join('-');
+  
+    const parentNode = nodeCache[parentId];
+    if (!parentNode) return;
+  
+    const nodesToLoad = direction === 'incoming'
+      ? parentNode.incoming.slice(10)
+      : parentNode.outgoing.slice(10);
+  
+    const newNodes = nodesToLoad.map((node, index) => ({
+      id: node.uuid,
+      type: 'custom',
+      data: { label: extractLabel(node.node_type) || node.uuid },
+      position: { x: 0, y: 0 }, // The layout algorithm will adjust the position
+    }));
+  
+    const newEdges = nodesToLoad.map((node) => ({
+      id: generateUniqueId(`e${direction === 'incoming' ? node.uuid + '-' + parentId : parentId + '-' + node.uuid}`),
+      source: direction === 'incoming' ? node.uuid : parentId,
+      target: direction === 'incoming' ? parentId : node.uuid,
+      animated: true,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 20,
+        height: 20,
+        color: '#808080',
+      },
+      style: {
+        strokeWidth: 1,
+        stroke: '#808080',
+      },
+      label: node.link_label,
+    }));
+  
+    const filteredNodes = nodes.filter(n => n.id !== customNodeId);
+    const filteredEdges = edges.filter(e => e.source !== customNodeId && e.target !== customNodeId);
+  
+    const layoutedNodes = getLayoutedElements([...filteredNodes, ...newNodes], [...filteredEdges, ...newEdges]);
+    setNodes(layoutedNodes);
+    setEdges([...filteredEdges, ...newEdges]);
   };
 
   useEffect(() => {
