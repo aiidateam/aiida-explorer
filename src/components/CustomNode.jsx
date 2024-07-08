@@ -12,8 +12,8 @@ const getNodeStyle = (label) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: '1px solid #000', // Added black border
-        overflow: 'hidden', // Prevent text overflow
+        border: '1px solid #000', 
+        overflow: 'hidden',
       };
     case 'structure':
       return {

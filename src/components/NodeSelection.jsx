@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
   createColumnHelper,
   flexRender,
@@ -21,6 +22,7 @@ const NodeSelection = ({ moduleName }) => {
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedNode, setSelectedNode] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -164,7 +166,7 @@ const NodeSelection = ({ moduleName }) => {
     columnHelper.display({
       id: 'actions',
       cell: props => (
-        <button onClick={() => onButtonClick(props.row.original.uuid)}>
+        <button className='bg-blue-300 hover:bg-blue-400 py-3 px-2 rounded-md' onClick={() => onButtonClick(props.row.original.uuid)}>
           Details
         </button>
       ),

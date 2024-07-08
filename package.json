@@ -29,6 +29,7 @@
     "http-proxy-middleware": "^3.0.0",
     "jquery": "^3.7.1",
     "lodash.debounce": "^4.0.8",
+    "mc-react-structure-visualizer": "^0.6.1",
     "react": "^18.2.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-data-table-component": "^7.6.2",
