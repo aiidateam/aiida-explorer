@@ -54,7 +54,7 @@ const getNodeStyle = (label) => {
   }
 };
 
-const CustomNode = ({ data, isConnectable }) => {
+const CustomNode = ({ data }) => {
   const nodeStyle = getNodeStyle(data.label);
 
   return (
@@ -64,7 +64,7 @@ const CustomNode = ({ data, isConnectable }) => {
         position={Position.Left}
         style={{ background: '#555' }}
         onConnect={(params) => console.log('handle onConnect', params)}
-        isConnectable={isConnectable}
+        // isConnectable={isConnectable}
       />
       <div style={{ fontSize: '14px' }}>{data.label}</div>
       <Handle
@@ -72,7 +72,7 @@ const CustomNode = ({ data, isConnectable }) => {
         position={Position.Right}
         style={{ background: '#555' }}
         onConnect={(params) => console.log('handle onConnect', params)}
-        isConnectable={isConnectable}
+        // isConnectable={isConnectable}
       />
     </div>
   );

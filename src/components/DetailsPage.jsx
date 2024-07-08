@@ -38,9 +38,9 @@ const DetailsPage = ({ moduleName }) => {
 
         const json = await response.json();
 
-        if (!json.data || !json.data.download || !json.data.download.data || json.data.download.data.trim().length === 0) {
-          throw new Error('Empty or invalid response');
-        }
+        // if (!json.data || !json.data.download || !json.data.download.data || json.data.download.data.trim().length === 0) {
+        //   throw new Error('Empty or invalid response');
+        // }
 
         setData(json.data.download.data);
       } catch (error) {
@@ -61,9 +61,9 @@ const DetailsPage = ({ moduleName }) => {
 
         const json = await response.json();
 
-        if (!json.data) {
-          throw new Error('Empty or invalid response');
-        }
+        // if (!json.data) {
+        //   throw new Error('Empty or invalid response');
+        // }
 
         setDerived(json.data.derived_properties);
       } catch (error) {

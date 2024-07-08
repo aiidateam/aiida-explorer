@@ -1304,7 +1304,8 @@ const GraphBrowser = ({ moduleName }) => {
         id: generateUniqueId(`e${node.uuid}-${nodeUuid}`),
         source: node.uuid,
         target: nodeUuid,
-        animated: true,
+        // animated: true,
+        type:'smoothstep',
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -1332,7 +1333,8 @@ const GraphBrowser = ({ moduleName }) => {
         id: generateUniqueId(`e${customIncomingNode.id}-${nodeUuid}`),
         source: customIncomingNode.id,
         target: nodeUuid,
-        animated: true,
+        // animated: true,
+        type:'smoothstep',
         style: { stroke: '#808080', strokeWidth: 1 },
         markerEnd: {
           type: MarkerType.ArrowClosed,
@@ -1357,7 +1359,8 @@ const GraphBrowser = ({ moduleName }) => {
         id: generateUniqueId(`e${nodeUuid}-${node.uuid}`),
         source: nodeUuid,
         target: node.uuid,
-        animated: true,
+        // animated: true,
+        type:'smoothstep',
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -1413,7 +1416,8 @@ const GraphBrowser = ({ moduleName }) => {
             id: generateUniqueId(`e${isIncoming ? prevNodeId : nodeUuid}-${isIncoming ? nodeUuid : prevNodeId}`),
             source: isIncoming ? prevNodeId : nodeUuid,
             target: isIncoming ? nodeUuid : prevNodeId,
-            animated: true,
+            // animated: true,
+            type:'smoothstep',
             style: { stroke: '#FFA500', strokeWidth: 2 },
             markerEnd: {
               type: MarkerType.ArrowClosed,
@@ -1443,7 +1447,7 @@ const GraphBrowser = ({ moduleName }) => {
     });
   
     const layoutedNodes = getLayoutedElements(newNodes, newEdges);
-    setNodes(layoutedNodes);
+    setNodes(layoutedNodes , { draggable: false });
     setEdges(newEdges);
   };
 
@@ -1470,7 +1474,8 @@ const GraphBrowser = ({ moduleName }) => {
       id: generateUniqueId(`e${direction === 'incoming' ? node.uuid + '-' + parentId : parentId + '-' + node.uuid}`),
       source: direction === 'incoming' ? node.uuid : parentId,
       target: direction === 'incoming' ? parentId : node.uuid,
-      animated: true,
+      // animated: true,
+      type:'smoothstep',
       markerEnd: {
         type: MarkerType.ArrowClosed,
         width: 20,
@@ -1488,7 +1493,7 @@ const GraphBrowser = ({ moduleName }) => {
     const filteredEdges = edges.filter(e => e.source !== customNodeId && e.target !== customNodeId);
   
     const layoutedNodes = getLayoutedElements([...filteredNodes, ...newNodes], [...filteredEdges, ...newEdges]);
-    setNodes(layoutedNodes);
+    setNodes(layoutedNodes , { draggable: false });
     setEdges([...filteredEdges, ...newEdges]);
   };
 
@@ -1541,6 +1546,7 @@ const GraphBrowser = ({ moduleName }) => {
             ...edge,
             label: showEdgeLabels ? edge.label : '',
           }))}
+          nodesDraggable={false} 
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
@@ -1550,6 +1556,7 @@ const GraphBrowser = ({ moduleName }) => {
           nodeTypes={nodeTypes}
         >
           <MiniMap />
+          
           <Controls />
           <Background />
         </ReactFlow>
