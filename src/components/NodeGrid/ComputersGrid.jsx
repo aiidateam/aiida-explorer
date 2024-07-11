@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import GridViewer from './GridViewer';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import FilterSidebar from "./FilterSidebar";
 import {
   createColumnHelper,
   flexRender,
@@ -10,7 +10,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 const ComputersGrid = ({ moduleName }) => {
   const [computersData, setComputersData] = useState([]);
@@ -24,12 +24,14 @@ const ComputersGrid = ({ moduleName }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`https://aiida.materialscloud.org/mc3d/api/v4/computers/page/${page}?perpage=10`);
+      const response = await axios.get(
+        `https://aiida.materialscloud.org/mc3d/api/v4/computers/page/${page}?perpage=10`
+      );
       setComputersData(response.data.data.computers);
       console.log("Fetched computers:", response.data.data.computers);
     } catch (error) {
-      console.error('Error fetching computers:', error);
-      setError('Failed to fetch computers data');
+      console.error("Error fetching computers:", error);
+      setError("Failed to fetch computers data");
     } finally {
       setIsLoading(false);
     }
@@ -53,25 +55,25 @@ const ComputersGrid = ({ moduleName }) => {
   const columnHelper = createColumnHelper();
 
   const columns = [
-    columnHelper.accessor('uuid', {
-      header: 'UUID',
-      cell: info => info.getValue(),
+    columnHelper.accessor("uuid", {
+      header: "UUID",
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor('label', {
-      header: 'Label',
-      cell: info => info.getValue(),
+    columnHelper.accessor("label", {
+      header: "Label",
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor('hostname', {
-      header: 'Host',
-      cell: info => info.getValue(),
+    columnHelper.accessor("hostname", {
+      header: "Host",
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor('scheduler_type', {
-      header: 'Scheduler',
-      cell: info => info.getValue(),
+    columnHelper.accessor("scheduler_type", {
+      header: "Scheduler",
+      cell: (info) => info.getValue(),
     }),
-    columnHelper.accessor('uuid', {
-      header: 'Details',
-      cell: info => (
+    columnHelper.accessor("uuid", {
+      header: "Details",
+      cell: (info) => (
         <button
           onClick={() => handleDetailsClick(info.getValue())}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -96,7 +98,7 @@ const ComputersGrid = ({ moduleName }) => {
       },
     },
     onPaginationChange: (updater) => {
-      if (typeof updater === 'function') {
+      if (typeof updater === "function") {
         const newPageIndex = updater({ pageIndex: currentPage - 1 }).pageIndex;
         setCurrentPage(newPageIndex + 1);
       } else {
@@ -107,9 +109,9 @@ const ComputersGrid = ({ moduleName }) => {
 
   return (
     <div className="flex w-full mx-auto py-2 px-0 text-sm">
-      <div className='w-1/5'>
-        <GridViewer 
-          onSelectNode={handleDataFetched} 
+      <div className="w-1/5">
+        <FilterSidebar
+          onSelectNode={handleDataFetched}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           setSelectedNode={setSelectedNode}
@@ -126,13 +128,19 @@ const ComputersGrid = ({ moduleName }) => {
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
-                {table.getHeaderGroups().map(headerGroup => (
+                {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th key={header.id} className="p-2 border-b text-left bg-blue-50">
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="p-2 border-b text-left bg-blue-50"
+                      >
                         {header.isPlaceholder ? null : (
                           <div>
-                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                           </div>
                         )}
                       </th>
@@ -141,11 +149,14 @@ const ComputersGrid = ({ moduleName }) => {
                 ))}
               </thead>
               <tbody>
-                {table.getRowModel().rows.map(row => (
+                {table.getRowModel().rows.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50">
-                    {row.getVisibleCells().map(cell => (
+                    {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="p-2 border-b">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -163,7 +174,7 @@ const ComputersGrid = ({ moduleName }) => {
             Previous
           </button>
           <span>
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </span>
           <button

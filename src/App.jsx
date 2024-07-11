@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import DetailsPage from './components/DetailsPage';
-import NodeSelection from './components/NodeSelection';
+import NodeGrid from './components/NodeGrid';
 import Statistics from './components/Statistics';
 import Tabs from './components/Tabs';
 import { IconContext } from "react-icons";
 import { FaArrowRight } from "react-icons/fa";
 import Search from './components/Search';
-import ComputersGrid from './components/ComputersGrid';
+import ComputersGrid from './components/NodeGrid/ComputersGrid';
 
 const ModuleInput = ({ setModuleName }) => {
   const [inputValue, setInputValue] = useState('');
@@ -51,6 +51,11 @@ const App = () => {
 
   return (
     <div className="p-1">
+      {/* <Router>
+        <Routes>
+          <Route path="/" element={<NodeGrid moduleName="mc3d" />} exact />
+        </Routes>
+      </Router> */}
       <Router>
         <Tabs />
         {!moduleName ? (
@@ -58,7 +63,7 @@ const App = () => {
         ) : (
           <Routes>
             <Route path="/search" element={<Search moduleName={moduleName} />} exact />
-            <Route path="/" element={<NodeSelection moduleName={moduleName} />} exact />
+            <Route path="/" element={<NodeGrid moduleName={moduleName} />} exact />
             <Route path="/details/:uuid" element={<DetailsPage moduleName={moduleName} />} />
             <Route path="/statistics" element={<Statistics moduleName={moduleName} />} />
             <Route path="/computers"  element={<ComputersGrid moduleName={moduleName} />} />
