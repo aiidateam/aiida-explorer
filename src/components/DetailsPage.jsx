@@ -161,11 +161,13 @@ const DetailsPage = ({ moduleName }) => {
                   </p>
                 </div>
               )}
-              <div className="flex items-center justify-center">
-                <div className='m-auto'>
-                  {data && <StructureVisualizer cifText={data} />}
-                </div>
-              </div>
+              {data &&!error && (
+                <div className="flex items-center justify-center">
+                  <div className='m-auto'>
+                    {data && <StructureVisualizer cifText={data} />}
+                  </div>
+                </div> 
+              )}
               {attributes && (
                 <div className="flex flex-col font-mono text-sm mb-4 mt-4">
                   <div className="w-full shadow-md overflow-auto h-42 border-2 border-gray-200 rounded-lg mr-2">
