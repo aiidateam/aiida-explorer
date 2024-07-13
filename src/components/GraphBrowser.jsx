@@ -1286,7 +1286,7 @@ const GraphBrowser = ({ moduleName }) => {
     const mainNode = {
       id: nodeUuid,
       type: 'custom',
-      data: { label: extractLabel(nodeData.node_type) || nodeUuid },
+      data: { label: extractLabel(nodeData.node_type) , uuid: nodeUuid},
       position: { x: 0, y: 0 },
     };
     newNodes.push(mainNode);
@@ -1296,7 +1296,7 @@ const GraphBrowser = ({ moduleName }) => {
       const incomingNode = {
         id: node.uuid,
         type: 'custom',
-        data: { label: extractLabel(node.node_type) || node.uuid },
+        data: { label: extractLabel(node.node_type) , uuid: node.uuid },
         position: { x: -200, y: index * 120 },
       };
       newNodes.push(incomingNode);
@@ -1351,7 +1351,7 @@ const GraphBrowser = ({ moduleName }) => {
       const outgoingNode = {
         id: node.uuid,
         type: 'custom',
-        data: { label: extractLabel(node.node_type) || node.uuid },
+        data: { label: extractLabel(node.node_type) , uuid: node.uuid },
         position: { x: 200, y: index * 120 },
       };
       newNodes.push(outgoingNode);
@@ -1466,7 +1466,7 @@ const GraphBrowser = ({ moduleName }) => {
     const newNodes = nodesToLoad.map((node, index) => ({
       id: node.uuid,
       type: 'custom',
-      data: { label: extractLabel(node.node_type) || node.uuid },
+      data: { label: extractLabel(node.node_type) || node.uuid , uuid: node.uuid },
       position: { x: 0, y: 0 }, 
     }));
   

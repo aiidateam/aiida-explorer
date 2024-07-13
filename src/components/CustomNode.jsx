@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position } from 'reactflow';
 
 const getNodeStyle = (label) => {
@@ -7,7 +7,7 @@ const getNodeStyle = (label) => {
       return {
         background: '#FF9999',
         borderRadius: '8px',
-        width: '120px',
+        width: '150px',
         height: '60px',
         display: 'flex',
         justifyContent: 'center',
@@ -44,7 +44,7 @@ const getNodeStyle = (label) => {
         background: '#FFCC80',
         borderRadius: '4px',
         width: '150px',
-        height: '40px',
+        height: '60px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -55,7 +55,32 @@ const getNodeStyle = (label) => {
 };
 
 const CustomNode = ({ data }) => {
+
+  const [subtitle, setSubtitle] = useState('');
+  const [nodeDetails, setNodeDetails] = useState(null);
+
   const nodeStyle = getNodeStyle(data.label);
+  console.log(data.uuid);
+
+  useEffect(() => {
+    const fetchNodes = async () => {
+      try {
+        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}`);
+        const result = await response.json();
+        setNodeDetails(result.data.nodes[0].process_type);
+      } catch (error) {
+        console.error('Error fetching nodes:', error);
+      }
+    };
+    
+    fetchNodes();
+  }, [data.uuid]);
+  
+  useEffect(() => {
+    if (nodeDetails) {
+      setSubtitle(nodeDetails.split(':')[1]);
+    }
+  }, [nodeDetails]);
 
   return (
     <div style={nodeStyle}>
@@ -66,7 +91,17 @@ const CustomNode = ({ data }) => {
         onConnect={(params) => console.log('handle onConnect', params)}
         // isConnectable={isConnectable}
       />
-      <div style={{ fontSize: '14px' }}>{data.label}</div>
+      <div className='flex-col'>
+
+      <div className="text-sm text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
+        {data.label}
+      </div>
+      {subtitle && (
+        <div className="text-xs font-thin text-center whitespace-nowrap overflow-hidden overflow-ellipsis mt-1">
+         <i> {subtitle} </i>
+        </div>
+      )}
+      </div>
       <Handle
         type="source"
         position={Position.Right}
