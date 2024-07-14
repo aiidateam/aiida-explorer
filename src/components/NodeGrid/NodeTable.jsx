@@ -11,7 +11,7 @@ import {
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
-const NodeTable = ({ data }) => {
+const NodeTable = ({ data , moduleName }) => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
 
@@ -20,7 +20,7 @@ const NodeTable = ({ data }) => {
   const columnHelper = createColumnHelper();
 
   const switchToDetailsView = (uuid) => {
-    navigate(`/details/${uuid}`);
+    navigate(`/${moduleName}/details/${uuid}`);
   };
 
   const columns = [

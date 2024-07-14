@@ -107,7 +107,7 @@ const NodeGrid = ({ moduleName }) => {
       </div>
       <div className="w-4/5 ml-2">
         <div className="overflow-x-auto">
-          <NodeTable data={data} />
+          <NodeTable data={data} moduleName={moduleName} />
         </div>
         <div className="flex justify-between items-center mt-4">
           <button

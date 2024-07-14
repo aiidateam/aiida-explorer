@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom';
 import DetailsPage from './components/DetailsPage';
 import NodeGrid from './components/NodeGrid';
 import Statistics from './components/Statistics';
@@ -17,24 +17,31 @@ const ModuleInput = ({ setModuleName }) => {
     setInputValue(e.target.value);
   };
 
+  useEffect(() => {
+    const savedModuleName = localStorage.getItem('moduleName');
+    if (savedModuleName) {
+      setModuleName(savedModuleName);
+    }
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(inputValue)
     if (inputValue) {
       setModuleName(inputValue);
-      navigate('/');
+      localStorage.setItem('moduleName', inputValue);
+      navigate(`/${inputValue}`);
     }
-  };    
+  };
 
   return (
-<div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="flex flex-row items-center">
         <input
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Enter module name"
-          className="px-6 py-2 border border-gray-300 "
+          className="px-6 py-2 border border-gray-300"
         />
         <button type="submit" className="flex items-center justify-center border border-blue-400 py-3 px-4 bg-blue-400 text-white">
           <IconContext.Provider value={{ className: "text-white" }}>
@@ -47,31 +54,72 @@ const ModuleInput = ({ setModuleName }) => {
 };
 
 const App = () => {
-  const [moduleName, setModuleName] = useState('');
+  const [moduleName, setModuleName] = useState(() => localStorage.getItem('moduleName') || '');
 
   return (
     <div className="p-1">
-      {/* <Router>
-        <Routes>
-          <Route path="/" element={<NodeGrid moduleName="mc3d" />} exact />
-        </Routes>
-      </Router> */}
       <Router>
         <Tabs />
-        {!moduleName ? (
-          <ModuleInput setModuleName={setModuleName} />
-        ) : (
-          <Routes>
-            <Route path="/search" element={<Search moduleName={moduleName} />} exact />
-            <Route path="/" element={<NodeGrid moduleName={moduleName} />} exact />
-            <Route path="/details/:uuid" element={<DetailsPage moduleName={moduleName} />} />
-            <Route path="/statistics" element={<Statistics moduleName={moduleName} />} />
-            <Route path="/computers"  element={<ComputersGrid moduleName={moduleName} />} />
-          </Routes>
-        )}
+        <Routes>
+          <Route path="/" element={
+            moduleName ? <Navigate to={`/${moduleName}`} /> : <ModuleInput setModuleName={setModuleName} />
+          } />
+          <Route path="/:moduleName/*" element={<ModuleRoutes />} />
+        </Routes>
       </Router>
     </div>
   );
+};
+
+const ModuleRoutes = () => {
+  const { moduleName } = useParams();
+  
+  useEffect(() => {
+    if (moduleName) {
+      localStorage.setItem('moduleName', moduleName);
+    }
+  }, [moduleName]);
+
+  return (
+    <Routes>
+      <Route index element={<NodeGridWrapper />} />
+      <Route path="search" element={<SearchWrapper />} />
+      <Route path="details/:uuid" element={<DetailsPageWrapper />} />
+      <Route path="statistics" element={<StatisticsWrapper />} />
+      <Route path="computers" element={<ComputersGridWrapper />} />
+      <Route path="*" element={<Navigate to={`/${moduleName}`} replace />} />
+    </Routes>
+  );
+};
+
+const SearchWrapper = ({ moduleName }) => {
+  const params = useParams();
+  const name = moduleName || params.moduleName;
+  return <Search moduleName={name} />;
+};
+
+const NodeGridWrapper = ({ moduleName }) => {
+  const params = useParams();
+  const name = moduleName || params.moduleName;
+  return <NodeGrid moduleName={name} />;
+};
+
+const DetailsPageWrapper = ({ moduleName }) => {
+  const params = useParams();
+  const name = moduleName || params.moduleName;
+  return <DetailsPage moduleName={name} />;
+};
+
+const StatisticsWrapper = ({ moduleName }) => {
+  const params = useParams();
+  const name = moduleName || params.moduleName;
+  return <Statistics moduleName={name} />;
+};
+
+const ComputersGridWrapper = ({ moduleName }) => {
+  const params = useParams();
+  const name = moduleName || params.moduleName;
+  return <ComputersGrid moduleName={name} />;
 };
 
 export default App;

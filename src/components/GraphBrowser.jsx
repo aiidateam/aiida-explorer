@@ -1513,7 +1513,7 @@ const GraphBrowser = ({ moduleName }) => {
     if (node.id.includes('incoming-custom') || node.id.includes('outgoing-custom')) {
       loadMoreNodes(node.id);
     } else {
-      navigate(`/details/${node.id}`);
+      navigate(`/${moduleName}/details/${node.id}`);
       fetchNodes(node.id);
     }
   }, [nodeCache, navigate]);

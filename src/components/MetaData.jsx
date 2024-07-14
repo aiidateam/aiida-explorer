@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+// import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+// import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { JsonViewer } from '@textea/json-viewer';
 
 const MetaData = ({ moduleName, uuid }) => {
