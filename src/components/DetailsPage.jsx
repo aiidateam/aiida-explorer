@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import 'tailwindcss/tailwind.css';
 import 'reactflow/dist/style.css';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import StructureVisualizer from "mc-react-structure-visualizer";
 import Attributes from './Attributes';
 import Files from './FIles';
@@ -19,6 +20,10 @@ const DetailsPage = ({ moduleName }) => {
   const [derived, setDerived] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attributes, setAttributes] = useState(null);
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isFromComputersGrid = searchParams.get('source') === 'computersGrid';
 
 
   const formatFormula = (formula) => {
@@ -102,7 +107,7 @@ const DetailsPage = ({ moduleName }) => {
 
   return (
     <div className="flex h-[100vh] mx-4 p-5">
-      <div className="w-1/2 p-6 border-2 mr-2 border-gray-200 rounded-lg relative bg-gray-50">
+      <div className={`w-1/2  ${isFromComputersGrid ? 'w-full' : 'w-1/2'} p-6 border-2 mr-2 border-gray-200 rounded-lg relative bg-gray-50 `}>
         <div className="flex justify-between mb-4">
           <button
             className="px-4 py-2 bg-blue-500 absolute top-0 left-0 text-white rounded-tl-md rounded-br-md"
@@ -222,14 +227,16 @@ const DetailsPage = ({ moduleName }) => {
           )}
         </div>
       </div> */}
-      <div className="w-1/2 p-6 relative border-2 ml-2 rounded-lg border-gray-200">
-        <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
-          <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
-        </div >
-        <div className='h-full w-full'>
-          <BrowserSelection uuid={uuid} moduleName={moduleName} />
+      {!isFromComputersGrid && (
+        <div className="w-1/2 p-6 relative border-2 ml-2 rounded-lg border-gray-200">
+          <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
+            <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
+          </div >
+          <div className='h-full w-full'>
+            <BrowserSelection uuid={uuid} moduleName={moduleName} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

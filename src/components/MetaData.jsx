@@ -54,7 +54,7 @@ const MetaData = ({ moduleName, uuid }) => {
   } : {};
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex mt-2 w-full">
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-md">
         {loading ? (
           <p>Loading node data...</p>

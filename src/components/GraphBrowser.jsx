@@ -1190,6 +1190,7 @@ import Legend from './Legend';
 import Tooltip from './Tooltip';
 import CustomNode from './CustomNode';
 
+
 const nodeWidth = 172;
 const nodeHeight = 36;
 
@@ -1201,7 +1202,11 @@ const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
 const getLayoutedElements = (nodes, edges) => {
-  dagreGraph.setGraph({ rankdir: 'LR' });
+  dagreGraph.setGraph({
+    rankdir: 'LR',
+    ranksep: 150, 
+    nodesep: 100, 
+  });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -1296,7 +1301,7 @@ const GraphBrowser = ({ moduleName }) => {
       const incomingNode = {
         id: node.uuid,
         type: 'custom',
-        data: { label: extractLabel(node.node_type) , uuid: node.uuid },
+        data: { label: extractLabel(node.node_type) , uuid: node.uid },
         position: { x: -200, y: index * 120 },
       };
       newNodes.push(incomingNode);
