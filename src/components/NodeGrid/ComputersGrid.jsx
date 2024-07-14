@@ -49,7 +49,7 @@ const ComputersGrid = ({ moduleName }) => {
   };
 
   const handleDetailsClick = (uuid) => {
-    navigate(`/details/${uuid}?source=computersGrid`);
+    navigate(`/${moduleName}/details/${uuid}?source=computersGrid`);
   };
 
   const columnHelper = createColumnHelper();

@@ -85,11 +85,11 @@ const TreeView = ({ fullTypeCounts, selectedNode, onSelectNode }) => {
   );
 };
 
-const FilterSidebar = ({ fullTypeCounts, selectedNode, onSelectNode , Computers }) => {
+const FilterSidebar = ({ fullTypeCounts, selectedNode, onSelectNode , Computers,moduleName }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/computers');
+    navigate(`/${moduleName}/computers`);
   };
 
 

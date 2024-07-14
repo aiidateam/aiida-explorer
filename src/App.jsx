@@ -17,18 +17,11 @@ const ModuleInput = ({ setModuleName }) => {
     setInputValue(e.target.value);
   };
 
-  useEffect(() => {
-    const savedModuleName = localStorage.getItem('moduleName');
-    if (savedModuleName) {
-      setModuleName(savedModuleName);
-    }
-  }, []);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inputValue) {
       setModuleName(inputValue);
-      localStorage.setItem('moduleName', inputValue);
+      sessionStorage.setItem('moduleName', inputValue);
       navigate(`/${inputValue}`);
     }
   };
@@ -54,31 +47,44 @@ const ModuleInput = ({ setModuleName }) => {
 };
 
 const App = () => {
-  const [moduleName, setModuleName] = useState(() => localStorage.getItem('moduleName') || '');
+  const [moduleName, setModuleName] = useState(() => sessionStorage.getItem('moduleName') || '');
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('moduleName');
+    };
+  
+    window.addEventListener('beforeunload', handleBeforeUnload);
+  
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   return (
     <div className="p-1">
       <Router>
-        <Tabs />
+        <Tabs moduleName={moduleName} setModuleName={setModuleName} />
         <Routes>
           <Route path="/" element={
             moduleName ? <Navigate to={`/${moduleName}`} /> : <ModuleInput setModuleName={setModuleName} />
           } />
-          <Route path="/:moduleName/*" element={<ModuleRoutes />} />
+          <Route path="/:moduleName/*" element={<ModuleRoutes setModuleName={setModuleName} />} />
         </Routes>
       </Router>
     </div>
   );
 };
 
-const ModuleRoutes = () => {
+const ModuleRoutes = ({ setModuleName }) => {
   const { moduleName } = useParams();
   
   useEffect(() => {
     if (moduleName) {
-      localStorage.setItem('moduleName', moduleName);
+      sessionStorage.setItem('moduleName', moduleName);
+      setModuleName(moduleName);
     }
-  }, [moduleName]);
+  }, [moduleName, setModuleName]);
 
   return (
     <Routes>
@@ -92,34 +98,29 @@ const ModuleRoutes = () => {
   );
 };
 
-const SearchWrapper = ({ moduleName }) => {
-  const params = useParams();
-  const name = moduleName || params.moduleName;
-  return <Search moduleName={name} />;
+const SearchWrapper = () => {
+  const { moduleName } = useParams();
+  return <Search moduleName={moduleName} />;
 };
 
-const NodeGridWrapper = ({ moduleName }) => {
-  const params = useParams();
-  const name = moduleName || params.moduleName;
-  return <NodeGrid moduleName={name} />;
+const NodeGridWrapper = () => {
+  const { moduleName } = useParams();
+  return <NodeGrid moduleName={moduleName} />;
 };
 
-const DetailsPageWrapper = ({ moduleName }) => {
-  const params = useParams();
-  const name = moduleName || params.moduleName;
-  return <DetailsPage moduleName={name} />;
+const DetailsPageWrapper = () => {
+  const { moduleName } = useParams();
+  return <DetailsPage moduleName={moduleName} />;
 };
 
-const StatisticsWrapper = ({ moduleName }) => {
-  const params = useParams();
-  const name = moduleName || params.moduleName;
-  return <Statistics moduleName={name} />;
+const StatisticsWrapper = () => {
+  const { moduleName } = useParams();
+  return <Statistics moduleName={moduleName} />;
 };
 
-const ComputersGridWrapper = ({ moduleName }) => {
-  const params = useParams();
-  const name = moduleName || params.moduleName;
-  return <ComputersGrid moduleName={name} />;
+const ComputersGridWrapper = () => {
+  const { moduleName } = useParams();
+  return <ComputersGrid moduleName={moduleName} />;
 };
 
 export default App;

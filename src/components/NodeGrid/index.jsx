@@ -103,6 +103,7 @@ const NodeGrid = ({ moduleName }) => {
             setSelectedNodeFilter(nodeType);
             setCurrentPage(1);
           }}
+          moduleName={moduleName}
         />
       </div>
       <div className="w-4/5 ml-2">
