@@ -1188,6 +1188,7 @@ import { FaArrowUp, FaEye, FaEyeSlash, FaShapes } from 'react-icons/fa';
 import dagre from 'dagre';
 import Legend from './Legend';
 import Tooltip from './Tooltip';
+import CustomEdge from './CustomEdge';
 import CustomNode from './CustomNode';
 
 
@@ -1198,13 +1199,17 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
+const edgeTypes = {
+  custom: CustomEdge,
+};
+
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
 const getLayoutedElements = (nodes, edges) => {
   dagreGraph.setGraph({
     rankdir: 'LR',
-    ranksep: 150, 
+    ranksep: 200, 
     nodesep: 100, 
   });
 
@@ -1310,7 +1315,9 @@ const GraphBrowser = ({ moduleName }) => {
         source: node.uuid,
         target: nodeUuid,
         // animated: true,
-        type:'smoothstep',
+        // type:'smoothstep',
+        type: 'custom',
+        data: { label: node.link_label },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -1321,7 +1328,7 @@ const GraphBrowser = ({ moduleName }) => {
           strokeWidth: 1,
           stroke: '#808080',
         },
-        label: node.link_label,
+        // label: node.link_label,
       });
     });
   
@@ -1338,8 +1345,9 @@ const GraphBrowser = ({ moduleName }) => {
         id: generateUniqueId(`e${customIncomingNode.id}-${nodeUuid}`),
         source: customIncomingNode.id,
         target: nodeUuid,
-        // animated: true,
-        type:'smoothstep',
+        animated: true,
+        // type:'smoothstep',
+        // type: 'custom',
         style: { stroke: '#808080', strokeWidth: 1 },
         markerEnd: {
           type: MarkerType.ArrowClosed,
@@ -1365,7 +1373,9 @@ const GraphBrowser = ({ moduleName }) => {
         source: nodeUuid,
         target: node.uuid,
         // animated: true,
-        type:'smoothstep',
+        // type:'smoothstep',
+        type: 'custom',
+        data: { label: node.link_label },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -1376,7 +1386,7 @@ const GraphBrowser = ({ moduleName }) => {
           strokeWidth: 1,
           stroke: '#808080',
         },
-        label: node.link_label,
+        // label: node.link_label,
       });
     });
 
@@ -1422,7 +1432,8 @@ const GraphBrowser = ({ moduleName }) => {
             source: isIncoming ? prevNodeId : nodeUuid,
             target: isIncoming ? nodeUuid : prevNodeId,
             // animated: true,
-            type:'smoothstep',
+            // type:'smoothstep',
+            type: 'custom',
             style: { stroke: '#FFA500', strokeWidth: 2 },
             markerEnd: {
               type: MarkerType.ArrowClosed,
@@ -1437,7 +1448,9 @@ const GraphBrowser = ({ moduleName }) => {
             id: generateUniqueId(`e${prevNodeId}-${clickedNodes[index + 1]}`),
             source: prevNodeId,
             target: clickedNodes[index + 1],
-            animated: true,
+            // animated: true,
+            type: 'custom',
+            data: { label: 'Previous' },
             style: { stroke: '#FFA500', strokeWidth: 2 },
             markerEnd: {
               type: MarkerType.ArrowClosed,
@@ -1445,7 +1458,7 @@ const GraphBrowser = ({ moduleName }) => {
               height: 20,
               color: '#FFA500',
             },
-            label: 'Previous',
+            // label: 'Previous',
           });
         }
       }
@@ -1480,7 +1493,8 @@ const GraphBrowser = ({ moduleName }) => {
       source: direction === 'incoming' ? node.uuid : parentId,
       target: direction === 'incoming' ? parentId : node.uuid,
       // animated: true,
-      type:'smoothstep',
+      type:'custom',
+      data: { label: node.link_label },
       markerEnd: {
         type: MarkerType.ArrowClosed,
         width: 20,
@@ -1491,7 +1505,7 @@ const GraphBrowser = ({ moduleName }) => {
         strokeWidth: 1,
         stroke: '#808080',
       },
-      label: node.link_label,
+      // label: node.link_label,
     }));
   
     const filteredNodes = nodes.filter(n => n.id !== customNodeId);
@@ -1513,8 +1527,10 @@ const GraphBrowser = ({ moduleName }) => {
     if (node.id.includes('incoming-custom') || node.id.includes('outgoing-custom')) {
       loadMoreNodes(node.id);
     } else {
-      navigate(`/${moduleName}/details/${node.id}`);
       fetchNodes(node.id);
+      setTimeout(() => {
+        navigate(`/${moduleName}/details/${node.id}`);
+      }, 0);
     }
   }, [nodeCache, navigate]);
 
@@ -1559,6 +1575,7 @@ const GraphBrowser = ({ moduleName }) => {
           onNodeMouseLeave={onNodeMouseLeave}
           fitView
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
         >
           <MiniMap />
           
