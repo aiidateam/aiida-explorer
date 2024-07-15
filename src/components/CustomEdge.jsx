@@ -22,7 +22,6 @@ const CustomEdge = ({
   }, [sourceX, sourceY, targetX, targetY]);
 
   if (!isReady) {
-    // Return a simple line as a placeholder while loading
     return (
       <path
         id={id}

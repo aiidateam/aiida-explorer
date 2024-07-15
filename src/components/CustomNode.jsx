@@ -58,6 +58,8 @@ const CustomNode = ({ data }) => {
 
   const [subtitle, setSubtitle] = useState('');
   const [nodeDetails, setNodeDetails] = useState(null);
+  const [value, setValue] = useState(null);
+  const [formula, setFormula] = useState(null);
 
   const nodeStyle = getNodeStyle(data.label);
   console.log(data.uuid);
@@ -66,22 +68,41 @@ const CustomNode = ({ data }) => {
     const fetchNodes = async () => {
       try {
         const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}`);
+        const response2 = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/attributes`);
+        const response3 = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/derived_properties`);
+
+        if (response3) {
+          const result3 = await response3.json();
+          console.log(result3.data.derived_properties.formula);
+          setFormula(result3.data.derived_properties.formula);
+        }
+        if (response2) {
+          const result2 = await response2.json();
+          console.log(result2.data.attributes.value);
+          setValue(result2.data.attributes.value);
+        }
         const result = await response.json();
         setNodeDetails(result.data.nodes[0].process_type);
       } catch (error) {
         console.error('Error fetching nodes:', error);
       }
     };
-    
+
     fetchNodes();
   }, [data.uuid]);
-  
+
   useEffect(() => {
+    if (formula) {
+      setSubtitle(formula);
+    }
+    if (value) {
+      setSubtitle(value);
+    }
     if (nodeDetails) {
       setSubtitle(nodeDetails.split(':')[1]);
     }
-  }, [nodeDetails]);
-
+  }, [formula, value, nodeDetails]);
+  
   return (
     <div style={nodeStyle}>
       <Handle

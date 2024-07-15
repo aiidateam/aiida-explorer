@@ -40,11 +40,13 @@ const Tooltip = ({ details, position, containerRef }) => {
         <div className="h-3 w-3 rounded-full bg-gray-500 mr-2"></div>
         <span className="font-semibold">Modified : </span> {details.mtime}
       </div>
-      <div className="flex items-center">
-        <div className="h-3 w-3 rounded-full bg-indigo-500 mr-2"></div>
-        <span className="font-semibold">Process Type : </span>{' '}
-        {details.process_type}
-      </div>
+      {details.process_type && (
+        <div className="flex items-center">
+          <div className="h-3 w-3 rounded-full bg-indigo-500 mr-2"></div>
+          <span className="font-semibold">Process Type : </span>{' '}
+          {details.process_type}
+        </div>
+      )}
     </div>
   );
 };
