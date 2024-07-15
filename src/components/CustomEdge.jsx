@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getSmoothStepPath } from 'reactflow';
 
 const CustomEdge = ({
@@ -14,12 +14,21 @@ const CustomEdge = ({
   markerEnd,
 }) => {
   const [isReady, setIsReady] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (sourceX != null && sourceY != null && targetX != null && targetY != null) {
       setIsReady(true);
     }
   }, [sourceX, sourceY, targetX, targetY]);
+
+  const onMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
+  const onMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
 
   if (!isReady) {
     return (
@@ -47,8 +56,20 @@ const CustomEdge = ({
   const labelHeight = 14; 
   const padding = 4; 
 
+  const showLabel = data?.showLabel || isHovered;
+
   return (
     <>
+      {/* Invisible wider path for hover detection */}
+      <path
+        d={edgePath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={20}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
+      {/* Visible edge path */}
       <path
         id={id}
         style={{ ...style, strokeWidth: 1, stroke: '#d1d5db' }}
@@ -56,7 +77,7 @@ const CustomEdge = ({
         d={edgePath}
         markerEnd={markerEnd}
       />
-      {data?.label && (
+      {showLabel && data?.label && (
         <g transform={`translate(${labelX}, ${labelY})`}>
           <rect
             x={-labelWidth / 2 - padding}

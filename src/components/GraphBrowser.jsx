@@ -1565,7 +1565,10 @@ const GraphBrowser = ({ moduleName }) => {
           nodes={nodes}
           edges={edges.map((edge) => ({
             ...edge,
-            label: showEdgeLabels ? edge.label : '',
+            data: {
+              ...edge.data,
+              showLabel: showEdgeLabels,
+            },
           }))}
           nodesDraggable={false} 
           onNodesChange={onNodesChange}
