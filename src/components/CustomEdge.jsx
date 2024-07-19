@@ -60,7 +60,6 @@ const CustomEdge = ({
 
   return (
     <>
-      {/* Invisible wider path for hover detection */}
       <path
         d={edgePath}
         fill="none"
@@ -69,7 +68,6 @@ const CustomEdge = ({
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       />
-      {/* Visible edge path */}
       <path
         id={id}
         style={{ ...style, strokeWidth: 1, stroke: '#d1d5db' }}

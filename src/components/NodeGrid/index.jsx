@@ -93,6 +93,8 @@ const NodeGrid = ({ moduleName }) => {
     fetchData(currentPage);
   }, [selectedNodeFilter, currentPage]);
 
+  console.log(fullTypeCounts);
+
   return (
     <div className="flex w-full mx-auto py-2 px-0 text-sm">
       <div className="w-1/5 mr-2 bg-green-50">

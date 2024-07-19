@@ -25,7 +25,7 @@ const TreeNode = ({ node, onSelectNode, selectedNode }) => {
   return (
     <div className="ml-0 mt-1">
       <div
-        className={`cursor-pointer text-gray-900 min-w-fit p-2 rounded hover:bg-gray-200 flex items-center
+        className={`cursor-pointer hover:bg-blue-600 text-gray-900 min-w-fit p-2 rounded hover:text-gray-100 flex items-center
           ${isSelected ? "bg-blue-500 text-white" : "bg-gray-100"}`}
         onClick={expandAndSelect}
       >
@@ -37,7 +37,7 @@ const TreeNode = ({ node, onSelectNode, selectedNode }) => {
         {node.label}
       </div>
       {isExpanded && (
-        <div className="ml-4 mt-2 focus:bg-gray-500 active:bg-gray-500">
+        <div className="ml-4 mt-2 ">
           {node.children.map((child, index) => (
             <TreeNode
               key={index}

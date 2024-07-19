@@ -15,10 +15,12 @@ import {
 const ComputersGrid = ({ moduleName }) => {
   const [computersData, setComputersData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [fullTypeCounts, setFullTypeCounts] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/`;
 
   const fetchComputers = async (page) => {
     setIsLoading(true);
@@ -37,8 +39,30 @@ const ComputersGrid = ({ moduleName }) => {
     }
   };
 
+  const fetchFullTypeCounts = async (apiEndpoint) => {
+    try {
+      const response = await axios.get(`${apiEndpoint}/nodes/full_types_count/`);
+      console.log(response.data.data);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching full type counts:", error);
+      setError("Failed to fetch full type counts");
+      return null;
+    }
+  };
+
   useEffect(() => {
-    fetchComputers(currentPage);
+    const fetchInitialData = async () => {
+      await fetchComputers(currentPage);
+
+      const counts = await fetchFullTypeCounts(baseUrl);
+      if (counts) {
+        console.log(counts);
+        setFullTypeCounts(counts);
+      }
+    };
+
+    fetchInitialData();
   }, [currentPage]);
 
   const handleDataFetched = (data) => {
@@ -106,11 +130,13 @@ const ComputersGrid = ({ moduleName }) => {
       }
     },
   });
+  console.log(fullTypeCounts);
 
   return (
     <div className="flex w-full mx-auto py-2 px-0 text-sm">
       <div className="w-1/5">
         <FilterSidebar
+          // fullTypeCounts={fullTypeCounts}
           onSelectNode={handleDataFetched}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
