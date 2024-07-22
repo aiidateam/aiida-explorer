@@ -2,6 +2,20 @@ import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position } from 'reactflow';
 
 const getNodeStyle = (label) => {
+  if (!label) {
+    return {
+      background: '#FFCC80',
+      borderRadius: '4px',
+      width: '150px',
+      height: '60px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      border: '1px solid #000',
+      overflow: 'hidden',
+    };
+  }
+
   switch (label.toLowerCase()) {
     case 'calcjobnode':
       return {
@@ -56,7 +70,9 @@ const getNodeStyle = (label) => {
 const CustomNode = ({ data }) => {
   const [subtitle, setSubtitle] = useState('');
   const nodeStyle = getNodeStyle(data.label);
-
+  console.log(data.uuid)
+  console.log(data.label)
+  
   useEffect(() => {
     const fetchNodeData = async () => {
       try {
@@ -66,33 +82,34 @@ const CustomNode = ({ data }) => {
           fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/derived_properties`)
         ]);
 
-        let nodeDetails, value, formula;
-
-        if (response.ok) {
-          const result = await response.json();
-          nodeDetails = result.data?.nodes?.[0]?.process_type;
-        }
-
-        if (response2.ok) {
-          const result2 = await response2.json();
-          value = result2.data?.attributes?.value;
-        }
+        let subtitle = '';
 
         if (response3.ok) {
           const result3 = await response3.json();
-          formula = result3.data?.derived_properties?.formula;
+          const formula = result3.data?.derived_properties?.formula;
+          if (formula) {
+            subtitle = formula;
+          }
         }
 
-        if (formula) {
-          setSubtitle(formula);
-        } else if (value !== null && value !== undefined) {
-          setSubtitle(String(value));
-        } else if (nodeDetails) {
-          const parts = nodeDetails.split(':');
-          setSubtitle(parts.length > 1 ? parts[1] : nodeDetails);
-        } else {
-          setSubtitle('');
+        if (!subtitle && response2.ok) {
+          const result2 = await response2.json();
+          const value = result2.data?.attributes?.value;
+          if (value !== null && value !== undefined) {
+            subtitle = String(value);
+          }
         }
+
+        if (!subtitle && response.ok) {
+          const result = await response.json();
+          const nodeDetails = result.data?.nodes?.[0]?.process_type;
+          if (nodeDetails) {
+            const parts = nodeDetails.split(':');
+            subtitle = parts.length > 1 ? parts[1] : nodeDetails;
+          }
+        }
+
+        setSubtitle(subtitle);
 
       } catch (error) {
         console.error('Error fetching node data:', error);

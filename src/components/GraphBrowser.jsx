@@ -1169,9 +1169,6 @@
 // };
 
 // export default GraphBrowser;
-
-
-
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactFlow, { 
@@ -1185,56 +1182,25 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { FaArrowUp, FaEye, FaEyeSlash, FaShapes } from 'react-icons/fa';
-import dagre from 'dagre';
 import Legend from './Legend';
 import Tooltip from './Tooltip';
 import CustomEdge from './CustomEdge';
 import CustomNode from './CustomNode';
 
-
 const nodeWidth = 172;
 const nodeHeight = 36;
+const CENTRAL_X = 600;
+const CENTRAL_Y = 300;
+const INPUT_X = 200;
+const OUTPUT_X = 1000;
+const LIMIT = 3;
 
 const nodeTypes = {
-  custom: CustomNode,
+  custom: React.memo(CustomNode),
 };
 
 const edgeTypes = {
   custom: CustomEdge,
-};
-
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-const getLayoutedElements = (nodes, edges) => {
-  dagreGraph.setGraph({
-    rankdir: 'LR',
-    ranksep: 200, 
-    nodesep: 100, 
-  });
-
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-  });
-
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(dagreGraph);
-
-  return nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-    node.targetPosition = 'left';
-    node.sourcePosition = 'right';
-
-    node.position = {
-      x: nodeWithPosition.x - nodeWidth / 2,
-      y: nodeWithPosition.y - nodeHeight / 2,
-    };
-
-    return node;
-  });
 };
 
 const GraphBrowser = ({ moduleName }) => {
@@ -1246,12 +1212,14 @@ const GraphBrowser = ({ moduleName }) => {
   const [clickedNodes, setClickedNodes] = useState([]);
   const [tooltipDetails, setTooltipDetails] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: null, y: null });
-  // const [showNodeTracker, setShowNodeTracker] = useState(false);
   const tooltipTimeout = useRef(null);
   const containerRef = useRef(null);
   const [showButtons, setShowButtons] = useState(false);
   const [showEdgeLabels, setShowEdgeLabels] = useState(false);
   const [showNodeTracker, setShowNodeTracker] = useState(false);
+  const [centralNode, setCentralNode] = useState(null);
+
+  const API_URL = `https://aiida.materialscloud.org/${moduleName}/api/v4/`;
 
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
@@ -1259,25 +1227,127 @@ const GraphBrowser = ({ moduleName }) => {
     return parts[parts.length - 2];
   };
 
+  const fetchCentralNode = async (uuid) => {
+    try {
+      const res = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}`);
+      const data = await res.json();
+      console.log(data.data.nodes[0].node_type)
+      return data.data.nodes[0].node_type;
+    } catch (error) {
+      console.error('Error fetching central node:', error);
+      return null;
+    }
+  };
+  
+
+  useEffect(() => {
+    const fetchAndSetCentralNode = async () => {
+      if (uuid) {
+        const nodeType = await fetchCentralNode(uuid);
+        setCentralNode(nodeType);
+        console.log(nodeType, "-->Central"); 
+      }
+    };
+    
+    fetchAndSetCentralNode();
+  }, [uuid]);
+
+  const fetchLinks = async (uuid, fullType, limit, direction = "incoming", offset = 0) => {
+    let url = `${API_URL}/nodes/${uuid}/links/${direction}`;
+    url += `?orderby=+ctime&full_type="${fullType}"&limit=${limit}&offset=${offset}`;
+  
+    try {
+      console.log('Fetching URL:', url);
+      const response = await fetch(url);
+      const result = await response.json();
+      const totalCount = response.headers.get("X-Total-Count");
+  
+      return {
+        totalCount: totalCount,
+        links: direction === "incoming" ? result.data.incoming : result.data.outgoing,
+      };
+    } catch (error) {
+      console.error("Error:", error);
+      return { totalCount: 0, links: [] };
+    }
+  };
+
+  const fetchAllLinks = async (uuid) => {
+    try {
+      const inputLogical = await fetchLinks(uuid, "process.%25%7C%25", LIMIT, "incoming");
+      const inputData = await fetchLinks(uuid, "data.%25%7C%25", LIMIT, "incoming");
+      const outputLogical = await fetchLinks(uuid, "process.%25%7C%25", LIMIT, "outgoing");
+      const outputData = await fetchLinks(uuid, "data.%25%7C%25", LIMIT, "outgoing");
+      return {
+        inputLogical,
+        inputData,
+        outputLogical,
+        outputData,
+      };
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  };
+
   const generateUniqueId = (prefix = 'id') => {
     return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
+  const createNode = (nodeData, x, y, style = {}) => {
+    const isCentralNode = nodeData.uuid === uuid;
+    const label = isCentralNode ? (centralNode ? extractLabel(centralNode) : "Loading.." ) : extractLabel(nodeData.node_type);
+  
+    return {
+      id: nodeData.uuid,
+      type: 'custom',
+      data: { label, uuid: nodeData.uuid },
+      position: { x, y },
+      sourcePosition: 'right',
+      targetPosition: 'left',
+      style,
+    };
+  };  
+
+  const createEdge = (source, target, label , isOutgoing, index) => ({
+    id: generateUniqueId(`e${source}-${target}`),
+    source,
+    target,
+    type: 'custom',
+    data: { label, showLabel: showEdgeLabels , index: isOutgoing ? index+1 : undefined },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 20,
+      height: 20,
+      color: '#808080',
+    },
+    style: {
+      strokeWidth: 1,
+      stroke: '#808080',
+    },
+  });
+
   const fetchNodes = async (nodeUuid) => {
     if (nodeCache[nodeUuid]) {
+      console.log("Using cached data for", nodeUuid);
       displayNodesFromCache(nodeUuid);
       return;
     }
 
     try {
-      const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${nodeUuid}/links/tree?`);
-      const data = await response.json();
+      console.log("Fetching data for", nodeUuid);
+      const data = await fetchAllLinks(nodeUuid);
+      console.log("Received data:", data);
+      if (!data) {
+        console.log("No data received");
+        return;
+      }
 
       const newCache = { ...nodeCache };
-      newCache[nodeUuid] = { ...data.data.nodes[0], details: data.data.nodes[0] };
+      newCache[nodeUuid] = data;
       setNodeCache(newCache);
 
-      displayNodes(newCache[nodeUuid], nodeUuid);
+      displayNodes(data, nodeUuid);
     } catch (error) {
       console.error('Error fetching nodes:', error);
     }
@@ -1291,315 +1361,152 @@ const GraphBrowser = ({ moduleName }) => {
   const displayNodes = (nodeData, nodeUuid) => {
     const newNodes = [];
     const newEdges = [];
-  
-    // Main node
-    const mainNode = {
-      id: nodeUuid,
-      type: 'custom',
-      data: { label: extractLabel(nodeData.node_type) , uuid: nodeUuid},
-      position: { x: 0, y: 0 },
-    };
-    newNodes.push(mainNode);
-  
-    // Incoming nodes
-    nodeData.incoming.slice(0, 10).forEach((node, index) => {
-      const incomingNode = {
-        id: node.uuid,
-        type: 'custom',
-        data: { label: extractLabel(node.node_type) , uuid: node.uid },
-        position: { x: -200, y: index * 120 },
-      };
-      newNodes.push(incomingNode);
-      newEdges.push({
-        id: generateUniqueId(`e${node.uuid}-${nodeUuid}`),
-        source: node.uuid,
-        target: nodeUuid,
-        // animated: true,
-        // type:'smoothstep',
-        type: 'custom',
-        data: { label: node.link_label },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: '#808080',
-        },
-        style: {
-          strokeWidth: 1,
-          stroke: '#808080',
-        },
-        // label: node.link_label,
-      });
-    });
-  
-    // Custom incoming node for extras
-    if (nodeData.incoming.length > 10) {
-      const customIncomingNode = {
-        id: generateUniqueId(`incoming-custom-${nodeUuid}`),
-        type: 'custom',
-        data: { label: `(+${nodeData.incoming.length - 10}) nodes` },
-        position: { x: -200, y: 10 * 120 },
-      };
-      newNodes.push(customIncomingNode);
-      newEdges.push({
-        id: generateUniqueId(`e${customIncomingNode.id}-${nodeUuid}`),
-        source: customIncomingNode.id,
-        target: nodeUuid,
-        animated: true,
-        // type:'smoothstep',
-        // type: 'custom',
-        style: { stroke: '#808080', strokeWidth: 1 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: '#808080',
-        },
-        label: 'More Incoming Nodes',
-      });
-    }
-  
-    // Outgoing nodes
-    nodeData.outgoing.slice(0, 10).forEach((node, index) => {
-      const outgoingNode = {
-        id: node.uuid,
-        type: 'custom',
-        data: { label: extractLabel(node.node_type) , uuid: node.uuid },
-        position: { x: 200, y: index * 120 },
-      };
-      newNodes.push(outgoingNode);
-      newEdges.push({
-        id: generateUniqueId(`e${nodeUuid}-${node.uuid}`),
-        source: nodeUuid,
-        target: node.uuid,
-        // animated: true,
-        // type:'smoothstep',
-        type: 'custom',
-        data: { label: node.link_label },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: '#808080',
-        },
-        style: {
-          strokeWidth: 1,
-          stroke: '#808080',
-        },
-        // label: node.link_label,
-      });
+
+    const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y);
+    newNodes.push(centralNode);
+
+    let y = CENTRAL_Y - 200;
+    nodeData.inputLogical.links.slice().reverse().forEach((node) => {
+      const newNode = createNode(node, INPUT_X, y, { backgroundColor: 'yellow' });
+      newNodes.push(newNode);
+      newEdges.push(createEdge(node.uuid, nodeUuid, 'logical input'));
+      y -= 70;
     });
 
-    if (nodeData.outgoing.length > 10) {
-      const customOutgoingNode = {
-        id: generateUniqueId(`outgoing-custom-${nodeUuid}`),
-        type: 'custom',
-        data: { label: `(+${nodeData.outgoing.length - 10}) nodes` },
-        position: { x: 200, y: 10 * 120 },
-      };
-      newNodes.push(customOutgoingNode);
-      newEdges.push({
-        id: generateUniqueId(`e${nodeUuid}-${customOutgoingNode.id}`),
-        source: nodeUuid,
-        target: customOutgoingNode.id,
-        animated: true,
-        style: { stroke: '#808080', strokeWidth: 1 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: '#808080',
-        },
-        label: 'More Outgoing Nodes',
-      });
-    }
-
-    clickedNodes.forEach((prevNodeId, index) => {
-      if (prevNodeId !== nodeUuid) {
-        newNodes.push({
-          id: prevNodeId,
-          type: 'custom',
-          data: { label: extractLabel(nodeCache[prevNodeId].node_type) || prevNodeId },
-          position: { x: -400 - index * 200, y: 0 },
-        });
-
-        const isIncoming = nodeData.incoming.some(node => node.uuid === prevNodeId);
-        const isOutgoing = nodeData.outgoing.some(node => node.uuid === prevNodeId);
-  
-        if (isIncoming || isOutgoing) {
-          newEdges.push({
-            id: generateUniqueId(`e${isIncoming ? prevNodeId : nodeUuid}-${isIncoming ? nodeUuid : prevNodeId}`),
-            source: isIncoming ? prevNodeId : nodeUuid,
-            target: isIncoming ? nodeUuid : prevNodeId,
-            // animated: true,
-            // type:'smoothstep',
-            type: 'custom',
-            style: { stroke: '#FFA500', strokeWidth: 2 },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 20,
-              height: 20,
-              color: '#FFA500',
-            },
-            label: 'Previous',
-          });
-        } else if (index < clickedNodes.length - 1) {
-          newEdges.push({
-            id: generateUniqueId(`e${prevNodeId}-${clickedNodes[index + 1]}`),
-            source: prevNodeId,
-            target: clickedNodes[index + 1],
-            // animated: true,
-            type: 'custom',
-            data: { label: 'Previous' },
-            style: { stroke: '#FFA500', strokeWidth: 2 },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 20,
-              height: 20,
-              color: '#FFA500',
-            },
-            // label: 'Previous',
-          });
-        }
-      }
+    y = CENTRAL_Y;
+    nodeData.inputData.links.forEach((node) => {
+      const newNode = createNode(node, INPUT_X, y, { backgroundColor: 'lightgreen' });
+      newNodes.push(newNode);
+      newEdges.push(createEdge(node.uuid, nodeUuid, 'data input'));
+      y += 100;
     });
-  
-    const layoutedNodes = getLayoutedElements(newNodes, newEdges);
-    setNodes(layoutedNodes , { draggable: false });
+
+    y = CENTRAL_Y - 200;
+    nodeData.outputLogical.links.slice().reverse().forEach((node,index) => {
+      const newNode = createNode(node, OUTPUT_X, y, { backgroundColor: 'lightblue' });
+      newNodes.push(newNode);
+      newEdges.push(createEdge(nodeUuid, node.uuid, 'logical output', true, index));
+      y -= 70;
+    });
+
+    y = CENTRAL_Y;
+    nodeData.outputData.links.forEach((node,index) => {
+      const newNode = createNode(node, OUTPUT_X, y, { backgroundColor: 'orange' });
+      newNodes.push(newNode);
+      newEdges.push(createEdge(nodeUuid, node.uuid, 'data output', true, index));
+      y += 100;
+    });
+
+    setNodes(newNodes);
     setEdges(newEdges);
   };
 
-  const loadMoreNodes = (customNodeId) => {
-    const parts = customNodeId.split('-');
-    const direction = parts[0];
-    const parentId = parts.slice(2, -1).join('-');
-  
-    const parentNode = nodeCache[parentId];
-    if (!parentNode) return;
-  
-    const nodesToLoad = direction === 'incoming'
-      ? parentNode.incoming.slice(10)
-      : parentNode.outgoing.slice(10);
-  
-    const newNodes = nodesToLoad.map((node, index) => ({
-      id: node.uuid,
-      type: 'custom',
-      data: { label: extractLabel(node.node_type) || node.uuid , uuid: node.uuid },
-      position: { x: 0, y: 0 }, 
-    }));
-  
-    const newEdges = nodesToLoad.map((node) => ({
-      id: generateUniqueId(`e${direction === 'incoming' ? node.uuid + '-' + parentId : parentId + '-' + node.uuid}`),
-      source: direction === 'incoming' ? node.uuid : parentId,
-      target: direction === 'incoming' ? parentId : node.uuid,
-      // animated: true,
-      type:'custom',
-      data: { label: node.link_label },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 20,
-        color: '#808080',
-      },
-      style: {
-        strokeWidth: 1,
-        stroke: '#808080',
-      },
-      // label: node.link_label,
-    }));
-  
-    const filteredNodes = nodes.filter(n => n.id !== customNodeId);
-    const filteredEdges = edges.filter(e => e.source !== customNodeId && e.target !== customNodeId);
-  
-    const layoutedNodes = getLayoutedElements([...filteredNodes, ...newNodes], [...filteredEdges, ...newEdges]);
-    setNodes(layoutedNodes , { draggable: false });
-    setEdges([...filteredEdges, ...newEdges]);
+  const loadMoreNodes = async (uuid, direction, nodeType) => {
+    try {
+      const offset = nodes.filter(node => node.data.direction === direction && node.data.nodeType === nodeType).length;
+      const moreLinks = await fetchLinks(uuid, nodeType, LIMIT, direction, offset);
+
+      if (moreLinks && moreLinks.links.length > 0) {
+        const newNodes = [];
+        const newEdges = [];
+
+        let y = direction === 'incoming' ? CENTRAL_Y - 200 : CENTRAL_Y - 150;
+        moreLinks.links.forEach((node) => {
+          const newNode = createNode(node, direction === 'incoming' ? INPUT_X : OUTPUT_X, y, {
+            backgroundColor: direction === 'incoming' ? 'yellow' : 'lightblue'
+          });
+          newNodes.push(newNode);
+          newEdges.push(direction === 'incoming' ?
+            createEdge(node.uuid, uuid, `${nodeType} input`) :
+            createEdge(uuid, node.uuid, `${nodeType} output`));
+          y += 50;
+        });
+
+        setNodes((nds) => [...nds, ...newNodes]);
+        setEdges((eds) => [...eds, ...newEdges]);
+      }
+    } catch (error) {
+      console.error("Error loading more nodes:", error);
+    }
   };
 
   useEffect(() => {
-    if (uuid) {
-      fetchNodes(uuid);
-      setClickedNodes(prev => [...prev, uuid]);
-    }
+    fetchNodes(uuid);
   }, [uuid]);
 
-  const onNodeClick = useCallback((event, node) => {
-    if (node.id.includes('incoming-custom') || node.id.includes('outgoing-custom')) {
-      loadMoreNodes(node.id);
-    } else {
-      fetchNodes(node.id);
-      setTimeout(() => {
-        navigate(`/${moduleName}/details/${node.id}`);
-      }, 0);
-    }
-  }, [nodeCache, navigate]);
+  const handleNodeClick = useCallback((event, node) => {
+    const { uuid } = node.data;
+    setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
+    navigate(`/${moduleName}/details/${uuid}`);
+  }, [navigate, moduleName]);
 
-  const onNodeMouseEnter = useCallback(async (event, node) => {
+  const handleMouseEnter = (event, node) => {
     clearTimeout(tooltipTimeout.current);
-    tooltipTimeout.current = setTimeout(async () => {
-      try {
-        const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${node.id}`);
-        const data = await response.json();
-        setTooltipDetails(data.data.nodes[0]);
-        setTooltipPosition({ x: event.clientX, y: event.clientY });
-      } catch (error) {
-        console.error('Error fetching node details:', error);
-      }
-    }, 200);
-  }, [moduleName]);
+    setTooltipDetails(node.data);
+    const rect = containerRef.current.getBoundingClientRect();
+    setTooltipPosition({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+  };
 
-  const onNodeMouseLeave = useCallback(() => {
-    clearTimeout(tooltipTimeout.current);
-    setTooltipDetails(null);
-  }, []);
+  const handleMouseLeave = () => {
+    tooltipTimeout.current = setTimeout(() => {
+      setTooltipDetails(null);
+    }, 500);
+  };
 
-  const toggleEdgeLabels = () => setShowEdgeLabels(!showEdgeLabels);
-  const toggleNodeTracker = () => setShowNodeTracker(!showNodeTracker);
   const toggleButtons = () => setShowButtons(!showButtons);
 
+const toggleEdgeLabels = () => {
+  setShowEdgeLabels((prev) => !prev);
+  setEdges((eds) =>
+    eds.map((edge) => ({
+      ...edge,
+      data: {
+        ...edge.data,
+        showLabel: !showEdgeLabels,
+      },
+    }))
+  );
+};
+
+  const toggleNodeTracker = () => setShowNodeTracker(!showNodeTracker);
+
   return (
-    <div className="h-full w-full relative" ref={containerRef}>
-      <Legend />
+    <div ref={containerRef} className='h-full w-full relative'>
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
-          edges={edges.map((edge) => ({
-            ...edge,
-            data: {
-              ...edge.data,
-              showLabel: showEdgeLabels,
-            },
-          }))}
-          nodesDraggable={false} 
+          edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          onNodeMouseEnter={onNodeMouseEnter}
-          onNodeMouseLeave={onNodeMouseLeave}
-          fitView
+          onNodeClick={handleNodeClick}
+          onNodeMouseEnter={handleMouseEnter}
+          onNodeMouseLeave={handleMouseLeave}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          fitView
         >
           <MiniMap />
-          
-          <Controls />
+          <Controls style={{ backgroundColor: '#fff' }}>
+            <button
+              className="m-auto  bg-slate-300"
+              title="Show/Hide Buttons"
+              onClick={toggleButtons}
+              style={{ backgroundColor: 'transparent', color: 'black' }}
+            >
+              <FaArrowUp className='p-auto text-orange-700 items-center flex justify-center m-1 mt-2 mb-0' />
+            </button>
+          </Controls>
           <Background />
         </ReactFlow>
-      </ReactFlowProvider>
-      {tooltipDetails && (
+        {tooltipDetails && (
         <Tooltip
           details={tooltipDetails}
           position={tooltipPosition}
           containerRef={containerRef}
         />
       )}
-      <button
-        onClick={toggleButtons}
-        className="fixed bottom-4 right-1/4 transform translate-x-1/2 bg-orange-200 hover:bg-orange-300 text-orange-700 font-bold py-2 px-4 rounded-full"
-      >
-        <FaArrowUp />
-      </button>
-
       {showButtons && (
         <div className="fixed bottom-16 right-1/4 transform translate-x-1/2 flex justify-between items-center w-full max-w-xs bg-white p-4 rounded-lg shadow-lg">
           <button
@@ -1616,7 +1523,6 @@ const GraphBrowser = ({ moduleName }) => {
           </button>
         </div>
       )}
-
       {showNodeTracker && (
         <div className="absolute w-full bottom-24 bg-blue-200 p-2 rounded-lg shadow-lg">
           <div className="flex items-center space-x-2">
@@ -1629,26 +1535,23 @@ const GraphBrowser = ({ moduleName }) => {
           </div>
         </div>
       )}
-      
-      <Legend />
+        {/* {showNodeTracker && (
+          <div style={{
+            position: 'absolute',
+            bottom: 10,
+            left: 10,
+            padding: '10px',
+            backgroundColor: 'white',
+            border: '1px solid black',
+            zIndex: 10
+          }}>
+            Clicked Nodes: {clickedNodes.join(' -> ')}
+          </div>
+        )} */}
+        <Legend />
+      </ReactFlowProvider>
     </div>
   );
 };
-
-const NodeTracker = ({ nodes }) => {
-  return (
-    <div className="absolute font-mono bottom-16 border-[1px] border-gray-400 left-4 right-4 bg-white p-2 rounded shadow">
-      {/* <h4 className="font-light text-sm mb-2">Node History:</h4> */}
-      <div className="flex overflow-x-auto">
-        {nodes.map((nodeId, index) => (
-          <div key={nodeId} className="flex text-xs mb-2 items-center">
-            <span className="px-2 py-1 bg-orange-50 border-[1px] border-fray-300 rounded mr-2">{nodeId}</span>
-            {index < nodes.length - 1 && <span className="mr-2">→</span>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};  
 
 export default GraphBrowser;
