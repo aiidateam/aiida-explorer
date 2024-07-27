@@ -10,6 +10,7 @@ import Files from './FIles';
 import Contents from './Contents';
 import MetaData from './MetaData';
 import BrowserSelection from '../BrowserSelection';
+import ExtraContent from './ExtraContent';
 
 const DetailsPage = ({ moduleName }) => {
   const { uuid } = useParams();
@@ -144,8 +145,12 @@ const DetailsPage = ({ moduleName }) => {
                 <MetaData moduleName={moduleName} uuid={uuid} />
               </div>
               <div>
-                <span className='font-semibold font-mono mb-0'>Node Attributes :</span>
+                <span className='font-semibold mt-2 font-mono mb-0'>Node Attributes :</span>
                 <Attributes moduleName={moduleName} uuid={uuid} />
+              </div>
+              <div>
+                <span className='font-semibold mt-2 font-mono mb-0'>Node Extras :</span>
+                <ExtraContent moduleName={moduleName} uuid={uuid} />
               </div>
             </div>
           ) : (
