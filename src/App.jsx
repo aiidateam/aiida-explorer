@@ -8,6 +8,7 @@ import { IconContext } from "react-icons";
 import { FaArrowRight } from "react-icons/fa";
 import Search from './components/Search';
 import ComputersGrid from './components/NodeGrid/ComputersGrid';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const ModuleInput = ({ setModuleName }) => {
   const [inputValue, setInputValue] = useState('');
@@ -65,12 +66,14 @@ const App = () => {
     <div className="p-1">
       <Router>
         <Tabs moduleName={moduleName} setModuleName={setModuleName} />
-        <Routes>
-          <Route path="/" element={
-            moduleName ? <Navigate to={`/${moduleName}`} /> : <ModuleInput setModuleName={setModuleName} />
-          } />
-          <Route path="/:moduleName/*" element={<ModuleRoutes setModuleName={setModuleName} />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={
+              moduleName ? <Navigate to={`/${moduleName}`} /> : <ModuleInput setModuleName={setModuleName} />
+            } />
+            <Route path="/:moduleName/*" element={<ModuleRoutes setModuleName={setModuleName} />} />
+          </Routes>
+        </ErrorBoundary>
       </Router>
     </div>
   );
@@ -87,14 +90,16 @@ const ModuleRoutes = ({ setModuleName }) => {
   }, [moduleName, setModuleName]);
 
   return (
-    <Routes>
-      <Route index element={<NodeGridWrapper />} />
-      <Route path="search" element={<SearchWrapper />} />
-      <Route path="details/:uuid" element={<DetailsPageWrapper />} />
-      <Route path="statistics" element={<StatisticsWrapper />} />
-      <Route path="computers" element={<ComputersGridWrapper />} />
-      <Route path="*" element={<Navigate to={`/${moduleName}`} replace />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route index element={<NodeGridWrapper />} />
+        <Route path="search" element={<SearchWrapper />} />
+        <Route path="details/:uuid" element={<DetailsPageWrapper />} />
+        <Route path="statistics" element={<StatisticsWrapper />} />
+        <Route path="computers" element={<ComputersGridWrapper />} />
+        <Route path="*" element={<Navigate to={`/${moduleName}`} replace />} />
+      </Routes>
+    </ErrorBoundary>
   );
 };
 

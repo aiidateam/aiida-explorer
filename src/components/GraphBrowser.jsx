@@ -1169,6 +1169,7 @@
 // };
 
 // export default GraphBrowser;
+
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactFlow, { 
@@ -1181,6 +1182,7 @@ import ReactFlow, {
     MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowUp, FaEye, FaEyeSlash, FaShapes } from 'react-icons/fa';
 import Legend from './Legend';
 import Tooltip from './Tooltip';
@@ -1193,11 +1195,46 @@ const CENTRAL_X = 600;
 const CENTRAL_Y = 300;
 const INPUT_X = 200;
 const OUTPUT_X = 1000;
-const LIMIT = 3;
+// const LIMIT = 1000;
+
+const LoadMoreNode = ({ data }) => (
+  <div 
+    className="load-more-node"
+    style={{
+      background: '#f0f0f0',
+      border: '1px solid #ccc',
+      borderRadius: '8px',
+      padding: '16px',
+      textAlign: 'center',
+      cursor: 'pointer'
+    }}
+    onClick={() => data.onClick(data.type)}
+  >
+    Load More ({data.count})
+  </div>
+);
+
+const labelNode = ({ data }) => (
+  <div 
+    className="px-3 text-center font-mono text-emerald-700 flex justify-center text-xl"
+    style={{
+      background: 'transparent',
+      border: 'none',
+      color: 'black',
+      textAlign: 'center',
+      cursor: 'default'
+    }}
+  >
+    {(data.label).toUpperCase()}
+  </div>
+);
 
 const nodeTypes = {
   custom: React.memo(CustomNode),
+  loadMore: LoadMoreNode,
+  label : labelNode
 };
+
 
 const edgeTypes = {
   custom: CustomEdge,
@@ -1218,8 +1255,76 @@ const GraphBrowser = ({ moduleName }) => {
   const [showEdgeLabels, setShowEdgeLabels] = useState(false);
   const [showNodeTracker, setShowNodeTracker] = useState(false);
   const [centralNode, setCentralNode] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [animationPhase, setAnimationPhase] = useState('idle');
 
   const API_URL = `https://aiida.materialscloud.org/${moduleName}/api/v4/`;
+
+  const handleLoadMore = useCallback((type) => {
+    setNodes((nds) => {
+      const loadMoreNodeIndex = nds.findIndex(n => n.id === `loadMore-${type}`);
+      if (loadMoreNodeIndex === -1) return nds;
+  
+      const loadMoreNode = nds[loadMoreNodeIndex];
+      const { remainingNodes } = loadMoreNode.data;
+      const nodesToAdd = remainingNodes.slice(0, 10);
+      const newRemainingNodes = remainingNodes.slice(10);
+  
+      let y = loadMoreNode.position.y;
+      const yIncrement = type.includes('Logical') ? 70 : 100;
+      const startX = type.includes('input') ? INPUT_X : OUTPUT_X;
+  
+      const newNodes = nodesToAdd.map((node) => {
+        y += yIncrement;
+        return createNode(node, startX, y);
+      });
+  
+      const newEdges = nodesToAdd.map((node, index) => 
+        createEdge(
+          type.includes('input') ? node.uuid : uuid,
+          type.includes('input') ? uuid : node.uuid,
+          node.link_label,
+          !type.includes('input'),
+          nds.filter(n => n.type === 'custom').length + index
+        )
+      );
+  
+      setEdges(eds => [...eds, ...newEdges]);
+  
+      if (newRemainingNodes.length > 0) {
+        return [
+          ...nds.slice(0, loadMoreNodeIndex),
+          ...newNodes,
+          {
+            ...loadMoreNode,
+            data: {
+              ...loadMoreNode.data,
+              count: newRemainingNodes.length,
+              remainingNodes: newRemainingNodes
+            },
+            position: { x: startX, y: y + yIncrement }
+          },
+          ...nds.slice(loadMoreNodeIndex + 1)
+        ];
+      } else {
+        return [
+          ...nds.slice(0, loadMoreNodeIndex),
+          ...newNodes,
+          ...nds.slice(loadMoreNodeIndex + 1)
+        ];
+      }
+    });
+  }, [uuid, setNodes, setEdges]);
+  
+  const getNodeColor = (type) => {
+    switch (type) {
+      case 'logicalInput': return 'yellow';
+      case 'inputData': return 'lightgreen';
+      case 'logicalOutput': return 'lightblue';
+      case 'outputData': return 'orange';
+      default: return 'gray';
+    }
+  };
 
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
@@ -1252,9 +1357,9 @@ const GraphBrowser = ({ moduleName }) => {
     fetchAndSetCentralNode();
   }, [uuid]);
 
-  const fetchLinks = async (uuid, fullType, limit, direction = "incoming", offset = 0) => {
+  const fetchLinks = async (uuid, fullType, direction = "incoming", offset = 0) => {
     let url = `${API_URL}/nodes/${uuid}/links/${direction}`;
-    url += `?orderby=+ctime&full_type="${fullType}"&limit=${limit}&offset=${offset}`;
+    url += `?orderby=+ctime&full_type="${fullType}"`;
   
     try {
       console.log('Fetching URL:', url);
@@ -1274,10 +1379,10 @@ const GraphBrowser = ({ moduleName }) => {
 
   const fetchAllLinks = async (uuid) => {
     try {
-      const inputLogical = await fetchLinks(uuid, "process.%25%7C%25", LIMIT, "incoming");
-      const inputData = await fetchLinks(uuid, "data.%25%7C%25", LIMIT, "incoming");
-      const outputLogical = await fetchLinks(uuid, "process.%25%7C%25", LIMIT, "outgoing");
-      const outputData = await fetchLinks(uuid, "data.%25%7C%25", LIMIT, "outgoing");
+      const inputLogical = await fetchLinks(uuid, "process.%25%7C%25", "incoming");
+      const inputData = await fetchLinks(uuid, "data.%25%7C%25", "incoming");
+      const outputLogical = await fetchLinks(uuid, "process.%25%7C%25", "outgoing");
+      const outputData = await fetchLinks(uuid, "data.%25%7C%25", "outgoing");
       return {
         inputLogical,
         inputData,
@@ -1358,93 +1463,244 @@ const GraphBrowser = ({ moduleName }) => {
     displayNodes(nodeData, nodeUuid);
   };
 
+  // const displayNodes = (nodeData, nodeUuid) => {
+  //   const newNodes = [];
+  //   const newEdges = [];
+  //   console.log(nodeData)
+  //   const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y);
+  //   newNodes.push(centralNode);
+    
+
+  //   let y = CENTRAL_Y - 200;
+  //   nodeData.inputLogical.links.slice().reverse().forEach((node) => {
+  //     const newNode = createNode(node, INPUT_X, y);
+  //     newNodes.push(newNode);
+  //     newEdges.push(createEdge(node.uuid, nodeUuid, node.link_label));
+  //     y -= 70;
+  //   });
+
+  //   y = CENTRAL_Y;
+  //   nodeData.inputData.links.forEach((node) => {
+  //     const newNode = createNode(node, INPUT_X, y);
+  //     newNodes.push(newNode);
+  //     newEdges.push(createEdge(node.uuid, nodeUuid, node.link_label));
+  //     y += 100;
+  //   });
+
+  //   y = CENTRAL_Y - 200;
+  //   nodeData.outputLogical.links.slice().reverse().forEach((node,index) => {
+  //     const newNode = createNode(node, OUTPUT_X, y);
+  //     newNodes.push(newNode);
+  //     newEdges.push(createEdge(nodeUuid, node.uuid, node.link_label, true, index));
+  //     y -= 70;
+  //   });
+
+  //   y = CENTRAL_Y;
+  //   nodeData.outputData.links.forEach((node,index) => {
+  //     const newNode = createNode(node, OUTPUT_X, y);
+  //     newNodes.push(newNode);
+  //     newEdges.push(createEdge(nodeUuid, node.uuid, node.link_label , true, index));
+  //     y += 100;
+  //   });
+
+  //   setNodes(newNodes);
+  //   setEdges(newEdges);
+  // };
+
   const displayNodes = (nodeData, nodeUuid) => {
     const newNodes = [];
     const newEdges = [];
-
+    const d = new Date();
+    let time = d.getTime();
     const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y);
     newNodes.push(centralNode);
+  
+    const createNodesWithLoadMore = (nodes, startX, startY, yIncrement, type, isReverse = false) => {
+      let y = startY;
+      const nodesToDisplay = isReverse ? nodes.slice().reverse() : nodes;
 
-    let y = CENTRAL_Y - 200;
-    nodeData.inputLogical.links.slice().reverse().forEach((node) => {
-      const newNode = createNode(node, INPUT_X, y, { backgroundColor: 'yellow' });
-      newNodes.push(newNode);
-      newEdges.push(createEdge(node.uuid, nodeUuid, 'logical input'));
-      y -= 70;
-    });
-
-    y = CENTRAL_Y;
-    nodeData.inputData.links.forEach((node) => {
-      const newNode = createNode(node, INPUT_X, y, { backgroundColor: 'lightgreen' });
-      newNodes.push(newNode);
-      newEdges.push(createEdge(node.uuid, nodeUuid, 'data input'));
-      y += 100;
-    });
-
-    y = CENTRAL_Y - 200;
-    nodeData.outputLogical.links.slice().reverse().forEach((node,index) => {
-      const newNode = createNode(node, OUTPUT_X, y, { backgroundColor: 'lightblue' });
-      newNodes.push(newNode);
-      newEdges.push(createEdge(nodeUuid, node.uuid, 'logical output', true, index));
-      y -= 70;
-    });
-
-    y = CENTRAL_Y;
-    nodeData.outputData.links.forEach((node,index) => {
-      const newNode = createNode(node, OUTPUT_X, y, { backgroundColor: 'orange' });
-      newNodes.push(newNode);
-      newEdges.push(createEdge(nodeUuid, node.uuid, 'data output', true, index));
-      y += 100;
-    });
-
+      const dummyNode = {
+        id: `dummy-${type}`,
+        type: 'label',
+        data: { label: type },
+        position: { x: startX, y: startY - yIncrement },
+        style: {
+          backgroundColor: 'transparent',
+          border: 'none',
+          color: 'transparent'
+        },
+      };
+      
+      newNodes.push(dummyNode);
+      newEdges.push(createEdge(dummyNode.id, dummyNode.id, '', false, 0));
+      
+      nodesToDisplay.slice(0, 10).forEach((node, index) => {
+        const newNode = createNode(node, startX, y);
+        newNodes.push(newNode);
+        newEdges.push(createEdge(
+          type.includes('input') ? node.uuid : nodeUuid,
+          type.includes('input') ? nodeUuid : node.uuid,
+          node.link_label,
+          !type.includes('input'),
+          index
+        ));
+        y += yIncrement;
+      });
+  
+      if (nodes.length > 10) {
+        const loadMoreNode = {
+          id: `loadMore-${type}`,
+          type: 'loadMore',
+          data: { 
+            count: nodes.length - 10, 
+            type, 
+            onClick: handleLoadMore,
+            remainingNodes: nodes.slice(10)
+          },
+          position: { x: startX, y },
+        };
+        newNodes.push(loadMoreNode);
+      }
+    };
+  
+    createNodesWithLoadMore(nodeData.inputLogical.links, INPUT_X, CENTRAL_Y - 300, 70, 'logical Input', true);
+    createNodesWithLoadMore(nodeData.inputData.links, INPUT_X, CENTRAL_Y, 100, 'input Data');
+    createNodesWithLoadMore(nodeData.outputLogical.links, OUTPUT_X, CENTRAL_Y - 300, 70, 'logical Output', true);
+    createNodesWithLoadMore(nodeData.outputData.links, OUTPUT_X, CENTRAL_Y, 100, 'output Data');
+  
     setNodes(newNodes);
     setEdges(newEdges);
   };
 
-  const loadMoreNodes = async (uuid, direction, nodeType) => {
-    try {
-      const offset = nodes.filter(node => node.data.direction === direction && node.data.nodeType === nodeType).length;
-      const moreLinks = await fetchLinks(uuid, nodeType, LIMIT, direction, offset);
+  // const loadMoreNodes = async (uuid, direction, nodeType) => {
+  //   try {
+  //     const offset = nodes.filter(node => node.data.direction === direction && node.data.nodeType === nodeType).length;
+  //     const moreLinks = await fetchLinks(uuid, nodeType, LIMIT, direction, offset);
 
-      if (moreLinks && moreLinks.links.length > 0) {
-        const newNodes = [];
-        const newEdges = [];
+  //     if (moreLinks && moreLinks.links.length > 0) {
+  //       const newNodes = [];
+  //       const newEdges = [];
 
-        let y = direction === 'incoming' ? CENTRAL_Y - 200 : CENTRAL_Y - 150;
-        moreLinks.links.forEach((node) => {
-          const newNode = createNode(node, direction === 'incoming' ? INPUT_X : OUTPUT_X, y, {
-            backgroundColor: direction === 'incoming' ? 'yellow' : 'lightblue'
-          });
-          newNodes.push(newNode);
-          newEdges.push(direction === 'incoming' ?
-            createEdge(node.uuid, uuid, `${nodeType} input`) :
-            createEdge(uuid, node.uuid, `${nodeType} output`));
-          y += 50;
-        });
+  //       let y = direction === 'incoming' ? CENTRAL_Y - 200 : CENTRAL_Y - 150;
+  //       moreLinks.links.forEach((node) => {
+  //         const newNode = createNode(node, direction === 'incoming' ? INPUT_X : OUTPUT_X, y, {
+  //           backgroundColor: direction === 'incoming' ? 'yellow' : 'lightblue'
+  //         });
+  //         newNodes.push(newNode);
+  //         newEdges.push(direction === 'incoming' ?
+  //           createEdge(node.uuid, uuid, `${nodeType} input`) :
+  //           createEdge(uuid, node.uuid, `${nodeType} output`));
+  //         y += 50;
+  //       });
 
-        setNodes((nds) => [...nds, ...newNodes]);
-        setEdges((eds) => [...eds, ...newEdges]);
-      }
-    } catch (error) {
-      console.error("Error loading more nodes:", error);
-    }
-  };
+  //       setNodes((nds) => [...nds, ...newNodes]);
+  //       setEdges((eds) => [...eds, ...newEdges]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading more nodes:", error);
+  //   }
+  // };
 
   useEffect(() => {
     fetchNodes(uuid);
   }, [uuid]);
 
+  // const handleNodeClick = useCallback((event, node) => {
+  //   const { uuid } = node.data;
+  //   setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
+  //   navigate(`/${moduleName}/details/${uuid}`);
+  // }, [navigate, moduleName]);
+
+  // const handleNodeClick = useCallback((event, node) => {
+  //   const { uuid } = node.data;
+  //   setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
+  //   setIsTransitioning(true);
+
+  //   setNodes((nds) =>
+  //     nds.map((n) => ({
+  //       ...n,
+  //       position: { x: CENTRAL_X, y: CENTRAL_Y },
+  //       style: { ...n.style, transition: 'all 0.5s ease-in-out' },
+  //     }))
+  //   );
+
+  //   setEdges((eds) =>
+  //     eds.map((e) => ({
+  //       ...e,
+  //       style: { ...e.style, opacity: 0, transition: 'opacity 0.5s ease-in-out' },
+  //     }))
+  //   );
+
+  //   setTimeout(() => {
+  //     fetchNodes(uuid);
+  //     setIsTransitioning(false);
+  //   }, 500);
+
+  //   navigate(`/${moduleName}/details/${uuid}`);
+  // }, [navigate, moduleName, fetchNodes]);
+
   const handleNodeClick = useCallback((event, node) => {
+
+    if (node.type === 'loadMore') {
+      handleLoadMore(node.data.type);
+      return;
+    }
+
     const { uuid } = node.data;
     setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
+    setIsTransitioning(true);
+    setAnimationPhase('shrinking');
+
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        position: { x: CENTRAL_X, y: CENTRAL_Y },
+        style: { ...n.style, transition: 'all 0.5s ease-in-out' },
+      }))
+    );
+
+    setEdges((eds) =>
+      eds.map((e) => ({
+        ...e,
+        style: { ...e.style, opacity: 0, transition: 'opacity 0.5s ease-in-out' },
+      }))
+    );
+
+    setTimeout(() => {
+      fetchNodes(uuid);
+      setAnimationPhase('expanding');
+
+      setTimeout(() => {
+        setNodes((nds) =>
+          nds.map((n) => ({
+            ...n,
+            position: n.position, 
+            style: { ...n.style, transition: 'all 0.5s ease-in-out' },
+          }))
+        );
+        setEdges((eds) =>
+          eds.map((e) => ({
+            ...e,
+            style: { ...e.style, opacity: 1, transition: 'opacity 0.5s ease-in-out' },
+          }))
+        );
+
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setAnimationPhase('idle');
+        }, 500);
+      }, 100);
+    }, 500);
+
     navigate(`/${moduleName}/details/${uuid}`);
-  }, [navigate, moduleName]);
+  }, [navigate, moduleName, fetchNodes]);
 
   const handleMouseEnter = (event, node) => {
     clearTimeout(tooltipTimeout.current);
+    console.log(node)
     setTooltipDetails(node.data);
     const rect = containerRef.current.getBoundingClientRect();
-    setTooltipPosition({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    setTooltipPosition({ x: event.clientX, y: event.clientY - rect.top });
   };
 
   const handleMouseLeave = () => {
@@ -1471,7 +1727,7 @@ const toggleEdgeLabels = () => {
   const toggleNodeTracker = () => setShowNodeTracker(!showNodeTracker);
 
   return (
-    <div ref={containerRef} className='h-full w-full relative'>
+    <div ref={containerRef} className='h-full relative'>
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes}
@@ -1535,19 +1791,6 @@ const toggleEdgeLabels = () => {
           </div>
         </div>
       )}
-        {/* {showNodeTracker && (
-          <div style={{
-            position: 'absolute',
-            bottom: 10,
-            left: 10,
-            padding: '10px',
-            backgroundColor: 'white',
-            border: '1px solid black',
-            zIndex: 10
-          }}>
-            Clicked Nodes: {clickedNodes.join(' -> ')}
-          </div>
-        )} */}
         <Legend />
       </ReactFlowProvider>
     </div>
