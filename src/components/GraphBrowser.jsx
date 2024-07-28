@@ -1219,7 +1219,7 @@ const labelNode = ({ data }) => (
     className="px-3 text-center font-mono text-emerald-700 flex justify-center text-xl"
     style={{
       background: 'transparent',
-      border: 'none',
+      border: '1px solid #ccf',
       color: 'black',
       textAlign: 'center',
       cursor: 'default'
