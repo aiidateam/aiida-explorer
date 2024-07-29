@@ -1,43 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom';
-import DetailsPage from './components/DetailsPage';
-import NodeGrid from './components/NodeGrid';
-import Statistics from './components/Statistics';
-import Tabs from './components/Tabs';
+import React, { useState } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
 import { IconContext } from "react-icons";
 import { FaArrowRight } from "react-icons/fa";
-import Search from './components/Search';
-import ComputersGrid from './components/NodeGrid/ComputersGrid';
-import ErrorBoundary from './components/ErrorBoundary';
 
-const ModuleInput = ({ setModuleName }) => {
-  const [inputValue, setInputValue] = useState('');
+import AiidaExplorer from "./AiidaExplorer";
+
+const Home = ({ setCustomApiUrl }) => {
+  const [inputValue, setInputvalue] = useState("");
   const navigate = useNavigate();
-
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inputValue) {
-      setModuleName(inputValue);
-      sessionStorage.setItem('moduleName', inputValue);
-      navigate(`/${inputValue}`);
+      setCustomApiUrl(inputValue);
+      navigate("custom");
     }
   };
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="flex flex-row items-center">
+    <div>
+      <ul>
+        <li className="bg-transparent text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded">
+          <Link to="/mc3d">Explore MC3D</Link>
+        </li>
+        <li className="bg-transparent text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded">
+          <Link to="/mc2d">Explore MC2D</Link>
+        </li>
+      </ul>
+      <br />
+      <form onSubmit={handleSubmit} className="flex">
         <input
           type="text"
           value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Enter module name"
+          onChange={(e) => setInputvalue(e.target.value)}
+          placeholder="Enter custom API URL"
           className="px-6 py-2 border border-gray-300"
         />
-        <button type="submit" className="flex items-center justify-center border border-blue-400 py-3 px-4 bg-blue-400 text-white">
+        <button
+          type="submit"
+          className="flex items-center justify-center border border-blue-400 py-3 px-4 bg-blue-400 text-white"
+        >
           <IconContext.Provider value={{ className: "text-white" }}>
             <FaArrowRight />
           </IconContext.Provider>
@@ -48,84 +56,44 @@ const ModuleInput = ({ setModuleName }) => {
 };
 
 const App = () => {
-  const [moduleName, setModuleName] = useState(() => sessionStorage.getItem('moduleName') || '');
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      sessionStorage.removeItem('moduleName');
-    };
-  
-    window.addEventListener('beforeunload', handleBeforeUnload);
-  
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  const [customApiUrl, setCustomApiUrl] = useState("");
 
   return (
     <div className="p-1">
-      <Router>
-        <Tabs moduleName={moduleName} setModuleName={setModuleName} />
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={
-              moduleName ? <Navigate to={`/${moduleName}`} /> : <ModuleInput setModuleName={setModuleName} />
-            } />
-            <Route path="/:moduleName/*" element={<ModuleRoutes setModuleName={setModuleName} />} />
-          </Routes>
-        </ErrorBoundary>
-      </Router>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/*"
+            element={<Home setCustomApiUrl={setCustomApiUrl} />}
+          />
+          {/* This route, based on the custom URL, will, obviously, not be accessible via direct linking
+              or refreshing the page. However, using back/forward will be fine. For future: for these cases,
+              it might make sense to include the apiUrl as a url parameter instead/in-addition. */}
+          <Route
+            path="/custom/*"
+            element={<AiidaExplorer apiUrl={customApiUrl} />}
+          />
+          {/* The routes below will work with direct linking, refresh as well. */}
+          <Route
+            path="/mc3d/*"
+            element={
+              <AiidaExplorer
+                apiUrl={"https://aiida.materialscloud.org/mc3d/api/v4"}
+              />
+            }
+          />
+          <Route
+            path="/mc2d/*"
+            element={
+              <AiidaExplorer
+                apiUrl={"https://aiida.materialscloud.org/mc2d/api/v4"}
+              />
+            }
+          />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
-};
-
-const ModuleRoutes = ({ setModuleName }) => {
-  const { moduleName } = useParams();
-  
-  useEffect(() => {
-    if (moduleName) {
-      sessionStorage.setItem('moduleName', moduleName);
-      setModuleName(moduleName);
-    }
-  }, [moduleName, setModuleName]);
-
-  return (
-    <ErrorBoundary>
-      <Routes>
-        <Route index element={<NodeGridWrapper />} />
-        <Route path="search" element={<SearchWrapper />} />
-        <Route path="details/:uuid" element={<DetailsPageWrapper />} />
-        <Route path="statistics" element={<StatisticsWrapper />} />
-        <Route path="computers" element={<ComputersGridWrapper />} />
-        <Route path="*" element={<Navigate to={`/${moduleName}`} replace />} />
-      </Routes>
-    </ErrorBoundary>
-  );
-};
-
-const SearchWrapper = () => {
-  const { moduleName } = useParams();
-  return <Search moduleName={moduleName} />;
-};
-
-const NodeGridWrapper = () => {
-  const { moduleName } = useParams();
-  return <NodeGrid moduleName={moduleName} />;
-};
-
-const DetailsPageWrapper = () => {
-  const { moduleName } = useParams();
-  return <DetailsPage moduleName={moduleName} />;
-};
-
-const StatisticsWrapper = () => {
-  const { moduleName } = useParams();
-  return <Statistics moduleName={moduleName} />;
-};
-
-const ComputersGridWrapper = () => {
-  const { moduleName } = useParams();
-  return <ComputersGrid moduleName={moduleName} />;
 };
 
 export default App;

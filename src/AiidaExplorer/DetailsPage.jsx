@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import StructureVisualizer from "mc-react-structure-visualizer";
 import Attributes from './Attributes';
-import Files from './FIles';
+import Files from './Files';
 import Contents from './Contents';
 import MetaData from './MetaData';
-import BrowserSelection from '../BrowserSelection';
+import BrowserSelection from './BrowserSelection';
 import ExtraContent from './ExtraContent';
 
 const DetailsPage = ({ moduleName }) => {

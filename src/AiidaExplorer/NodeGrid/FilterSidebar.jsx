@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const buildTree = (node) => {
   let subspaces = node.subspaces || [];
@@ -19,7 +19,7 @@ const TreeNode = ({ node, onSelectNode, selectedNode }) => {
   const expandAndSelect = () => {
     setIsExpanded(!isExpanded);
     onSelectNode(node);
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -85,13 +85,17 @@ const TreeView = ({ fullTypeCounts, selectedNode, onSelectNode }) => {
   );
 };
 
-const FilterSidebar = ({ fullTypeCounts, selectedNode, onSelectNode , Computers,moduleName }) => {
+const FilterSidebar = ({
+  fullTypeCounts,
+  selectedNode,
+  onSelectNode,
+  Computers,
+}) => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    navigate(`/${moduleName}/computers`);
-  };
-
+  // const handleClick = () => {
+  //   navigate(`/${moduleName}/computers`);
+  // };
 
   return (
     <div className="p-4 bg-white border-2 border-gray-300 overflow-auto h-full">
@@ -100,15 +104,15 @@ const FilterSidebar = ({ fullTypeCounts, selectedNode, onSelectNode , Computers,
         selectedNode={selectedNode}
         onSelectNode={onSelectNode}
       />
-        <hr className="my-3 text-gray-900"/>
-          <div>
-            <button
-              className="bg-gray-300 p-3 text-center font-medium text-md text-gray-900 w-full"
-              onClick={handleClick}
-            >
-              Computers
-            </button>
-          </div>
+      <hr className="my-3 text-gray-900" />
+      <div>
+        <button
+          className="bg-gray-300 p-3 text-center font-medium text-md text-gray-900 w-full"
+          // onClick={handleClick}
+        >
+          Computers
+        </button>
+      </div>
     </div>
   );
 };
