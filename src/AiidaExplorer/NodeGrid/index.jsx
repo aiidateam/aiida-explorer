@@ -34,8 +34,8 @@ async function fetchNodesPaginated(
   return result.data.nodes;
 }
 
-const NodeGrid = ({ moduleName }) => {
-  const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/`;
+const NodeGrid = ({ apiUrl }) => {
+  const baseUrl = apiUrl;
   const entriesPerPage = 20;
 
   const [data, setData] = useState([]);
@@ -105,12 +105,11 @@ const NodeGrid = ({ moduleName }) => {
             setSelectedNodeFilter(nodeType);
             setCurrentPage(1);
           }}
-          moduleName={moduleName}
         />
       </div>
       <div className="w-4/5 ml-2">
         <div className="overflow-x-auto">
-          <NodeTable data={data} moduleName={moduleName} />
+          <NodeTable data={data} />
         </div>
         <div className="flex justify-between items-center mt-4">
           <button

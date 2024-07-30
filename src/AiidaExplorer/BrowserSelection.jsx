@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaGlobe, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaBars } from 'react-icons/fa';
-import GraphBrowser from './components/GraphBrowser';
+import GraphBrowser from './GraphBrowser';
 
 const BrowserSelection = ({ uuid, moduleName }) => {
   const [collapsed, setCollapsed] = useState(true);
