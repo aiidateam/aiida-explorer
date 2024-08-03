@@ -1512,13 +1512,14 @@ const GraphBrowser = ({ apiUrl }) => {
     const newEdges = [];
     const d = new Date();
     let time = d.getTime();
-    const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y);
+    const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y+100);
     newNodes.push(centralNode);
   
     const createNodesWithLoadMore = (nodes, startX, startY, yIncrement, type, isReverse = false) => {
+      if (nodes.length === 0) return;
+
       let y = startY;
       const nodesToDisplay = isReverse ? nodes.slice().reverse() : nodes;
-
       const dummyNode = {
         id: `dummy-${type}`,
         type: 'label',
