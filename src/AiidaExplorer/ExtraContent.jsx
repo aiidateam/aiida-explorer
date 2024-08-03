@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { JsonViewer } from '@textea/json-viewer';
 
-const ExtraContent = ({ uuid, moduleName }) => {
+const ExtraContent = ({ uuid, apiUrl }) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}/contents/extras`)
+        fetch(`${apiUrl}/nodes/${uuid}/contents/extras`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -15,7 +15,7 @@ const ExtraContent = ({ uuid, moduleName }) => {
             })
             .then(data => setData(data))
             .catch(error => setError(error.message));
-    }, [moduleName, uuid]);
+    }, [apiUrl, uuid]);
 
     if (error) {
         return <div>Error: {error}</div>;

@@ -2,18 +2,18 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaFileAlt } from 'react-icons/fa';
 
-const RepoFiles = ({ uuid , moduleName }) => {
+const RepoFiles = ({ uuid , apiUrl }) => {
   const [files, setFiles] = useState([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await axios.get(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}/repo/list/`);
+        const response = await axios.get(`${apiUrl}/nodes/${uuid}/repo/list/`);
         const filesList = response.data.data.repo_list;
         const filesWithContent = await Promise.all(filesList.map(async (file) => {
           try {
-            const fileContentResponse = await axios.get(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}/repo/contents?filename=${file.name}`);
+            const fileContentResponse = await axios.get(`${apiUrl}/nodes/${uuid}/repo/contents?filename=${file.name}`);
             return { name: file.name, content: fileContentResponse.data };
           } catch (error) {
             console.error(`Error fetching content for file ${file.name}:`, error);

@@ -35,6 +35,14 @@ const AiidaExplorer = ({ apiUrl }) => {
       <ErrorBoundary>
         <Routes>
           <Route path="" element={<NodeGrid apiUrl={apiUrl} />} />
+          <Route
+            path="/details/:uuid"
+            element={
+              <DetailsPage
+                apiUrl={apiUrl}
+              />
+            }
+          />
           {/* <Route path="/:moduleName/*" element={<ModuleRoutes setModuleName={setModuleName} />} /> */}
         </Routes>
       </ErrorBoundary>
@@ -57,7 +65,7 @@ const ModuleRoutes = ({ setModuleName }) => {
       <Routes>
         <Route index element={<NodeGridWrapper />} />
         <Route path="search" element={<SearchWrapper />} />
-        <Route path="details/:uuid" element={<DetailsPageWrapper />} />
+        <Route path="details/:uuid" element={<DetailsPage moduleName={moduleName} /> } />
         <Route path="statistics" element={<StatisticsWrapper />} />
         <Route path="computers" element={<ComputersGridWrapper />} />
         <Route path="*" element={<Navigate to={`/${moduleName}`} replace />} />
@@ -76,10 +84,11 @@ const NodeGridWrapper = () => {
   return <NodeGrid moduleName={moduleName} />;
 };
 
-const DetailsPageWrapper = () => {
-  const { moduleName } = useParams();
-  return <DetailsPage moduleName={moduleName} />;
-};
+// const DetailsPageWrapper = () => {
+//   const { moduleName } = useParams();
+//   console.log(moduleName);
+//   return <DetailsPage moduleName={moduleName} />;
+// };
 
 const StatisticsWrapper = () => {
   const { moduleName } = useParams();

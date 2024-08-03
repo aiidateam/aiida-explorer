@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ComponentVisualizer = ({ uuid, moduleName }) => {
+const ComponentVisualizer = ({ uuid, apiUrl }) => {
     const [data, setData] = useState(null);
     const [compoundsData, setCompoundsData] = useState(null);
     const [error, setError] = useState(null);
@@ -9,7 +9,7 @@ const ComponentVisualizer = ({ uuid, moduleName }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}/download?download_format=cif&download=false`);
+                const response = await fetch(`${apiUrl}/v4/nodes/${uuid}/download?download_format=cif&download=false`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }

@@ -1240,7 +1240,7 @@ const edgeTypes = {
   custom: CustomEdge,
 };
 
-const GraphBrowser = ({ moduleName }) => {
+const GraphBrowser = ({ apiUrl }) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -1258,7 +1258,7 @@ const GraphBrowser = ({ moduleName }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationPhase, setAnimationPhase] = useState('idle');
 
-  const API_URL = `https://aiida.materialscloud.org/${moduleName}/api/v4/`;
+  const API_URL = `${apiUrl}`
 
   const handleLoadMore = useCallback((type) => {
     setNodes((nds) => {
@@ -1334,7 +1334,7 @@ const GraphBrowser = ({ moduleName }) => {
 
   const fetchCentralNode = async (uuid) => {
     try {
-      const res = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}`);
+      const res = await fetch(`${apiUrl}/nodes/${uuid}`);
       const data = await res.json();
       console.log(data.data.nodes[0].node_type)
       return data.data.nodes[0].node_type;
@@ -1692,8 +1692,8 @@ const GraphBrowser = ({ moduleName }) => {
       }, 100);
     }, 500);
 
-    navigate(`/${moduleName}/details/${uuid}`);
-  }, [navigate, moduleName, fetchNodes]);
+    navigate(`/mc3d/details/${uuid}`);
+  }, [navigate, apiUrl, fetchNodes]);
 
   const handleMouseEnter = (event, node) => {
     clearTimeout(tooltipTimeout.current);

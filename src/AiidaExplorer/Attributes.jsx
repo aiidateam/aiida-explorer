@@ -8,34 +8,13 @@ import { JsonViewer } from '@textea/json-viewer';
 import { JSONTree } from 'react-json-tree';
 import { FaCopy, FaCheck } from 'react-icons/fa';
 
-const Attributes = ({ uuid, moduleName }) => {
+const Attributes = ({ uuid, apiUrl }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [lastJob, setLastJob] = useState([]);
+  // const [lastJob, setLastJob] = useState([]);
   const [derivedProperties, setDerivedProperties] = useState(null);
   const [error, setError] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
-
-  // const theme = {
-  //   scheme: 'stackoverflow-light',
-  //   author: 'stackoverflow',
-  //   base00: '#f6f6f6',
-  //   base01: '#dcdcdc',
-  //   base02: '#c0c0c0',
-  //   base03: '#808080',
-  //   base04: '#808080',
-  //   base05: '#404040',
-  //   base06: '#404040',
-  //   base07: '#404040',
-  //   base08: '#f2777a',
-  //   base09: '#f99157',
-  //   base0A: '#ffcc66',
-  //   base0B: '#99cc99',
-  //   base0C: '#66cccc',
-  //   base0D: '#6699cc',
-  //   base0E: '#cc99cc',
-  //   base0F: '#d27b53'
-  // };
 
   const handleCopyClick = useCallback(() => {
     setIsCopied(true);
@@ -45,13 +24,13 @@ const Attributes = ({ uuid, moduleName }) => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}?attributes=true`);
+        const res = await fetch(`${apiUrl}/nodes/${uuid}?attributes=true`);
         if (!res.ok) {
           throw new Error('Network response was not ok');
         }
         const data = await res.json();
         setData(data.data.nodes[0].attributes);
-        setLastJob(data.data.nodes[0].attributes.last_job_info || []);
+        // setLastJob(data.data.nodes[0].attributes.last_job_info || []);
       } catch (error) {
         setError(" ");
       } finally {
@@ -61,7 +40,7 @@ const Attributes = ({ uuid, moduleName }) => {
 
     const fetchDerivedProperties = async () => {
       try {
-        const response = await axios.get(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}/contents/derived_properties/`);
+        const response = await axios.get(`${apiUrl}/nodes/${uuid}/contents/derived_properties/`);
         setDerivedProperties(response.data);
       } catch (error) {
         console.error('Error fetching derived properties:', error);
@@ -70,7 +49,7 @@ const Attributes = ({ uuid, moduleName }) => {
 
     fetchDerivedProperties();
     getData();
-  }, [uuid]);
+  }, [uuid , apiUrl]);
 
   const renderDerivedPropertiesTable = () => {
     if (!derivedProperties || !derivedProperties.data || !derivedProperties.data.derived_properties) {
@@ -184,7 +163,7 @@ const Attributes = ({ uuid, moduleName }) => {
       <div>
         {renderDerivedPropertiesTable()}
       </div>
-      {lastJob && (
+      {/* {lastJob && (
         <div>
           <span className='font-mono font-bold text-md'>Last Job Details :</span>
           <JsonViewer
@@ -195,7 +174,7 @@ const Attributes = ({ uuid, moduleName }) => {
             enableClipboard={false}
           />
         </div>
-      )}
+      )} */}
     </div>
   );
 };

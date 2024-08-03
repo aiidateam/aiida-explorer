@@ -12,7 +12,13 @@ import MetaData from './MetaData';
 import BrowserSelection from './BrowserSelection';
 import ExtraContent from './ExtraContent';
 
-const DetailsPage = ({ moduleName }) => {
+const DetailsPage = ({ apiUrl }) => {
+  
+  // const location = useLocation();
+  // const pathname = location.pathname;
+  // const pathParts = pathname.split('/');
+  // const moduleName = pathParts[1] || '';
+
   const { uuid } = useParams();
   const [view, setView] = useState('raw');
   const navigate = useNavigate();
@@ -22,7 +28,6 @@ const DetailsPage = ({ moduleName }) => {
   const [loading, setLoading] = useState(true);
   const [attributes, setAttributes] = useState(null);
 
-  const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isFromComputersGrid = searchParams.get('source') === 'computersGrid';
 
@@ -36,7 +41,7 @@ const DetailsPage = ({ moduleName }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}/download?download_format=cif&download=false`);
+        const response = await fetch(`${apiUrl}/nodes/${uuid}/download?download_format=cif&download=false`);
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -59,7 +64,7 @@ const DetailsPage = ({ moduleName }) => {
 
     const fetchDerivedData = async () => {
       try {
-        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}/contents/derived_properties`);
+        const response = await fetch(`${apiUrl}/nodes/${uuid}/contents/derived_properties`);
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -82,7 +87,7 @@ const DetailsPage = ({ moduleName }) => {
 
     const fetchAttributesData = async () => {
       try {
-        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}/contents/attributes`);
+        const response = await fetch(`${apiUrl}/nodes/${uuid}/contents/attributes`);
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -139,24 +144,24 @@ const DetailsPage = ({ moduleName }) => {
         <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[90%]">
           {view === 'raw' ? (
             <div>
-              <Files moduleName={moduleName} uuid={uuid} />
+              <Files apiUrl={apiUrl} uuid={uuid} />
               <div className="col-span-2 mb-4">
                 <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
-                <MetaData moduleName={moduleName} uuid={uuid} />
+                <MetaData apiUrl={apiUrl} uuid={uuid} />
               </div>
               <div>
                 <span className='font-semibold mt-2 font-mono mb-0'>Node Attributes :</span>
-                <Attributes moduleName={moduleName} uuid={uuid} />
+                <Attributes apiUrl={apiUrl} uuid={uuid} />
               </div>
               <div>
                 <span className='font-semibold mt-2 font-mono mb-0'>Node Extras :</span>
-                <ExtraContent moduleName={moduleName} uuid={uuid} />
+                <ExtraContent apiUrl={apiUrl} uuid={uuid} />
               </div>
             </div>
           ) : (
             <div>
-              <Files moduleName={moduleName} uuid={uuid} />
-              <Contents moduleName={moduleName} uuid={uuid} />
+              <Files apiUrl={apiUrl} uuid={uuid} />
+              <Contents apiUrl={apiUrl} uuid={uuid} />
               {derived && (
                 <div className="p-4 bg-gray-50 mb-4 border[-1px] border-gray-300 shadow-md rounded-lg">
                   <p className="text-lg font-semibold">
@@ -238,7 +243,7 @@ const DetailsPage = ({ moduleName }) => {
             <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
           </div >
           <div className='h-full w-full'>
-            <BrowserSelection uuid={uuid} moduleName={moduleName} />
+            <BrowserSelection uuid={uuid} apiUrl={apiUrl} />
           </div>
         </div>
       )}

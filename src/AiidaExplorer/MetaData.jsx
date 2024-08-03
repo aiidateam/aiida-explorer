@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 // import { stackoverflowLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { JsonViewer } from '@textea/json-viewer';
 
-const MetaData = ({ moduleName, uuid }) => {
+const MetaData = ({ apiUrl, uuid }) => {
   const [data, setData] = useState(null);
   const [computerData, setComputerData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,7 +12,7 @@ const MetaData = ({ moduleName, uuid }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}`);
+        const response = await fetch(`${apiUrl}/nodes/${uuid}`);
         const result = await response.json();
         setData(result.data.nodes[0]);
         setLoading(false);
@@ -24,7 +24,7 @@ const MetaData = ({ moduleName, uuid }) => {
 
     const fetchComputerData = async () => {
       try {
-        const response = await fetch(`https://aiida.materialscloud.org/mc3d/api/v4/computers/${uuid}`);
+        const response = await fetch(`${apiUrl}/computers/${uuid}`);
         const result = await response.json();
         if (result.data && result.data.computers.length > 0) {
           setComputerData(result.data.computers[0]);

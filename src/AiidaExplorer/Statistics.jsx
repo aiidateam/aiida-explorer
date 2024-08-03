@@ -24,14 +24,14 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
   );
 };
 
-const Statistics = ({moduleName}) => {
+const Statistics = ({apiUrl}) => {
   const [data, setData] = useState([]);
   const [types, setTypes] = useState([]);
   const [startDate, setStartDate] = useState(new Date('2019-06-28'));
   const [endDate, setEndDate] = useState(new Date('2019-12-10'));
 
   useEffect(() => {
-    fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/statistics`)
+    fetch(`${apiUrl}/nodes/statistics`)
       .then(response => response.json())
       .then(data => {
         const formattedData = Object.entries(data.data.ctime_by_day).map(([date, nodes]) => ({

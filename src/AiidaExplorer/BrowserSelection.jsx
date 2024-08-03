@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaGlobe, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaBars } from 'react-icons/fa';
 import GraphBrowser from './GraphBrowser';
 
-const BrowserSelection = ({ uuid, moduleName }) => {
+const BrowserSelection = ({ uuid, apiUrl }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [selectedView, setSelectedView] = useState('local');
 
@@ -13,7 +13,7 @@ const BrowserSelection = ({ uuid, moduleName }) => {
   return (
     <div className="flex z-50 h-full ">
 <div className="flex-1 overflow-y-auto">
-  {selectedView === 'local' ? <GraphBrowser uuid={uuid} moduleName={moduleName} /> : <GraphBrowser uuid={uuid} moduleName={moduleName} />}
+  {selectedView === 'local' ? <GraphBrowser uuid={uuid} apiUrl={apiUrl} /> : <GraphBrowser uuid={uuid} apiUrl={apiUrl} />}
 </div>
 <div className={`relative flex flex-col items-center p-2 transition-all duration-300 ${collapsed ? 'w-0' : 'w-20 bg-gray-200 text-gray-800'}`}>
   {!collapsed && (

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaFileAlt, FaEye, FaDownload } from "react-icons/fa";
 
-const Files = ({ uuid, moduleName }) => {
+const Files = ({ uuid, apiUrl }) => {
   const [inputFiles, setInputFiles] = useState([]);
   const [outputFiles, setOutputFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ const Files = ({ uuid, moduleName }) => {
   useEffect(() => {
     const fetchInputFiles = async () => {
       try {
-        const response = await axios.get(`https://aiida.materialscloud.org/${moduleName}/api/v4/calcjobs/${uuid}/input_files`);
+        const response = await axios.get(`${apiUrl}/calcjobs/${uuid}/input_files`);
         setInputFiles(response.data.data);
       } catch (error) {
         console.error('Error fetching input files:', error);
@@ -24,7 +24,7 @@ const Files = ({ uuid, moduleName }) => {
 
     const fetchOutputFiles = async () => {
       try {
-        const response = await axios.get(`https://aiida.materialscloud.org/${moduleName}/api/v4/calcjobs/${uuid}/output_files`);
+        const response = await axios.get(`${apiUrl}/calcjobs/${uuid}/output_files`);
         setOutputFiles(response.data.data);
       } catch (error) {
         console.error('Error fetching output files:', error);
@@ -34,7 +34,7 @@ const Files = ({ uuid, moduleName }) => {
 
     const getData = async () => {
       try {
-        const res = await fetch(`https://aiida.materialscloud.org/${moduleName}/api/v4/nodes/${uuid}?attributes=true`);
+        const res = await fetch(`${apiUrl}/nodes/${uuid}?attributes=true`);
         if (!res.ok) {
           throw new Error('Network response was not ok');
         }
@@ -50,7 +50,7 @@ const Files = ({ uuid, moduleName }) => {
     getData();
     fetchInputFiles();
     fetchOutputFiles();
-  }, [uuid, moduleName]);
+  }, [uuid, apiUrl]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,7 +58,7 @@ const Files = ({ uuid, moduleName }) => {
     setIsLoading(true);
     setIsModalOpen(true);
     try {
-      const response = await axios.get(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}/repo/contents?filename="${filename}"`);
+      const response = await axios.get(`${apiUrl}/nodes/${uuid}/repo/contents?filename="${filename}"`);
       if (typeof response.data === 'object') {
         setModalContent(JSON.stringify(response.data, null, 2));
       } else {
@@ -74,7 +74,7 @@ const Files = ({ uuid, moduleName }) => {
 
   const handleDownload = async (filename) => {
     try {
-      const response = await axios.get(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${uuid}/repo/contents?filename="${filename}"`, {
+      const response = await axios.get(`${apiUrl}/nodes/${uuid}/repo/contents?filename="${filename}"`, {
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
