@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position } from 'reactflow';
 
-const getNodeStyle = (label) => {
+const getNodeStyle = (label , isPreviouslySelected) => {
   if (!label) {
     return {
       background: '#FFCC80',
@@ -11,7 +11,8 @@ const getNodeStyle = (label) => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      border: '1px solid #000',
+      border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+      transition: 'all 0.3s ease-in-out',
       overflow: 'hidden',
     };
   }
@@ -26,7 +27,8 @@ const getNodeStyle = (label) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: '1px solid #000', 
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000', 
+        transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
     case 'structure':
@@ -38,7 +40,8 @@ const getNodeStyle = (label) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: '1px solid #000',
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+        transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
     case 'dict':
@@ -50,7 +53,8 @@ const getNodeStyle = (label) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: '1px solid #000',
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+        transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
     default:
@@ -62,7 +66,8 @@ const getNodeStyle = (label) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: '1px solid #000',
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+        transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
   }

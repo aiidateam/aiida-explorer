@@ -1252,11 +1252,14 @@ const GraphBrowser = ({ apiUrl }) => {
   const tooltipTimeout = useRef(null);
   const containerRef = useRef(null);
   const [showButtons, setShowButtons] = useState(false);
-  const [showEdgeLabels, setShowEdgeLabels] = useState(false);
+  const [showEdgeLabels, setShowEdgeLabels] = useState(true);
   const [showNodeTracker, setShowNodeTracker] = useState(false);
   const [centralNode, setCentralNode] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationPhase, setAnimationPhase] = useState('idle');
+  const [previouslySelectedNode, setPreviouslySelectedNode] = useState(null);
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
+
 
   const API_URL = `${apiUrl}`
 
@@ -1399,27 +1402,37 @@ const GraphBrowser = ({ apiUrl }) => {
     return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  const createNode = (nodeData, x, y, style = {}) => {
+  const createNode = useCallback((nodeData, x, y, style = {}) => {
     const isCentralNode = nodeData.uuid === uuid;
-    const label = isCentralNode ? (centralNode ? extractLabel(centralNode) : "Loading.." ) : extractLabel(nodeData.node_type);
+    const isPreviouslySelected = nodeData.uuid === previouslySelectedNode;
+    const label = isCentralNode ? (centralNode ? extractLabel(centralNode) : "Loading..") : extractLabel(nodeData.node_type);
   
     return {
       id: nodeData.uuid,
       type: 'custom',
-      data: { label, uuid: nodeData.uuid },
+      data: { 
+        label, 
+        uuid: nodeData.uuid, 
+        isPreviouslySelected 
+      },
       position: { x, y },
       sourcePosition: 'right',
       targetPosition: 'left',
       style,
     };
-  };  
+  }, [uuid, centralNode, previouslySelectedNode]);
 
-  const createEdge = (source, target, label , isOutgoing, index) => ({
+ const createEdge = useCallback((source, target, label, isOutgoing, index) => ({
     id: generateUniqueId(`e${source}-${target}`),
     source,
     target,
     type: 'custom',
-    data: { label, showLabel: showEdgeLabels , index: isOutgoing ? index+1 : undefined },
+    data: { 
+      label, 
+      showLabel: showEdgeLabels, 
+      index: isOutgoing ? index + 1 : undefined,
+      isPreviouslySelected: source === previouslySelectedNode || target === previouslySelectedNode
+    },
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: 20,
@@ -1430,7 +1443,7 @@ const GraphBrowser = ({ apiUrl }) => {
       strokeWidth: 1,
       stroke: '#808080',
     },
-  });
+  }), [showEdgeLabels, previouslySelectedNode]);
 
   const fetchNodes = async (nodeUuid) => {
     if (nodeCache[nodeUuid]) {
@@ -1462,50 +1475,6 @@ const GraphBrowser = ({ apiUrl }) => {
     const nodeData = nodeCache[nodeUuid];
     displayNodes(nodeData, nodeUuid);
   };
-
-  // const displayNodes = (nodeData, nodeUuid) => {
-  //   const newNodes = [];
-  //   const newEdges = [];
-  //   console.log(nodeData)
-  //   const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y);
-  //   newNodes.push(centralNode);
-    
-
-  //   let y = CENTRAL_Y - 200;
-  //   nodeData.inputLogical.links.slice().reverse().forEach((node) => {
-  //     const newNode = createNode(node, INPUT_X, y);
-  //     newNodes.push(newNode);
-  //     newEdges.push(createEdge(node.uuid, nodeUuid, node.link_label));
-  //     y -= 70;
-  //   });
-
-  //   y = CENTRAL_Y;
-  //   nodeData.inputData.links.forEach((node) => {
-  //     const newNode = createNode(node, INPUT_X, y);
-  //     newNodes.push(newNode);
-  //     newEdges.push(createEdge(node.uuid, nodeUuid, node.link_label));
-  //     y += 100;
-  //   });
-
-  //   y = CENTRAL_Y - 200;
-  //   nodeData.outputLogical.links.slice().reverse().forEach((node,index) => {
-  //     const newNode = createNode(node, OUTPUT_X, y);
-  //     newNodes.push(newNode);
-  //     newEdges.push(createEdge(nodeUuid, node.uuid, node.link_label, true, index));
-  //     y -= 70;
-  //   });
-
-  //   y = CENTRAL_Y;
-  //   nodeData.outputData.links.forEach((node,index) => {
-  //     const newNode = createNode(node, OUTPUT_X, y);
-  //     newNodes.push(newNode);
-  //     newEdges.push(createEdge(nodeUuid, node.uuid, node.link_label , true, index));
-  //     y += 100;
-  //   });
-
-  //   setNodes(newNodes);
-  //   setEdges(newEdges);
-  // };
 
   const displayNodes = (nodeData, nodeUuid) => {
     const newNodes = [];
@@ -1573,40 +1542,11 @@ const GraphBrowser = ({ apiUrl }) => {
     setEdges(newEdges);
   };
 
-  // const loadMoreNodes = async (uuid, direction, nodeType) => {
-  //   try {
-  //     const offset = nodes.filter(node => node.data.direction === direction && node.data.nodeType === nodeType).length;
-  //     const moreLinks = await fetchLinks(uuid, nodeType, LIMIT, direction, offset);
-
-  //     if (moreLinks && moreLinks.links.length > 0) {
-  //       const newNodes = [];
-  //       const newEdges = [];
-
-  //       let y = direction === 'incoming' ? CENTRAL_Y - 200 : CENTRAL_Y - 150;
-  //       moreLinks.links.forEach((node) => {
-  //         const newNode = createNode(node, direction === 'incoming' ? INPUT_X : OUTPUT_X, y, {
-  //           backgroundColor: direction === 'incoming' ? 'yellow' : 'lightblue'
-  //         });
-  //         newNodes.push(newNode);
-  //         newEdges.push(direction === 'incoming' ?
-  //           createEdge(node.uuid, uuid, `${nodeType} input`) :
-  //           createEdge(uuid, node.uuid, `${nodeType} output`));
-  //         y += 50;
-  //       });
-
-  //       setNodes((nds) => [...nds, ...newNodes]);
-  //       setEdges((eds) => [...eds, ...newEdges]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error loading more nodes:", error);
-  //   }
-  // };
 
   useEffect(() => {
     fetchNodes(uuid);
   }, [uuid]);
 
-  // const handleNodeClick = useCallback((event, node) => {
   //   const { uuid } = node.data;
   //   setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
   //   navigate(`/${moduleName}/details/${uuid}`);
@@ -1641,16 +1581,25 @@ const GraphBrowser = ({ apiUrl }) => {
   // }, [navigate, moduleName, fetchNodes]);
 
   const handleNodeClick = useCallback((event, node) => {
-
     if (node.type === 'loadMore') {
       handleLoadMore(node.data.type);
       return;
     }
 
     const { uuid } = node.data;
+    setPreviouslySelectedNode(uuid);
     setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
+    // setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
     setIsTransitioning(true);
     setAnimationPhase('shrinking');
+
+    setBreadcrumbs((prevBreadcrumbs) => {
+      const newBreadcrumbs = [
+        ...prevBreadcrumbs,
+        { nodes: nodes, edges: edges, centralNode: uuid, label: node.data.label }
+      ];
+      return newBreadcrumbs.slice(-5);
+    });
 
     setNodes((nds) =>
       nds.map((n) => ({
@@ -1695,6 +1644,22 @@ const GraphBrowser = ({ apiUrl }) => {
 
     navigate(`/mc3d/details/${uuid}`);
   }, [navigate, apiUrl, fetchNodes]);
+
+  const handleBreadcrumbClick = useCallback((index) => {
+    const { nodes: breadcrumbNodes, edges: breadcrumbEdges, centralNode } = breadcrumbs[index];
+    setPreviouslySelectedNode(centralNode);
+    setNodes(breadcrumbNodes.map(node => ({
+      ...node,
+      data: { ...node.data, isPreviouslySelected: node.id === centralNode }
+    })));
+    setEdges(breadcrumbEdges.map(edge => ({
+      ...edge,
+      data: { ...edge.data, isPreviouslySelected: edge.source === centralNode || edge.target === centralNode }
+    })));
+    navigate(`/mc3d/details/${centralNode}`);
+    setBreadcrumbs(breadcrumbs.slice(0, index + 1));
+  }, [breadcrumbs, navigate]);
+
 
   const handleMouseEnter = (event, node) => {
     clearTimeout(tooltipTimeout.current);
@@ -1764,6 +1729,19 @@ const toggleEdgeLabels = () => {
           containerRef={containerRef}
         />
       )}
+      <div className="absolute top-4 left-4 bg-white p-2 rounded-lg shadow-lg">
+          {breadcrumbs.map((breadcrumb, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && <span className="mx-2 text-gray-400">&gt;</span>}
+              <button
+                onClick={() => handleBreadcrumbClick(index)}
+                className="text-blue-600 hover:text-blue-800 font-semibold"
+              >
+                {breadcrumb.label || 'Node'}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
       {showButtons && (
         <div className="fixed bottom-16 right-1/4 transform translate-x-1/2 flex justify-between items-center w-full max-w-xs bg-white p-4 rounded-lg shadow-lg">
           <button
@@ -1792,7 +1770,7 @@ const toggleEdgeLabels = () => {
           </div>
         </div>
       )}
-        <Legend />
+        {/* <Legend /> */}
       </ReactFlowProvider>
     </div>
   );

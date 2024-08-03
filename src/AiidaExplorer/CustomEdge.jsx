@@ -63,6 +63,7 @@ const CustomEdge = ({
   const padding = 4; 
 
   const showLabel = data?.showLabel || isHovered;
+  const edgeColor = data.isPreviouslySelected ? 'blue' : '#d1d5db';
 
   return (
     <>
@@ -76,7 +77,7 @@ const CustomEdge = ({
       />
       <path
         id={id}
-        style={{ ...style, strokeWidth: 1, stroke: '#d1d5db' }}
+        style={{ ...style, strokeWidth: data.isPreviouslySelected ? 2 : 1, stroke: edgeColor , transition: 'all 0.3s ease-in-out' }}
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
