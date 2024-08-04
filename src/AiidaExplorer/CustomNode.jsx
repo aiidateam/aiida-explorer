@@ -20,10 +20,10 @@ const getNodeStyle = (label , isPreviouslySelected) => {
   switch (label.toLowerCase()) {
     case 'calcjobnode':
       return {
-        background: '#FF9999',
-        borderRadius: '8px',
-        width: '150px',
-        height: '60px',
+        background: '#f5b7b1',
+        borderRadius: '40%',
+        width: '170px',
+        height: '80px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -31,10 +31,23 @@ const getNodeStyle = (label , isPreviouslySelected) => {
         transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
-    case 'structure':
+    case 'workchainnode':
       return {
-        background: '#99FF99',
-        borderRadius: '50%',
+        background: '#f5b7b1',
+        borderRadius: '40%',
+        width: '170px',
+        height: '80px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000', 
+        transition: 'all 0.3s ease-in-out',
+        overflow: 'hidden',
+      };
+    case 'structuredata':
+      return {
+        background: '#85c1e9',
+        borderRadius: '8px',
         width: '150px',
         height: '60px',
         display: 'flex',
@@ -44,9 +57,22 @@ const getNodeStyle = (label , isPreviouslySelected) => {
         transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
-    case 'dict':
+    // case 'dict':
+    //   return {
+    //     background: '#9999FF',
+    //     borderRadius: '8px',
+    //     width: '150px',
+    //     height: '60px',
+    //     display: 'flex',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+    //     transition: 'all 0.3s ease-in-out',
+    //     overflow: 'hidden',
+    //   };
+    case 'upfdata':
       return {
-        background: '#9999FF',
+        background: '#d2b4de',
         borderRadius: '8px',
         width: '150px',
         height: '60px',
@@ -59,7 +85,7 @@ const getNodeStyle = (label , isPreviouslySelected) => {
       };
     default:
       return {
-        background: '#FFCC80',
+        background: '#82e0aa',
         borderRadius: '4px',
         width: '150px',
         height: '60px',

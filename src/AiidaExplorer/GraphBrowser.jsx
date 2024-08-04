@@ -1188,6 +1188,7 @@ import Legend from './Legend';
 import Tooltip from './Tooltip';
 import CustomEdge from './CustomEdge';
 import CustomNode from './CustomNode';
+import Breadcrumbs from './BreadCrumb';
 
 const nodeWidth = 172;
 const nodeHeight = 36;
@@ -1405,7 +1406,7 @@ const GraphBrowser = ({ apiUrl }) => {
   const createNode = useCallback((nodeData, x, y, style = {}) => {
     const isCentralNode = nodeData.uuid === uuid;
     const isPreviouslySelected = nodeData.uuid === previouslySelectedNode;
-    const label = isCentralNode ? (centralNode ? extractLabel(centralNode) : "Loading..") : extractLabel(nodeData.node_type);
+    const label = isCentralNode ? (extractLabel(centralNode)) : extractLabel(nodeData.node_type);
   
     return {
       id: nodeData.uuid,
@@ -1533,9 +1534,9 @@ const GraphBrowser = ({ apiUrl }) => {
       }
     };
   
-    createNodesWithLoadMore(nodeData.inputLogical.links, INPUT_X, CENTRAL_Y - 300, 70, 'logical Input', true);
+    createNodesWithLoadMore(nodeData.inputLogical.links, INPUT_X, CENTRAL_Y - 300, 100, 'logical Input', true);
     createNodesWithLoadMore(nodeData.inputData.links, INPUT_X, CENTRAL_Y, 100, 'input Data');
-    createNodesWithLoadMore(nodeData.outputLogical.links, OUTPUT_X, CENTRAL_Y - 300, 70, 'logical Output', true);
+    createNodesWithLoadMore(nodeData.outputLogical.links, OUTPUT_X, CENTRAL_Y - 300, 100, 'logical Output', true);
     createNodesWithLoadMore(nodeData.outputData.links, OUTPUT_X, CENTRAL_Y, 100, 'output Data');
   
     setNodes(newNodes);
@@ -1729,19 +1730,7 @@ const toggleEdgeLabels = () => {
           containerRef={containerRef}
         />
       )}
-      <div className="absolute top-4 left-4 bg-white p-2 rounded-lg shadow-lg">
-          {breadcrumbs.map((breadcrumb, index) => (
-            <React.Fragment key={index}>
-              {index > 0 && <span className="mx-2 text-gray-400">&gt;</span>}
-              <button
-                onClick={() => handleBreadcrumbClick(index)}
-                className="text-blue-600 hover:text-blue-800 font-semibold"
-              >
-                {breadcrumb.label || 'Node'}
-              </button>
-            </React.Fragment>
-          ))}
-        </div>
+       <Breadcrumbs breadcrumbs={breadcrumbs} handleBreadcrumbClick={handleBreadcrumbClick} />
       {showButtons && (
         <div className="fixed bottom-16 right-1/4 transform translate-x-1/2 flex justify-between items-center w-full max-w-xs bg-white p-4 rounded-lg shadow-lg">
           <button
