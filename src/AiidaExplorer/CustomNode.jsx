@@ -103,6 +103,13 @@ const CustomNode = ({ data }) => {
   const nodeStyle = getNodeStyle(data.label);
   console.log(data.uuid)
   console.log(data.label)
+  const [label , setLabel] = useState();
+
+  const extractLabel = (nodeType) => {
+    if (!nodeType) return '';
+    const parts = nodeType.split('.');
+    return parts[parts.length - 2];
+  };
   
   useEffect(() => {
     const fetchNodeData = async () => {
@@ -114,7 +121,7 @@ const CustomNode = ({ data }) => {
         ]);
 
         let subtitle = '';
-
+        
         if (response3.ok) {
           const result3 = await response3.json();
           const formula = result3.data?.derived_properties?.formula;
@@ -122,7 +129,7 @@ const CustomNode = ({ data }) => {
             subtitle = formula;
           }
         }
-
+        
         if (!subtitle && response2.ok) {
           const result2 = await response2.json();
           const value = result2.data?.attributes?.value;
@@ -130,9 +137,11 @@ const CustomNode = ({ data }) => {
             subtitle = String(value);
           }
         }
-
+        
         if (!subtitle && response.ok) {
           const result = await response.json();
+          setLabel(result.data.nodes[0].node_type)
+          console.log(extractLabel(label));
           const nodeDetails = result.data?.nodes?.[0]?.process_type;
           if (nodeDetails) {
             const parts = nodeDetails.split(':');
@@ -161,7 +170,7 @@ const CustomNode = ({ data }) => {
       />
       <div className='flex-col'>
         <div className="text-sm text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
-          {data.label}
+          {extractLabel(label) || data.label}
         </div>
         {subtitle && (
           <div className="text-xs font-thin text-center whitespace-nowrap overflow-hidden overflow-ellipsis mt-1">

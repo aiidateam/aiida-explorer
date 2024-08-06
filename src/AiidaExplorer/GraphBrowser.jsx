@@ -1319,16 +1319,6 @@ const GraphBrowser = ({ apiUrl }) => {
       }
     });
   }, [uuid, setNodes, setEdges]);
-  
-  const getNodeColor = (type) => {
-    switch (type) {
-      case 'logicalInput': return 'yellow';
-      case 'inputData': return 'lightgreen';
-      case 'logicalOutput': return 'lightblue';
-      case 'outputData': return 'orange';
-      default: return 'gray';
-    }
-  };
 
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
@@ -1340,26 +1330,26 @@ const GraphBrowser = ({ apiUrl }) => {
     try {
       const res = await fetch(`${apiUrl}/nodes/${uuid}`);
       const data = await res.json();
-      console.log(data.data.nodes[0].node_type)
-      return data.data.nodes[0].node_type;
+      const nodeType = data.data.nodes[0].node_type;
+      const label = extractLabel(nodeType);
+      return { nodeType, label };
     } catch (error) {
       console.error('Error fetching central node:', error);
       return null;
     }
-  };
+  };  
   
-
   useEffect(() => {
     const fetchAndSetCentralNode = async () => {
       if (uuid) {
         const nodeType = await fetchCentralNode(uuid);
-        setCentralNode(nodeType);
+        setCentralNode(extractLabel(nodeType));
         console.log(nodeType, "-->Central"); 
       }
     };
     
     fetchAndSetCentralNode();
-  }, [uuid]);
+  }, []);
 
   const fetchLinks = async (uuid, fullType, direction = "incoming", offset = 0) => {
     let url = `${API_URL}/nodes/${uuid}/links/${direction}`;
@@ -1406,7 +1396,13 @@ const GraphBrowser = ({ apiUrl }) => {
   const createNode = useCallback((nodeData, x, y, style = {}) => {
     const isCentralNode = nodeData.uuid === uuid;
     const isPreviouslySelected = nodeData.uuid === previouslySelectedNode;
-    const label = isCentralNode ? (extractLabel(centralNode)) : extractLabel(nodeData.node_type);
+    let label;
+  
+    if (isCentralNode && centralNode) {
+      label = centralNode.label; 
+    } else {
+      label = extractLabel(nodeData.node_type);
+    }
   
     return {
       id: nodeData.uuid,
@@ -1422,6 +1418,18 @@ const GraphBrowser = ({ apiUrl }) => {
       style,
     };
   }, [uuid, centralNode, previouslySelectedNode]);
+
+  useEffect(() => {
+    const fetchAndSetCentralNode = async () => {
+      if (uuid) {
+        const nodeType = await fetchCentralNode(uuid);
+        setCentralNode(nodeType);
+        console.log(nodeType, "-->Central"); 
+      }
+    };
+    
+    fetchAndSetCentralNode();
+  }, []);
 
  const createEdge = useCallback((source, target, label, isOutgoing, index) => ({
     id: generateUniqueId(`e${source}-${target}`),
@@ -1480,8 +1488,8 @@ const GraphBrowser = ({ apiUrl }) => {
   const displayNodes = (nodeData, nodeUuid) => {
     const newNodes = [];
     const newEdges = [];
-    const d = new Date();
-    let time = d.getTime();
+      // const d = new Date();
+      // let time = d.getTime();
     const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y+100);
     newNodes.push(centralNode);
   
@@ -1508,6 +1516,7 @@ const GraphBrowser = ({ apiUrl }) => {
       nodesToDisplay.slice(0, 10).forEach((node, index) => {
         const newNode = createNode(node, startX, y);
         newNodes.push(newNode);
+        newNode.originalPosition = { x: startX, y };
         newEdges.push(createEdge(
           type.includes('input') ? node.uuid : nodeUuid,
           type.includes('input') ? nodeUuid : node.uuid,
@@ -1530,7 +1539,21 @@ const GraphBrowser = ({ apiUrl }) => {
           },
           position: { x: startX, y },
         };
+        const loadMoreEdge = {
+          id: `loadEdge-${type}`,
+          type: 'custom',
+          source: `loadMore-${type}`,
+          target :centralNode,
+          data: { 
+            count: nodes.length - 10, 
+            type, 
+            onClick: handleLoadMore,
+            remainingNodes: nodes.slice(10)
+          },
+          position: { x: startX, y },
+        };
         newNodes.push(loadMoreNode);
+        newEdges.push(loadMoreEdge);
       }
     };
   
