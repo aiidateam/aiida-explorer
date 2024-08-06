@@ -1748,6 +1748,7 @@ const toggleEdgeLabels = () => {
         </ReactFlow>
         {tooltipDetails && (
         <Tooltip
+          apiUrl = {apiUrl}
           details={tooltipDetails}
           position={tooltipPosition}
           containerRef={containerRef}

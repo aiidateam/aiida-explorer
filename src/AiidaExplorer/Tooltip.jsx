@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const Tooltip = ({ details, position, containerRef }) => {
+const Tooltip = ({ details, position, containerRef, apiUrl }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [fetchedData, setFetchedData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -9,7 +9,7 @@ const Tooltip = ({ details, position, containerRef }) => {
   useEffect(() => {
     if (containerRef.current && position) {
       const containerRect = containerRef.current.getBoundingClientRect();
-      const x = position.x - containerRect.left;
+      const x = position.x - containerRect.left + 40;
       const y = position.y - containerRect.top;
       setTooltipPosition({ x, y });
     }
@@ -18,7 +18,7 @@ const Tooltip = ({ details, position, containerRef }) => {
   useEffect(() => {
     if (details && details.uuid) {
       setLoading(true);
-      fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${details.uuid}`)
+      fetch(`${apiUrl}/nodes/${details.uuid}`)
         .then(response => response.json())
         .then(data => {
           setFetchedData(data.data.nodes[0]);
