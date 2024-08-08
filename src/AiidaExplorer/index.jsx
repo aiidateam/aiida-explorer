@@ -31,7 +31,7 @@ const AiidaExplorer = ({ apiUrl }) => {
 
   return (
     <div className="p-1">
-      {/* <Tabs moduleName={moduleName} setModuleName={setModuleName} /> */}
+      <Tabs apiUrl={apiUrl} />
       <ErrorBoundary>
         <Routes>
           <Route path="" element={<NodeGrid apiUrl={apiUrl} />} />
@@ -40,6 +40,20 @@ const AiidaExplorer = ({ apiUrl }) => {
             element={
               <DetailsPage
                 apiUrl={apiUrl}
+              />
+            }
+          />
+          <Route
+            path="/statistics/"
+            element={
+              <Statistics apiUrl = {apiUrl}
+              />
+            }
+          />
+          <Route
+            path="/computers/"
+            element={
+              <ComputersGrid apiUrl = {apiUrl}
               />
             }
           />

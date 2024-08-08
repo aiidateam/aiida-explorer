@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 import FilterSidebar from "./FilterSidebar";
 import {
   createColumnHelper,
@@ -12,7 +12,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 
-const ComputersGrid = ({ moduleName }) => {
+const ComputersGrid = ({ apiUrl }) => {
   const [computersData, setComputersData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [fullTypeCounts, setFullTypeCounts] = useState(null);
@@ -20,14 +20,15 @@ const ComputersGrid = ({ moduleName }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const baseUrl = `https://aiida.materialscloud.org/${moduleName}/api/v4/`;
+  const location = useLocation();
+  const baseUrl = `${apiUrl}`;
 
   const fetchComputers = async (page) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await axios.get(
-        `https://aiida.materialscloud.org/mc3d/api/v4/computers/page/${page}?perpage=10`
+        `${baseUrl}/computers/page/${page}?perpage=10`
       );
       setComputersData(response.data.data.computers);
       console.log("Fetched computers:", response.data.data.computers);
@@ -61,9 +62,10 @@ const ComputersGrid = ({ moduleName }) => {
         setFullTypeCounts(counts);
       }
     };
+    console.log(fullTypeCounts)
 
     fetchInitialData();
-  }, [currentPage]);
+  }, []);
 
   const handleDataFetched = (data) => {
     console.log("Computers data received in parent:", data);
@@ -73,7 +75,10 @@ const ComputersGrid = ({ moduleName }) => {
   };
 
   const handleDetailsClick = (uuid) => {
-    navigate(`/${moduleName}/details/${uuid}?source=computersGrid`);
+    const currentPath = location.pathname;
+    const newPath = currentPath.replace(/computers$/, `details/${uuid}`);
+
+    navigate(`${newPath}?source=computersGrid`);
   };
 
   const columnHelper = createColumnHelper();
@@ -136,12 +141,12 @@ const ComputersGrid = ({ moduleName }) => {
     <div className="flex w-full mx-auto py-2 px-0 text-sm">
       <div className="w-1/5">
         <FilterSidebar
-          // fullTypeCounts={fullTypeCounts}
+          //fullTypeCounts={fullTypeCounts}
           onSelectNode={handleDataFetched}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           setSelectedNode={setSelectedNode}
-          moduleName={moduleName}
+          // moduleName={moduleName}
           onDataFetched={handleDataFetched}
         />
       </div>

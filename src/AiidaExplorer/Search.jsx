@@ -6,7 +6,7 @@ const Search = ({ apiUrl }) => {
 
   return (
 <div className="bg-gray-100">
-  <div className="flex items-center border-2 border-gray-300 hover:border-gray-600 rounded-md shadow-md bg-white">
+  <div className="flex mt-4 items-center border-2 border-gray-300 hover:border-gray-600 rounded-md shadow-md bg-white">
     <input
       type="search"
       placeholder="Search UUID"
@@ -19,12 +19,14 @@ const Search = ({ apiUrl }) => {
         }
       }}
     />
-    <CiSearch
-      className="text-center size-6 cursor-pointer mr-1"
-      onClick={() => {
-        window.location.href = `/details/${searchValue}`;
-      }}
-    />
+    <div className='bg-blue-500 p-2 text-white'>
+      <CiSearch
+        className="text-center size-6 cursor-pointer mr-1"
+        onClick={() => {
+          window.location.href = `/details/${searchValue}`;
+        }}
+      />
+    </div>
   </div>
 </div>
 

@@ -11,26 +11,33 @@ const Tabs = () => {
   }, [location]);
 
   const handleNavigation = (path) => {
-    navigate(path);
-    setSelectedTab(path);
+    const basePath = location.pathname.split('/').slice(0, 2).join('/');
+    const fullPath = `${basePath}${path}`;
+    navigate(fullPath);
+    console.log(basePath , fullPath)
+    setSelectedTab(fullPath);
   };
 
-  const renderButton = (path, tabName) => (
-    <button
-      onClick={() => handleNavigation(path)}
-      className={`px-4 py-2 text-sm font-medium w-1/3 space-x-2 last:border-r-0 ${
-        selectedTab === path ? 'text-white bg-gray-400' : 'text-gray-700 bg-white'
-      }`}
-    >
-      {tabName}
-    </button>
-  );
+  const renderButton = (path, tabName) => {
+    const isActive = location.pathname.includes(path);
+
+    return (
+      <button
+        onClick={() => handleNavigation(path)}
+        className={`px-4 py-2 text-sm font-medium w-1/3 space-x-2 last:border-r-0 ${
+          isActive ? 'text-white bg-gray-400' : 'text-gray-700 bg-white'
+        }`}
+      >
+        {tabName}
+      </button>
+    );
+  };
 
   return (
     <div className="border-2 text-center w-full border-gray-300 flex justify-between p-1">
-      {renderButton('/', 'Grid')}
-      {renderButton('/statistics', 'Statistics')}
-      {renderButton('/search', 'Details')}
+      {renderButton('/', 'Node Grid')}
+      {renderButton('/statistics', 'Node Statistics')}
+      {renderButton('/details', 'Node Details')}
     </div>
   );
 };

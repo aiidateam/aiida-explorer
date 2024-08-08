@@ -94,6 +94,12 @@ const DetailsPage = ({ apiUrl }) => {
         // }
 
         setDerived(json.data.derived_properties);
+        if(derived){
+          setDerived(json.data.derived_properties);
+        }else{
+          setDerived(0);
+        }
+        console.log(derived);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(error.message);
@@ -155,14 +161,14 @@ const DetailsPage = ({ apiUrl }) => {
           />
     </div>
         <div className="flex justify-between mb-4">
-          <button
+          {/* <button
             className="px-4 py-2 bg-blue-500 absolute top-0 left-0 text-white rounded-tl-md rounded-br-md"
             onClick={() => navigate(-1)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 512 512">
               <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="48" d="M244 400L100 256l144-144M120 256h292"/>
             </svg>
-          </button>
+          </button> */}
           
         </div>
         {/* <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
@@ -182,7 +188,7 @@ const DetailsPage = ({ apiUrl }) => {
             Rich
           </button>
         </div>
-        <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[90%]">
+        <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[70%]">
           {view === 'raw' ? (
             <div>
               <Files apiUrl={apiUrl} uuid={uuid} />
