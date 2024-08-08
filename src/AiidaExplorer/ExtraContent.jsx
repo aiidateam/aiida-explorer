@@ -33,6 +33,7 @@ const ExtraContent = ({ uuid, apiUrl }) => {
             displayDataTypes={false}
             displayObjectSize={false}
             enableClipboard={false}
+            rootName = {false}
             // rootName={null}
           />
         </div>

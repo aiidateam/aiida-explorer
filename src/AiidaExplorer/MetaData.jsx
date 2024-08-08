@@ -65,6 +65,7 @@ const MetaData = ({ apiUrl, uuid }) => {
             displayDataTypes={false}
             displayObjectSize={false}
             enableClipboard={false}
+            rootName = {false}
           />
           // <SyntaxHighlighter language="json" style={stackoverflowLight}>
           //   {JSON.stringify(displayData, null, 2)}
@@ -80,6 +81,7 @@ const MetaData = ({ apiUrl, uuid }) => {
             displayDataTypes={false}
             displayObjectSize={false}
             enableClipboard={false}
+            rootName = {false}
           />
             // <SyntaxHighlighter language="json" style={stackoverflowLight}>
             //   {JSON.stringify(computerData, null, 2)}

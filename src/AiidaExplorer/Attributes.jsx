@@ -135,6 +135,7 @@ const Attributes = ({ uuid, apiUrl }) => {
     displayDataTypes={false}
     displaySize={false}
     enableClipboard={false}
+    rootName = {false}
   /></div>;
   }
 
@@ -149,6 +150,7 @@ const Attributes = ({ uuid, apiUrl }) => {
           displayDataTypes={false}
           displaySize={false}
           enableClipboard={false}
+          rootName = {false}
         />
         <CopyToClipboard text={JSON.stringify(jsonData, null, 2)} onCopy={handleCopyClick}>
           <button className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200">

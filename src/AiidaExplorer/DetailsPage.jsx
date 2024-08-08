@@ -11,6 +11,8 @@ import Contents from './Contents';
 import MetaData from './MetaData';
 import BrowserSelection from './BrowserSelection';
 import ExtraContent from './ExtraContent';
+import Search from './Search';
+import { JsonViewer } from '@textea/json-viewer';
 
 const DetailsPage = ({ apiUrl }) => {
   
@@ -27,7 +29,8 @@ const DetailsPage = ({ apiUrl }) => {
   const [derived, setDerived] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attributes, setAttributes] = useState(null);
-
+  const [search , setSearch] = useState();
+  const [header , setHeader] = useState();
   const searchParams = new URLSearchParams(location.search);
   const isFromComputersGrid = searchParams.get('source') === 'computersGrid';
 
@@ -36,6 +39,10 @@ const DetailsPage = ({ apiUrl }) => {
     return formula.split(/(\d+)/).map((part, index) =>
       /\d/.test(part) ? <sub key={index}>{part}</sub> : part
     );
+  };
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   useEffect(() => {
@@ -61,7 +68,17 @@ const DetailsPage = ({ apiUrl }) => {
         setLoading(false);
       }
     };
-
+    const fetchHeader = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/nodes/${uuid}`);
+        const result = await response.json();
+        setHeader(result.data.nodes[0]);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching the data:", error);
+        setLoading(false);
+      }
+    };
     const fetchDerivedData = async () => {
       try {
         const response = await fetch(`${apiUrl}/nodes/${uuid}/contents/derived_properties`);
@@ -105,15 +122,38 @@ const DetailsPage = ({ apiUrl }) => {
         setError(error.message);
       }
     };
-
+    fetchHeader();
     fetchData();
     fetchDerivedData();
     fetchAttributesData();
   }, [uuid]);
 
+  const displayData = header ? {
+    UUID: header.uuid,
+    Type: header.full_type,
+    "Created on": formatDate(header.ctime),
+    "Modified on": formatDate(header.mtime),
+    "Creator": "Sebastiaan Huber (EPFL)"
+  } : {};
+  console.log(displayData);
+
   return (
+    <div >
     <div className="flex h-[100vh] mx-4 p-5">
       <div className={`w-1/2  ${isFromComputersGrid ? 'w-full' : 'w-1/2'} p-6 border-2 mr-2 border-gray-200 rounded-lg relative bg-gray-50 `}>
+      <div className="mb-4">
+      <Search />
+    </div>
+    <div className='bg-white rounded shadow p-2'>
+    <JsonViewer
+            value={displayData}
+            theme="githubLight"
+            displayDataTypes={false}
+            displayObjectSize={false}
+            enableClipboard={false}
+            rootName = {false}
+          />
+    </div>
         <div className="flex justify-between mb-4">
           <button
             className="px-4 py-2 bg-blue-500 absolute top-0 left-0 text-white rounded-tl-md rounded-br-md"
@@ -123,10 +163,11 @@ const DetailsPage = ({ apiUrl }) => {
               <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="48" d="M244 400L100 256l144-144M120 256h292"/>
             </svg>
           </button>
+          
         </div>
-        <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
+        {/* <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
           <h1 className="text-xl font-semibold text-center">Node Preview</h1>
-        </div>
+        </div> */}
         <div className="flex justify-center mb-4">
           <button
             className={`px-6 shadow-lg py-2 mx-2 rounded-lg ${view === 'raw' ? 'bg-blue-400 text-white' : 'bg-blue-100'}`}
@@ -247,6 +288,7 @@ const DetailsPage = ({ apiUrl }) => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };
