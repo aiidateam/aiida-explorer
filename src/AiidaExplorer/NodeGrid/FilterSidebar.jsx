@@ -93,7 +93,7 @@ const FilterSidebar = ({
   Computers,
 }) => {
   const navigate = useNavigate();
-
+  console.log(fullTypeCounts);
   const handleClick = () => {
     const currentPath = location.pathname;
     navigate(`${currentPath}computers`);

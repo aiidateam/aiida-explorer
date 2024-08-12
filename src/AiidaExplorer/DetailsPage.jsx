@@ -13,6 +13,7 @@ import BrowserSelection from './BrowserSelection';
 import ExtraContent from './ExtraContent';
 import Search from './Search';
 import { JsonViewer } from '@textea/json-viewer';
+import Brillouinzone from './brillouinzone';
 
 const DetailsPage = ({ apiUrl }) => {
   
@@ -31,6 +32,7 @@ const DetailsPage = ({ apiUrl }) => {
   const [attributes, setAttributes] = useState(null);
   const [search , setSearch] = useState();
   const [header , setHeader] = useState();
+  const [response , setResponse] = useState();
   const searchParams = new URLSearchParams(location.search);
   const isFromComputersGrid = searchParams.get('source') === 'computersGrid';
 
@@ -92,12 +94,13 @@ const DetailsPage = ({ apiUrl }) => {
         // if (!json.data) {
         //   throw new Error('Empty or invalid response');
         // }
-
+        setResponse(json)
         setDerived(json.data.derived_properties);
         if(derived){
           setDerived(json.data.derived_properties);
+          console.log(json);
         }else{
-          setDerived(0);
+          setDerived(null);
         }
         console.log(derived);
       } catch (error) {
@@ -192,10 +195,10 @@ const DetailsPage = ({ apiUrl }) => {
           {view === 'raw' ? (
             <div>
               <Files apiUrl={apiUrl} uuid={uuid} />
-              <div className="col-span-2 mb-4">
+              {/* <div className="col-span-2 mb-4">
                 <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
                 <MetaData apiUrl={apiUrl} uuid={uuid} />
-              </div>
+              </div> */}
               <div>
                 <span className='font-semibold mt-2 font-mono mb-0'>Node Attributes :</span>
                 <Attributes apiUrl={apiUrl} uuid={uuid} />
@@ -230,7 +233,7 @@ const DetailsPage = ({ apiUrl }) => {
                   </div>
                 </div> 
               )}
-              {attributes && (
+              {attributes.cell && (
                 <div className="flex flex-col font-mono text-sm mb-4 mt-4">
                   <div className="w-full shadow-md overflow-auto h-42 border-2 border-gray-200 rounded-lg mr-2">
                     <table className="table-auto w-full">
@@ -252,6 +255,7 @@ const DetailsPage = ({ apiUrl }) => {
                       </tbody>
                     </table>
                   </div>
+                  {attributes.sites && (
                   <div className="w-full shadow-md overflow-auto h-96 mb-4 mt-4 border-2 border-gray-200 rounded-lg">
                     <table className="table-auto w-full">
                       <thead>
@@ -273,6 +277,10 @@ const DetailsPage = ({ apiUrl }) => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                  )}
+                  <div className='h-full w-full '>
+                    <Brillouinzone data = {response} />
                   </div>
                 </div>
               )}

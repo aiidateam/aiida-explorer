@@ -44,6 +44,14 @@ const AiidaExplorer = ({ apiUrl }) => {
             }
           />
           <Route
+            path="/details/"
+            element={
+              <Search
+                apiUrl={apiUrl}
+              />
+            }
+          />
+          <Route
             path="/statistics/"
             element={
               <Statistics apiUrl = {apiUrl}

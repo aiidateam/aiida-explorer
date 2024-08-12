@@ -16,12 +16,13 @@ const ComputersGrid = ({ apiUrl }) => {
   const [computersData, setComputersData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [fullTypeCounts, setFullTypeCounts] = useState(null);
-  const [selectedNode, setSelectedNode] = useState(null);
+  // const [selectedNode, setSelectedNode] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const baseUrl = `${apiUrl}`;
+  const [selectedNode, setSelectedNode] = useState({ full_type: '' });
 
   const fetchComputers = async (page) => {
     setIsLoading(true);
@@ -43,27 +44,34 @@ const ComputersGrid = ({ apiUrl }) => {
   const fetchFullTypeCounts = async (apiEndpoint) => {
     try {
       const response = await axios.get(`${apiEndpoint}/nodes/full_types_count/`);
-      console.log(response.data.data);
-      return response.data.data;
+      console.log("Full type counts fetched:", response.data.data);
+      setFullTypeCounts(response.data.data);  
     } catch (error) {
       console.error("Error fetching full type counts:", error);
       setError("Failed to fetch full type counts");
-      return null;
     }
   };
+  
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      await fetchComputers(currentPage);
+      await fetchFullTypeCounts(baseUrl);  
+    };
+  
+    fetchInitialData();
+  }, [currentPage, baseUrl]);  
 
   useEffect(() => {
     const fetchInitialData = async () => {
       await fetchComputers(currentPage);
-
+  
       const counts = await fetchFullTypeCounts(baseUrl);
       if (counts) {
-        console.log(counts);
+        console.log("Setting full type counts:", counts);
         setFullTypeCounts(counts);
       }
     };
-    console.log(fullTypeCounts)
-
+  
     fetchInitialData();
   }, []);
 
@@ -73,6 +81,10 @@ const ComputersGrid = ({ apiUrl }) => {
       setComputersData(data.computers);
     }
   };
+
+  useEffect(() => {
+    console.log("fullTypeCounts updated:", fullTypeCounts);
+  }, [fullTypeCounts]);
 
   const handleDetailsClick = (uuid) => {
     const currentPath = location.pathname;
@@ -140,15 +152,14 @@ const ComputersGrid = ({ apiUrl }) => {
   return (
     <div className="flex w-full mx-auto py-2 px-0 text-sm">
       <div className="w-1/5">
-        <FilterSidebar
-          //fullTypeCounts={fullTypeCounts}
-          onSelectNode={handleDataFetched}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          setSelectedNode={setSelectedNode}
-          // moduleName={moduleName}
-          onDataFetched={handleDataFetched}
-        />
+      <FilterSidebar
+        // fullTypeCounts={fullTypeCounts}
+        onSelectNode={handleDataFetched}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        setSelectedNode={setSelectedNode}
+        onDataFetched={handleDataFetched}
+      />
       </div>
       <div className="w-4/5 ml-2">
         {isLoading ? (

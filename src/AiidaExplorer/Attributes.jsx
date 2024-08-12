@@ -10,47 +10,82 @@ import { FaCopy, FaCheck } from 'react-icons/fa';
 
 const Attributes = ({ uuid, apiUrl }) => {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  // const [lastJob, setLastJob] = useState([]);
+  const [nodeLoading, setNodeLoading] = useState(true);
+  const [computerData, setComputerData] = useState(null);
+  const [computerLoading, setComputerLoading] = useState(true);
   const [derivedProperties, setDerivedProperties] = useState(null);
-  const [error, setError] = useState(null);
+  const [nodeError, setNodeError] = useState(null);
+  const [computerError, setComputerError] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [loading , setLoading] = useState(false);
+  const [error , setError] = useState(false);
 
   const handleCopyClick = useCallback(() => {
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 1000);
   }, []);
 
+  const getData = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/nodes/${uuid}?attributes=true`);
+      if (!res.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await res.json();
+      console.log("Fetched Node Data:", data.data.nodes[0].attributes);
+      setData(data.data.nodes[0].attributes);
+    } catch (error) {
+      console.error("Error fetching node data:", error);
+      setNodeError("Failed to fetch node data");
+    } finally {
+      setNodeLoading(false);
+    }
+  };
+
+  const getComputerData = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/computers/${uuid}?attributes=true`);
+      if (!res.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await res.json();
+      console.log("Fetched Computer Data:", data.data.computers[0]);
+      setComputerData(data.data.computers[0]);
+    } catch (error) {
+      console.error("Error fetching computer data:", error);
+      setComputerError("Failed to fetch computer data");
+    } finally {
+      setComputerLoading(false);
+    }
+  };
+
+  const fetchDerivedProperties = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/nodes/${uuid}/contents/derived_properties/`);
+      setDerivedProperties(response.data);
+    } catch (error) {
+      console.error('Error fetching derived properties:', error);
+    }
+  };
+
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/nodes/${uuid}?attributes=true`);
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await res.json();
-        setData(data.data.nodes[0].attributes);
-        // setLastJob(data.data.nodes[0].attributes.last_job_info || []);
-      } catch (error) {
-        setError(" ");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchDerivedProperties = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/nodes/${uuid}/contents/derived_properties/`);
-        setDerivedProperties(response.data);
-      } catch (error) {
-        console.error('Error fetching derived properties:', error);
-      }
-    };
-
-    fetchDerivedProperties();
     getData();
-  }, [uuid , apiUrl]);
+    getComputerData();
+    fetchDerivedProperties();
+  }, [uuid, apiUrl]);
 
+  if (nodeLoading || computerLoading) {
+    return (
+      <div className="loading-animation m-auto flex justify-center text-center">
+        <ClipLoader size={30} color="#007bff" />
+      </div>
+    );
+  }
+
+  if (nodeError && computerError) {
+    return <div className='bg-gray-100 p-4 rounded-lg'>Error loading data</div>;
+  }
+  
   const renderDerivedPropertiesTable = () => {
     if (!derivedProperties || !derivedProperties.data || !derivedProperties.data.derived_properties) {
       return null;
@@ -144,15 +179,33 @@ const Attributes = ({ uuid, apiUrl }) => {
   return (
     <div>
       <div className="relative border-2 border-gray-100 p-3 shadow-lg">
-        <JsonViewer
-          value={jsonData}
-          theme="githubLight"
-          displayDataTypes={false}
-          displaySize={false}
-          enableClipboard={false}
-          rootName = {false}
-        />
-        <CopyToClipboard text={JSON.stringify(jsonData, null, 2)} onCopy={handleCopyClick}>
+      {data && Object.keys(data).length > 0 && (
+          <div>
+            {/* <h3>Node Data:</h3> */}
+            <JsonViewer
+              value={data}
+              theme="githubLight"
+              displayDataTypes={false}
+              displaySize={false}
+              enableClipboard={false}
+              rootName={false}
+            />
+          </div>
+        )}
+        {computerData && Object.keys(computerData).length > 0 && (
+          <div>
+            {/* <h3>Computer Data:</h3> */}
+            <JsonViewer
+              value={computerData}
+              theme="githubLight"
+              displayDataTypes={false}
+              displaySize={false}
+              enableClipboard={false}
+              rootName={false}
+            />
+          </div>
+        )}
+       <CopyToClipboard text={JSON.stringify(data, null, 2)} onCopy={handleCopyClick}>
           <button className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md hover:bg-gray-100 transition-colors duration-200">
             {isCopied ? (
               <FaCheck className="text-green-600" />
