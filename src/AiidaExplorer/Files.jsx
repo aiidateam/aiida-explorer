@@ -6,6 +6,7 @@ const Files = ({ uuid, apiUrl }) => {
   const [inputFiles, setInputFiles] = useState([]);
   const [outputFiles, setOutputFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [folderUuid, setFolderUuid] = useState(uuid);
   const [error, setError] = useState(false);
   const [data, setData] = useState([]);
   const [modalContent, setModalContent] = useState(null);
@@ -15,11 +16,13 @@ const Files = ({ uuid, apiUrl }) => {
     const fetchInputFiles = async () => {
       try {
         const response = await axios.get(`${apiUrl}/calcjobs/${uuid}/input_files`);
-        setInputFiles(response.data.data);
+        const filteredFiles = response.data.data.filter(file => file.type === 'FILE');
+        setInputFiles(filteredFiles);
       } catch (error) {
         console.error('Error fetching input files:', error);
         setError(true);
       }
+      
     };
 
     const fetchOutputFiles = async () => {
@@ -29,6 +32,23 @@ const Files = ({ uuid, apiUrl }) => {
       } catch (error) {
         console.error('Error fetching output files:', error);
         setError(true);
+      }
+    };
+
+    const getFolderUuid = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/nodes/${uuid}/links/outgoing`);
+        console.log(res.data.data.outgoing);
+        const outgoingLinks = res.data.data.outgoing;
+        console.log(outgoingLinks);
+        const folder = outgoingLinks.find(link => link.full_type.includes('data.core.folder.FolderData.|'));
+        if (folder) {
+          setFolderUuid(folder.uuid);
+        } else {
+          console.error('Folder UUID with full_type "data.core.folder.FolderData.|" not found');
+        }
+      } catch (error) {
+        console.error('Error fetching folder UUID:', error);
       }
     };
 
@@ -48,13 +68,14 @@ const Files = ({ uuid, apiUrl }) => {
     };
 
     getData();
+    getFolderUuid();
     fetchInputFiles();
     fetchOutputFiles();
   }, [uuid, apiUrl]);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchFileContent = async (filename) => {
+  const fetchInputFileContent = async (filename) => {
     setIsLoading(true);
     setIsModalOpen(true);
     try {
@@ -65,16 +86,38 @@ const Files = ({ uuid, apiUrl }) => {
         setModalContent(response.data);
       }
     } catch (error) {
-      console.error('Error fetching file content:', error);
+      console.error('Error fetching input file content:', error);
+      setModalContent('Error loading file content');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const fetchOutputFileContent = async (filename) => {
+    setIsLoading(true);
+    setIsModalOpen(true);
+    try {
+      if (!folderUuid) {
+        throw new Error('Folder UUID not available');
+      }
+      const response = await axios.get(`${apiUrl}/nodes/${folderUuid}/repo/contents?filename="${filename}"`);
+      if (typeof response.data === 'object') {
+        setModalContent(JSON.stringify(response.data, null, 2));
+      } else {
+        setModalContent(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching output file content:', error);
       setModalContent('Error loading file content');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDownload = async (filename) => {
+  const handleDownload = async (filename, isOutputFile = false) => {
     try {
-      const response = await axios.get(`${apiUrl}/nodes/${uuid}/repo/contents?filename="${filename}"`, {
+      const downloadUuid = isOutputFile && folderUuid ? folderUuid : uuid;
+      const response = await axios.get(`${apiUrl}/nodes/${downloadUuid}/repo/contents?filename="${filename}"`, {
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -118,7 +161,7 @@ const Files = ({ uuid, apiUrl }) => {
                 <li key={index} className="flex items-center font-mono text-wrap">
                   {/* <FaFileAlt className="mr-2" /> */}
                   <FaDownload className="cursor-pointer" onClick={() => handleDownload(typeof file === 'object' ? file.name : file)} />
-                  <FaEye className=" ml-3 mr-2 cursor-pointer" onClick={() => fetchFileContent(typeof file === 'object' ? file.name : file)} />
+                  <FaEye className=" ml-3 mr-2 cursor-pointer" onClick={() => fetchInputFileContent(typeof file === 'object' ? file.name : file)} />
                   {typeof file === 'object' ? file.name : file}
                 </li>
               ))}
@@ -134,8 +177,8 @@ const Files = ({ uuid, apiUrl }) => {
               {outputFiles.map((file, index) => (
                 <li key={index} className="flex items-center font-mono text-wrap">
                   {/* <FaFileAlt className="mr-2" /> */}
-                  <FaDownload className="cursor-pointer" onClick={() => handleDownload(typeof file === 'object' ? file.name : file)} />
-                  <FaEye className="ml-3 mr-2 cursor-pointer" onClick={() => fetchFileContent(typeof file === 'object' ? file.name : file)} />
+                  <FaDownload className="cursor-pointer" onClick={() => handleDownload(typeof file === 'object' ? file.name : file, true)} />
+                  <FaEye className="ml-3 mr-2 cursor-pointer" onClick={() => fetchOutputFileContent(typeof file === 'object' ? file.name : file)} />
                   {typeof file === 'object' ? file.name : file}
                 </li>
               ))}

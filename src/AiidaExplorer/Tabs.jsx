@@ -13,14 +13,13 @@ const Tabs = () => {
   const handleNavigation = (path) => {
     const basePath = location.pathname.split('/').slice(0, 2).join('/');
     const fullPath = `${basePath}${path}`;
+    console.log(basePath);
     navigate(fullPath);
-    console.log(basePath , fullPath)
     setSelectedTab(fullPath);
   };
 
   const renderButton = (path, tabName) => {
-    const isActive = location.pathname.includes(path);
-
+    const isActive = selectedTab.includes(path);
     return (
       <button
         onClick={() => handleNavigation(path)}
@@ -36,8 +35,8 @@ const Tabs = () => {
   return (
     <div className="border-2 text-center w-full border-gray-300 flex justify-between p-1">
       {renderButton('/', 'Node Grid')}
+      {renderButton('/details/', 'Node Details')}
       {renderButton('/statistics', 'Node Statistics')}
-      {renderButton('/details', 'Node Details')}
     </div>
   );
 };

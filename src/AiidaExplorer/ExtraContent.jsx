@@ -28,7 +28,7 @@ const ExtraContent = ({ uuid, apiUrl }) => {
     return (
         <div className='p-2 border-2 border-gray-50 rounded shadow-md'>
             <JsonViewer
-            value={data}
+            value={data.data.extras}
             theme="githubLight"
             displayDataTypes={false}
             displayObjectSize={false}

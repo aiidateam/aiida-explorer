@@ -11,6 +11,7 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
 } from "@tanstack/react-table";
+import { ClipLoader } from "react-spinners";
 
 const ComputersGrid = ({ apiUrl }) => {
   const [computersData, setComputersData] = useState([]);
@@ -163,7 +164,10 @@ const ComputersGrid = ({ apiUrl }) => {
       </div>
       <div className="w-4/5 ml-2">
         {isLoading ? (
-          <p>Loading...</p>
+          <p>
+        <div className="loading-animation m-auto flex justify-center text-center">
+          <ClipLoader size={30} color="#007bff" />
+        </div></p>
         ) : error ? (
           <p>Error: {error}</p>
         ) : (

@@ -1,5 +1,6 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useState , useRef } from 'react';
 import { Handle, Position } from 'reactflow';
+import Tooltip from './Tooltip'; 
 
 const getNodeStyle = (label , isPreviouslySelected) => {
   if (!label) {
@@ -20,7 +21,7 @@ const getNodeStyle = (label , isPreviouslySelected) => {
   switch (label.toLowerCase()) {
     case 'calcjobnode':
       return {
-        background: '#f5b7b1',
+        background: '#F5B1CD',
         borderRadius: '40%',
         width: '170px',
         height: '80px',
@@ -44,19 +45,19 @@ const getNodeStyle = (label , isPreviouslySelected) => {
         transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
-    case 'structuredata':
-      return {
-        background: '#85c1e9',
-        borderRadius: '8px',
-        width: '150px',
-        height: '60px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
-        transition: 'all 0.3s ease-in-out',
-        overflow: 'hidden',
-      };
+    // case 'structuredata':
+    //   return {
+    //     background: '#85c1e9',
+    //     borderRadius: '8px',
+    //     width: '150px',
+    //     height: '60px',
+    //     display: 'flex',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+    //     transition: 'all 0.3s ease-in-out',
+    //     overflow: 'hidden',
+    //   };
     // case 'dict':
     //   return {
     //     background: '#9999FF',
@@ -70,19 +71,19 @@ const getNodeStyle = (label , isPreviouslySelected) => {
     //     transition: 'all 0.3s ease-in-out',
     //     overflow: 'hidden',
     //   };
-    case 'upfdata':
-      return {
-        background: '#d2b4de',
-        borderRadius: '8px',
-        width: '150px',
-        height: '60px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
-        transition: 'all 0.3s ease-in-out',
-        overflow: 'hidden',
-      };
+    // case 'upfdata':
+    //   return {
+    //     background: '#d2b4de',
+    //     borderRadius: '8px',
+    //     width: '150px',
+    //     height: '60px',
+    //     display: 'flex',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
+    //     transition: 'all 0.3s ease-in-out',
+    //     overflow: 'hidden',
+    //   };
     default:
       return {
         background: '#82e0aa',
@@ -100,57 +101,62 @@ const getNodeStyle = (label , isPreviouslySelected) => {
 };
 const CustomNode = ({ data }) => {
   const [subtitle, setSubtitle] = useState('');
-  const nodeStyle = getNodeStyle(data.label);
-  console.log(data.uuid)
-  console.log(data.label)
-  const [label , setLabel] = useState();
+  const [label, setLabel] = useState();
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [nodeData, setNodeData] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const nodeRef = useRef(null);
 
   const extractLabel = (nodeType) => {
     if (!nodeType) return '';
     const parts = nodeType.split('.');
     return parts[parts.length - 2];
   };
-  
+
   useEffect(() => {
     const fetchNodeData = async () => {
       try {
-        const [response, response2, response3] = await Promise.all([
-          fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}`),
-          fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/attributes`),
-          fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/derived_properties`)
-        ]);
+        if (!apiCache[data.uuid]) {
+          const [response, response2, response3] = await Promise.all([
+            fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}`),
+            fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/attributes`),
+            fetch(`https://aiida.materialscloud.org/mc3d/api/v4/nodes/${data.uuid}/contents/derived_properties`)
+          ]);
 
-        let subtitle = '';
-        
-        if (response3.ok) {
-          const result3 = await response3.json();
-          const formula = result3.data?.derived_properties?.formula;
-          if (formula) {
-            subtitle = formula;
-          }
-        }
-        
-        if (!subtitle && response2.ok) {
-          const result2 = await response2.json();
-          const value = result2.data?.attributes?.value;
-          if (value !== null && value !== undefined) {
-            subtitle = String(value);
-          }
-        }
-        
-        if (!subtitle && response.ok) {
-          const result = await response.json();
-          setLabel(result.data.nodes[0].node_type)
-          console.log(extractLabel(label));
-          const nodeDetails = result.data?.nodes?.[0]?.process_type;
-          if (nodeDetails) {
-            const parts = nodeDetails.split(':');
-            subtitle = parts.length > 1 ? parts[1] : nodeDetails;
-          }
-        }
+          let subtitle = '';
 
-        setSubtitle(subtitle);
+          if (response3.ok) {
+            const result3 = await response3.json();
+            const formula = result3.data?.derived_properties?.formula;
+            if (formula) {
+              subtitle = formula;
+            }
+          }
 
+          if (!subtitle && response2.ok) {
+            const result2 = await response2.json();
+            const value = result2.data?.attributes?.value;
+            if (value !== null && value !== undefined) {
+              subtitle = String(value);
+            }
+          }
+
+          if (!subtitle && response.ok) {
+            const result = await response.json();
+            setLabel(result.data.nodes[0].node_type);
+            const nodeDetails = result.data?.nodes?.[0]?.process_type;
+            if (nodeDetails) {
+              const parts = nodeDetails.split(':');
+              subtitle = parts.length > 1 ? parts[1] : nodeDetails;
+            }
+          }
+
+          const fetchedNodeData = { subtitle, label: data.label };
+          apiCache[data.uuid] = fetchedNodeData;
+          setNodeData(fetchedNodeData);
+        } else {
+          setNodeData(apiCache[data.uuid]);
+        }
       } catch (error) {
         console.error('Error fetching node data:', error);
         setSubtitle('');
@@ -160,8 +166,22 @@ const CustomNode = ({ data }) => {
     fetchNodeData();
   }, [data.uuid]);
 
+  const handleMouseEnter = (event) => {
+    setTooltipPosition({ x: event.clientX, y: event.clientY });
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
   return (
-    <div style={nodeStyle}>
+    <div
+      ref={nodeRef}
+      style={getNodeStyle(data.label)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <Handle
         type="target"
         position={Position.Left}
@@ -172,9 +192,9 @@ const CustomNode = ({ data }) => {
         <div className="text-sm text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
           {extractLabel(label) || data.label}
         </div>
-        {subtitle && (
+        {nodeData?.subtitle && (
           <div className="text-xs font-thin text-center whitespace-nowrap overflow-hidden overflow-ellipsis mt-1">
-            <i>{subtitle}</i>
+            <i>{nodeData.subtitle}</i>
           </div>
         )}
       </div>
@@ -184,6 +204,14 @@ const CustomNode = ({ data }) => {
         style={{ background: '#555' }}
         onConnect={(params) => console.log('handle onConnect', params)}
       />
+      {showTooltip && (
+        <Tooltip
+          details={data}
+          position={tooltipPosition}
+          containerRef={nodeRef}
+          apiUrl="https://aiida.materialscloud.org/mc3d/api/v4"
+        />
+      )}
     </div>
   );
 };

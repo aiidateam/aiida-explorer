@@ -82,7 +82,7 @@ const NodeTable = ({ data, isLoading }) => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     // getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(),
     manualPagination: true,
   });
 
@@ -161,7 +161,7 @@ const NodeTable = ({ data, isLoading }) => {
                           header.getContext()
                         )}
                       </div>
-                      {header.column.getCanFilter() ? (
+                      {/* {header.column.getCanFilter() ? (
                         <div>
                           <input
                             value={header.column.getFilterValue() ?? ""}
@@ -172,7 +172,7 @@ const NodeTable = ({ data, isLoading }) => {
                             className="w-full mt-1 p-1 text-xs border rounded"
                           />
                         </div>
-                      ) : null}
+                      ) : null} */}
                     </div>
                   )}
                 </th>

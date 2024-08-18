@@ -15,19 +15,12 @@ async function fetchFullTypeCounts(apiEndpoint) {
   }
 }
 
-async function fetchNodesPaginated(
-  apiEndpoint,
-  fullType,
-  page,
-  entriesPerPage = 20
-) {
+async function fetchNodesPaginated(apiEndpoint, fullType, page, entriesPerPage = 20) {
   let url = `${apiEndpoint}/nodes/page/${page}`;
-  // query parameters:
   url += `?perpage=${entriesPerPage}&full_type="${fullType}"&orderby=-ctime`;
   if (fullType.includes("process")) {
     url += "&attributes=true";
-    url +=
-      "&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception";
+    url += "&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception";
   }
   const response = await fetch(url);
   const result = await response.json();
@@ -44,21 +37,14 @@ const NodeGrid = ({ apiUrl }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedNodeFilter, setSelectedNodeFilter] = useState(null);
-
   const [fullTypeCounts, setFullTypeCounts] = useState(null);
 
   const fetchData = async (page) => {
     setLoading(true);
     if (selectedNodeFilter && page >= 1) {
       try {
-        const result = await fetchNodesPaginated(
-          baseUrl,
-          selectedNodeFilter.full_type,
-          page,
-          entriesPerPage
-        );
+        const result = await fetchNodesPaginated(baseUrl, selectedNodeFilter.full_type, page, entriesPerPage);
         setData(result);
-        // console.log(result)
       } catch (error) {
         console.error("Error fetching data:", error);
         setData([]);
@@ -76,36 +62,67 @@ const NodeGrid = ({ apiUrl }) => {
     return 1;
   };
 
-  // hook when the component renders for the first time
   useEffect(() => {
     setLoading(true);
     fetchFullTypeCounts(baseUrl).then((counts) => {
-      console.log(counts);
       setFullTypeCounts(counts);
-
-      // set the default selected filter to first subspaces
       if (counts.subspaces) {
         setSelectedNodeFilter(counts.subspaces[0]);
       }
-    });
+    }).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     fetchData(currentPage);
   }, [selectedNodeFilter, currentPage]);
 
-  console.log(fullTypeCounts);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= getTotalPages()) {
+      setCurrentPage(newPage);
+    }
+  };
 
-  // if (loading) {
-  //   return (
-  //     <div className="loading-animation m-auto flex justify-center text-center">
-  //       <ClipLoader size={30} color="#007bff" />
-  //     </div>
-  //   );
-  // }
+  const renderPaginationControls = () => {
+    const totalPages = getTotalPages();
+    const startPage = Math.max(1, currentPage - 7);
+    const endPage = Math.min(totalPages, currentPage + 7);
+
+    const pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-2 py-1 ${i === currentPage ? "bg-blue-200" : "bg-gray-100"} text-sm rounded`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex space-x-2">
+        <button
+          onClick={() => handlePageChange(1)}
+          disabled={currentPage === 1}
+          className="px-2 py-1 bg-gray-100 text-sm rounded"
+        >
+          First
+        </button>
+        {pages}
+        <button
+          onClick={() => handlePageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="px-2 py-1 bg-gray-100 text-sm rounded"
+        >
+          Last
+        </button>
+      </div>
+    );
+  };
 
   return (
-    <div className="flex w-full mx-auto py-2 px-0 text-sm">
+    <div className="flex w-full h-4/5 mx-auto py-2 px-0 text-sm">
       <div className="w-1/5 mr-2 bg-green-50">
         <FilterSidebar
           fullTypeCounts={fullTypeCounts}
@@ -118,25 +135,25 @@ const NodeGrid = ({ apiUrl }) => {
       </div>
       <div className="w-4/5 ml-2">
         <div className="overflow-x-auto">
-          <NodeTable data={data} loading={loading} />
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <ClipLoader size={50} color="#007bff" />
+            </div>
+          ) : (
+            <NodeTable data={data} loading={loading} />
+          )}
         </div>
         <div className="flex justify-between items-center mt-4">
           <button
-            onClick={() => {
-              setCurrentPage((old) => Math.max(old - 1, 1));
-            }}
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="px-3 py-1 bg-green-100 text-green-800 rounded disabled:bg-gray-100 disabled:text-gray-400 text-xs"
           >
             Previous
           </button>
-          <span className="text-xs">
-            Page {currentPage} of {getTotalPages()}
-          </span>
+          {renderPaginationControls()}
           <button
-            onClick={() => {
-              setCurrentPage((old) => Math.max(old + 1, 1));
-            }}
+            onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === getTotalPages()}
             className="px-3 py-1 bg-green-100 text-green-800 rounded disabled:bg-gray-100 disabled:text-gray-400 text-xs"
           >
