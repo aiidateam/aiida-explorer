@@ -4,22 +4,26 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const Tabs = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedTab, setSelectedTab] = useState(location.pathname);
+  const [selectedTab, setSelectedTab] = useState('');
 
   useEffect(() => {
-    setSelectedTab(location.pathname);
+    if (location.pathname.includes('details')) {
+      setSelectedTab('details');
+    } else if (location.pathname.includes('statistics')) {
+      setSelectedTab('statistics');
+    } else {
+      setSelectedTab('grid');
+    }
   }, [location]);
 
   const handleNavigation = (path) => {
     const basePath = location.pathname.split('/').slice(0, 2).join('/');
     const fullPath = `${basePath}${path}`;
-    console.log(basePath);
     navigate(fullPath);
-    setSelectedTab(fullPath);
   };
 
-  const renderButton = (path, tabName) => {
-    const isActive = selectedTab.includes(path);
+  const renderButton = (path, tabName, tabKey) => {
+    const isActive = selectedTab === tabKey;
     return (
       <button
         onClick={() => handleNavigation(path)}
@@ -34,9 +38,9 @@ const Tabs = () => {
 
   return (
     <div className="border-2 text-center w-full border-gray-300 flex justify-between p-1">
-      {renderButton('/', 'Node Grid')}
-      {renderButton('/details/', 'Node Details')}
-      {renderButton('/statistics', 'Node Statistics')}
+      {renderButton('/', 'Node Grid', 'grid')}
+      {renderButton('/details/', 'Node Details', 'details')}
+      {renderButton('/statistics', 'Node Statistics', 'statistics')}
     </div>
   );
 };
