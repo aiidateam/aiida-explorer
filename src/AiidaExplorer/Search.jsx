@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CiSearch } from 'react-icons/ci';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const Search = ({ apiUrl }) => {
+const Search = ({ apiUrl ,uuid }) => {
   const [searchValue, setSearchValue] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Search = ({ apiUrl }) => {
       <div className="flex mt-4 items-center border-2 border-gray-300 hover:border-gray-600 rounded-md shadow-md bg-white">
         <input
           type="search"
-          placeholder="Search UUID"
+          placeholder={uuid}
           className="flex-grow p-1 border-0 outline-none rounded-l-md"
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}

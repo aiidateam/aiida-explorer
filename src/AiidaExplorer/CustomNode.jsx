@@ -2,6 +2,8 @@ import React, { memo, useEffect, useState , useRef } from 'react';
 import { Handle, Position } from 'reactflow';
 import Tooltip from './Tooltip'; 
 
+const apiCache = {}; 
+
 const getNodeStyle = (label , isPreviouslySelected) => {
   if (!label) {
     return {
@@ -101,7 +103,7 @@ const getNodeStyle = (label , isPreviouslySelected) => {
 };
 const CustomNode = ({ data }) => {
   const [subtitle, setSubtitle] = useState('');
-  const [label, setLabel] = useState();
+  const [labelRe, setLabel] = useState();
   const [showTooltip, setShowTooltip] = useState(false);
   const [nodeData, setNodeData] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -141,9 +143,11 @@ const CustomNode = ({ data }) => {
             }
           }
 
-          if (!subtitle && response.ok) {
+          if (response) {
             const result = await response.json();
-            setLabel(result.data.nodes[0].node_type);
+            console.log(result)
+            setLabel(extractLabel(result.data.nodes[0].node_type));
+
             const nodeDetails = result.data?.nodes?.[0]?.process_type;
             if (nodeDetails) {
               const parts = nodeDetails.split(':');
@@ -175,6 +179,7 @@ const CustomNode = ({ data }) => {
     setShowTooltip(false);
   };
 
+  console.log(labelRe)
   return (
     <div
       ref={nodeRef}
@@ -190,7 +195,7 @@ const CustomNode = ({ data }) => {
       />
       <div className='flex-col'>
         <div className="text-sm text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
-          {extractLabel(label) || data.label}
+          {extractLabel(labelRe) || data.label}
         </div>
         {nodeData?.subtitle && (
           <div className="text-xs font-thin text-center whitespace-nowrap overflow-hidden overflow-ellipsis mt-1">

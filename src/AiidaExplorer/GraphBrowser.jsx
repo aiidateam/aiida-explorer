@@ -1343,6 +1343,7 @@ const GraphBrowser = ({ apiUrl }) => {
     const fetchAndSetCentralNode = async () => {
       if (uuid) {
         const nodeType = await fetchCentralNode(uuid);
+        console.log(nodeType);
         setCentralNode(extractLabel(nodeType));
         console.log(nodeType, "-->Central"); 
       }
@@ -1398,8 +1399,9 @@ const GraphBrowser = ({ apiUrl }) => {
     const isPreviouslySelected = nodeData.uuid === previouslySelectedNode;
     let label;
   
-    if (isCentralNode && centralNode) {
-      label = centralNode.label; 
+    if (isCentralNode) {
+      label = centralNode;
+      console.log(label); 
     } else {
       label = extractLabel(nodeData.node_type);
     }
@@ -1423,8 +1425,8 @@ const GraphBrowser = ({ apiUrl }) => {
     const fetchAndSetCentralNode = async () => {
       if (uuid) {
         const nodeType = await fetchCentralNode(uuid);
-        setCentralNode(nodeType);
-        console.log(nodeType, "-->Central"); 
+        setCentralNode(nodeType.label);
+        console.log(nodeType.label, "-->Central"); 
       }
     };
     

@@ -16,12 +16,6 @@ import { JsonViewer } from '@textea/json-viewer';
 import Brillouinzone from './brillouinzone';
 
 const DetailsPage = ({ apiUrl }) => {
-  
-  // const location = useLocation();
-  // const pathname = location.pathname;
-  // const pathParts = pathname.split('/');
-  // const moduleName = pathParts[1] || '';
-
   const { uuid } = useParams();
   const [view, setView] = useState('raw');
   const navigate = useNavigate();
@@ -57,11 +51,6 @@ const DetailsPage = ({ apiUrl }) => {
         }
 
         const json = await response.json();
-
-        // if (!json.data || !json.data.download || !json.data.download.data || json.data.download.data.trim().length === 0) {
-        //   throw new Error('Empty or invalid response');
-        // }
-
         setData(json.data.download.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -90,10 +79,6 @@ const DetailsPage = ({ apiUrl }) => {
         }
 
         const json = await response.json();
-
-        // if (!json.data) {
-        //   throw new Error('Empty or invalid response');
-        // }
         setResponse(json)
         setDerived(json.data.derived_properties);
         if(derived){
@@ -147,24 +132,29 @@ const DetailsPage = ({ apiUrl }) => {
   console.log(displayData);
 
   return (
-    <div >
-    <div className="flex h-[100vh] mx-4 p-5">
-      <div className={`w-1/2  ${isFromComputersGrid ? 'w-full' : 'w-1/2'} p-6 border-2 mr-2 border-gray-200 rounded-lg relative bg-gray-50 `}>
-      <div className="mb-4">
-      <Search />
-    </div>
-    <div className='bg-white rounded shadow p-2'>
-    <JsonViewer
+<div>
+  <div className="flex flex-col md:flex-row h-[100vh] mx-4 p-5">
+    <div className={`w-full md:w-1/2 ${isFromComputersGrid ? 'w-full' : 'w-full md:w-1/2'} p-6 border-2 mb-4 md:mb-0 md:mr-2  rounded-lg relative `}>
+      <div className='p-5 relative border-2 bg-gray-50 border-gray-300 rounded'>
+         <div className='border-2 border-gray-300 absolute top-[-1rem] left-[2%] px-3 py-1 bg-gray-200 z-10 align-middle items-center'>
+          <h1 className="text-xl font-semibold text-center">Overview</h1>
+        </div> 
+        <div className="mb-4">
+          <Search uuid={uuid} />
+        </div>
+        <div className='bg-white rounded shadow p-2'>
+          <JsonViewer
             value={displayData}
             theme="githubLight"
             displayDataTypes={false}
             displayObjectSize={false}
             enableClipboard={false}
-            rootName = {false}
+            rootName={false}
           />
-    </div>
-        <div className="flex justify-between mb-4">
-          {/* <button
+        </div>
+      </div>
+      <div className="flex pt-3 justify-between mb-4">
+         {/* <button
             className="px-4 py-2 bg-blue-500 absolute top-0 left-0 text-white rounded-tl-md rounded-br-md"
             onClick={() => navigate(-1)}
           >
@@ -172,11 +162,14 @@ const DetailsPage = ({ apiUrl }) => {
               <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="48" d="M244 400L100 256l144-144M120 256h292"/>
             </svg>
           </button> */}
-          
-        </div>
-        {/* <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
+      </div>
+      {/* <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
           <h1 className="text-xl font-semibold text-center">Node Preview</h1>
         </div> */}
+      <div className='px-5 py2 bg-gray-50 h-[65vh] border-2 relative border-gray-300 rounded'>
+      <div className='border-2 border-gray-300 absolute top-[-1rem] left-[2%] px-3 py-1 bg-gray-200 z-10 align-middle items-center'>
+          <h1 className="text-xl font-semibold text-center">Details</h1>
+        </div> 
         <div className="flex justify-center mb-4">
           <button
             className={`px-6 shadow-lg py-2 mx-2 rounded-lg ${view === 'raw' ? 'bg-blue-400 text-white' : 'bg-blue-100'}`}
@@ -191,20 +184,18 @@ const DetailsPage = ({ apiUrl }) => {
             Rich
           </button>
         </div>
-        <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[70%]">
+        <div className="overflow-auto bg-white p-4 rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] h-[85%]">
           {view === 'raw' ? (
             <div>
               <Files apiUrl={apiUrl} uuid={uuid} />
-              {/* <div className="col-span-2 mb-4">
-                <span className='font-semibold font-mono mb-0'>Node Metadata :</span>
-                <MetaData apiUrl={apiUrl} uuid={uuid} />
-              </div> */}
-              <div>
+              <div className='h-full'>
                 <span className='font-semibold mt-2 font-mono mb-0'>Node Attributes :</span>
-                <Attributes apiUrl={apiUrl} uuid={uuid} />
+                <div className='h-full'>
+                    <Attributes apiUrl={apiUrl} uuid={uuid} />
+                </div>
               </div>
-              <div>
-                <span className='font-semibold mt-2 font-mono mb-0'>Node Extras :</span>
+              <div className='mt-3'>
+                <span className='font-semibold font-mono mb-0'>Node Extras :</span>
                 <ExtraContent apiUrl={apiUrl} uuid={uuid} />
               </div>
             </div>
@@ -226,12 +217,12 @@ const DetailsPage = ({ apiUrl }) => {
                   </p>
                 </div>
               )}
-              {data &&!error && (
+              {data && !error && (
                 <div className="flex items-center justify-center">
                   <div className='m-auto'>
                     {data && <StructureVisualizer cifText={data} />}
                   </div>
-                </div> 
+                </div>
               )}
               {attributes.cell && (
                 <div className="flex flex-col font-mono text-sm mb-4 mt-4">
@@ -256,54 +247,53 @@ const DetailsPage = ({ apiUrl }) => {
                     </table>
                   </div>
                   {attributes.sites && (
-                  <div className="w-full shadow-md overflow-auto h-96 mb-4 mt-4 border-2 border-gray-200 rounded-lg">
-                    <table className="table-auto w-full">
-                      <thead>
-                        <tr>
-                          <th className="px-4 py-2">Kind Name</th>
-                          <th className="px-4 py-2">Position X</th>
-                          <th className="px-4 py-2">Position Y</th>
-                          <th className='px-4 py-2'> Position Z</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {attributes.sites && attributes.sites.map((site, index) => (
-                          <tr key={index}>
-                            <td className="border px-4 py-2">{site.kind_name}</td>
-                            {site.position.map((pos, i) => (
-                              <td key={i} className="border px-4 py-2">{pos}</td>
-                            ))}
+                    <div className="w-full shadow-md overflow-auto h-96 mb-4 mt-4 border-2 border-gray-200 rounded-lg">
+                      <table className="table-auto w-full">
+                        <thead>
+                          <tr>
+                            <th className="px-4 py-2">Kind Name</th>
+                            <th className="px-4 py-2">Position X</th>
+                            <th className="px-4 py-2">Position Y</th>
+                            <th className='px-4 py-2'> Position Z</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {attributes.sites && attributes.sites.map((site, index) => (
+                            <tr key={index}>
+                              <td className="border px-4 py-2">{site.kind_name}</td>
+                              {site.position.map((pos, i) => (
+                                <td key={i} className="border px-4 py-2">{pos}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                   <div className='h-full w-full '>
-                    <Brillouinzone data = {response} />
+                    <Brillouinzone data={response} />
                   </div>
                 </div>
               )}
             </div>
           )}
         </div>
+        
       </div>
-            {/* </div>
-          )}
-        </div>
-      </div> */}
-      {!isFromComputersGrid && (
-        <div className="w-1/2 p-6 relative border-2 ml-2 rounded-lg border-gray-200">
-          <div className='border-2 border-gray-300 absolute top-[-1rem] left-[40.5%] px-3 py-2 bg-green-200 z-10 align-middle items-center'>
-            <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
-          </div >
-          <div className='h-full w-full'>
-            <BrowserSelection uuid={uuid} apiUrl={apiUrl} />
-          </div>
-        </div>
-      )}
     </div>
-    </div>
+    {!isFromComputersGrid && (
+      <div className="w-full md:w-1/2 p-6 relative border-2 md:ml-2 border-gray-200 rounded-lg">
+        <div className='border-2 border-gray-300 absolute top-[-1rem] left-[11%] translate-x-[-50%] px-3 py-1 bg-gray-200 z-10 align-middle items-center'>
+          <h1 className="text-xl font-semibold text-center">Graph Preview</h1>
+        </div >
+        <div className='h-full w-full'>
+          <BrowserSelection uuid={uuid} apiUrl={apiUrl} />
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
   );
 };
 
