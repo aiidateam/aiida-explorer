@@ -6,11 +6,11 @@ import {
   useParams,
   Navigate,
 } from "react-router-dom";
-import DetailsPage from "./DetailsPage";
+import DetailsPage from "./NodeDetails/DetailsPage";
 import NodeGrid from "./NodeGrid";
-import Statistics from "./Statistics";
+import Statistics from "./Statistics/Statistics";
 import Tabs from "./Tabs";
-import Search from "./Search";
+import Search from "./Statistics/Search";
 import ComputersGrid from "./NodeGrid/ComputersGrid";
 import ErrorBoundary from "./ErrorBoundary";
 

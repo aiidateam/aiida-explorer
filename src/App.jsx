@@ -11,7 +11,7 @@ import { IconContext } from "react-icons";
 import { FaArrowRight } from "react-icons/fa";
 
 import AiidaExplorer from "./AiidaExplorer";
-import DetailsPage from "./AiidaExplorer/DetailsPage";
+// import DetailsPage from "./AiidaExplorer/DetailsPage";
 
 const Home = ({ setCustomApiUrl }) => {
   const [inputValue, setInputvalue] = useState("");

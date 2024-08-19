@@ -16,7 +16,7 @@ import Legend from './Legend';
 import Tooltip from './Tooltip';
 import CustomEdge from './CustomEdge';
 import CustomNode from './CustomNode';
-import Breadcrumbs from './BreadCrumb';
+import Breadcrumbs from '../BreadCrumb';
 
 const nodeWidth = 172;
 const nodeHeight = 36;

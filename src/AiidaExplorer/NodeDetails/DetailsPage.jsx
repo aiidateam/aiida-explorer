@@ -11,7 +11,7 @@ import Contents from './Contents';
 import MetaData from './MetaData';
 import BrowserSelection from './BrowserSelection';
 import ExtraContent from './ExtraContent';
-import Search from './Search';
+import Search from '../Statistics/Search';
 import { JsonViewer } from '@textea/json-viewer';
 import Brillouinzone from './brillouinzone';
 
@@ -170,7 +170,7 @@ const DetailsPage = ({ apiUrl }) => {
       <div className='border-2 border-gray-300 absolute top-[-1rem] left-[2%] px-3 py-1 bg-gray-200 z-10 align-middle items-center'>
           <h1 className="text-xl font-semibold text-center">Details</h1>
         </div> 
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mt-4 mb-4">
           <button
             className={`px-6 shadow-lg py-2 mx-2 rounded-lg ${view === 'raw' ? 'bg-blue-400 text-white' : 'bg-blue-100'}`}
             onClick={() => setView('raw')}

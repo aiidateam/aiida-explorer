@@ -68,7 +68,30 @@ const Statistics = ({ apiUrl }) => {
   const [endDate, setEndDate] = useState(new Date('2019-12-10'));
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [selectedUser, setSelectedUser] = useState('1');
+  const [selectedUser, setSelectedUser] = useState('everybody');
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/users`);
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const userData = await response.json();
+        setUsers([
+          { id: 'everybody', name: 'Everybody' },
+          ...userData.data.users.map(user => ({
+            id: user.id,
+            name: `${user.first_name} ${user.last_name}`.trim()
+          }))
+        ]);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setError('Failed to load users. Please try again later.');
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,7 +99,7 @@ const Statistics = ({ apiUrl }) => {
       setError(null);
 
       try {
-        const endpoint = selectedUser === '1' 
+        const endpoint = selectedUser === 'everybody' 
           ? `${apiUrl}/nodes/statistics` 
           : `${apiUrl}/nodes/statistics?user=${selectedUser}`;
 
@@ -85,12 +108,14 @@ const Statistics = ({ apiUrl }) => {
         const responseData = await response.json();
 
         if (responseData && responseData.data) {
+          // Update timeline data
           const formattedData = Object.entries(responseData.data.ctime_by_day || {}).map(([date, nodes]) => ({
             date,
             nodes
           }));
           setData(formattedData);
 
+          // Update types data
           if (responseData.data.types) {
             const formattedTypes = Object.entries(responseData.data.types).map(([type, count]) => ({
               type,
@@ -121,6 +146,7 @@ const Statistics = ({ apiUrl }) => {
     setActiveIndex(index);
   };
 
+
   return (
     <div className="mt-2 p-4 border-2 border-gray-300 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">Statistics</h2>
@@ -132,9 +158,10 @@ const Statistics = ({ apiUrl }) => {
             onChange={(e) => setSelectedUser(e.target.value)}
             className="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="1">Everybody</option>
-            <option value="2">Sebastian Huber</option>
-            <option value="3">aiida explore</option>
+            {users.map(user => (
+              <option key={user.id} value={user.id}>{user.name}</option>
+            ))}
+
           </select>
         </div>
         <div>
@@ -175,21 +202,18 @@ const Statistics = ({ apiUrl }) => {
           <div className="flex-1 bg-white p-4 rounded-lg shadow">
             <h3 className="text-center text-xl font-semibold mb-4">Number of Nodes Created Over Time</h3>
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart
-                data={data.filter(entry => {
-                  const entryDate = new Date(entry.date);
-                  return entryDate >= startDate && entryDate <= endDate;
-                })}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" angle={-45} textAnchor="end" height={70} />
-                <YAxis />
-                <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} />
-                <Legend verticalAlign="top" height={36} />
-                <Bar dataKey="nodes" fill="#4299E1" />
-                <Brush dataKey="date" height={30} stroke="#8884d8" />
-              </BarChart>
+            <BarChart
+              data={data}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" angle={-45} textAnchor="end" height={70} />
+              <YAxis />
+              <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} />
+              <Legend verticalAlign="top" height={36} />
+              <Bar dataKey="nodes" fill="#4299E1" />
+              <Brush dataKey="date" height={30} stroke="#8884d8" />
+            </BarChart>
             </ResponsiveContainer>
           </div>
 

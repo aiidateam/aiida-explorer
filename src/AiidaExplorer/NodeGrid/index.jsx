@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import FilterSidebar from "./FilterSidebar";
 import { ClipLoader } from "react-spinners";
-
 import NodeTable from "./NodeTable";
 
 async function fetchFullTypeCounts(apiEndpoint) {
@@ -123,7 +122,7 @@ const NodeGrid = ({ apiUrl }) => {
 
   return (
     <div className="flex w-full h-4/5 mx-auto py-2 px-0 text-sm">
-      <div className="w-1/5 mr-2 bg-green-50">
+      <div className="w-full sm:w-1/5 mr-2 bg-green-50">
         <FilterSidebar
           fullTypeCounts={fullTypeCounts}
           selectedNode={selectedNodeFilter}
@@ -133,10 +132,10 @@ const NodeGrid = ({ apiUrl }) => {
           }}
         />
       </div>
-      <div className="w-4/5 ml-2">
-        <div className="overflow-x-auto">
+      <div className="w-full sm:w-4/5 ml-2 flex flex-col">
+        <div className="overflow-x-auto h-[96%] flex-grow">
           {loading ? (
-            <div className="flex justify-center items-center h-full">
+            <div className="flex justify-center items-center h-[96%]">
               <ClipLoader size={50} color="#007bff" />
             </div>
           ) : (
