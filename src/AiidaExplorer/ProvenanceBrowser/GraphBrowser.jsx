@@ -570,14 +570,14 @@ const toggleEdgeLabels = () => {
           </Controls>
           <Background />
         </ReactFlow>
-        {/* {tooltipDetails && (
+        {tooltipDetails && (
         <Tooltip
           apiUrl = {apiUrl}
           details={tooltipDetails}
           position={tooltipPosition}
           containerRef={containerRef}
         />
-      )} */}
+      )}
        <Breadcrumbs breadcrumbs={breadcrumbs} handleBreadcrumbClick={handleBreadcrumbClick} />
       {showButtons && (
         <div className="fixed bottom-16 right-1/4 transform translate-x-1/2 flex justify-between items-center w-full max-w-xs bg-white p-4 rounded-lg shadow-lg">

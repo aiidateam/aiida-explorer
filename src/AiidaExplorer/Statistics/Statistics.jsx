@@ -1,8 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Brush, Sector } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Brush,
+  Sector
+} from 'recharts';
 import DatePicker from 'react-datepicker';
 import { ClipLoader } from 'react-spinners';
 import 'react-datepicker/dist/react-datepicker.css';
+import axios from 'axios';
 
 const COLORS = [
   '#8FBC8F', '#90EE90', '#3CB371', '#2E8B57', '#006400',
@@ -18,7 +33,19 @@ const extractLabel = (nodeType) => {
 
 const renderActiveShape = (props) => {
   const RADIAN = Math.PI / 180;
-  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const {
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    startAngle,
+    endAngle,
+    fill,
+    payload,
+    percent,
+    value
+  } = props;
   const sin = Math.sin(-RADIAN * midAngle);
   const cos = Math.cos(-RADIAN * midAngle);
   const sx = cx + (outerRadius + 10) * cos;
@@ -60,6 +87,87 @@ const renderActiveShape = (props) => {
     </g>
   );
 };
+
+const UserProcessNodesPieChart = ({ selectedUser, apiUrl }) => {
+  const [processData, setProcessData] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const onPieEnter = (_, index) => {
+    setActiveIndex(index);
+  };
+
+  const fetchDataForUser = async (userId) => {
+    try {
+      const endpoint = userId
+        ? `${apiUrl}/nodes/full_types_count?user=${userId}`
+        : `${apiUrl}/nodes/full_types_count`;
+
+      const response = await axios.get(endpoint);
+      const data = response.data;
+
+      const processedData = [];
+
+      const recursiveProcess = (node) => {
+        if (node.full_type.startsWith("process")) {
+          processedData.push({ full_type: node.full_type, counter: node.counter });
+        }
+
+        if (node.subspaces && node.subspaces.length > 0) {
+          node.subspaces.forEach((subspace) => {
+            recursiveProcess(subspace);
+          });
+        }
+      };
+
+      recursiveProcess(data.data);
+
+      return processedData;
+    } catch (error) {
+      console.error("Error fetching the data", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+
+      const processNodes = await fetchDataForUser(selectedUser === 'everybody' ? null : selectedUser);
+      setProcessData(processNodes);
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [selectedUser, apiUrl]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <PieChart>
+        <Pie
+          activeIndex={activeIndex}
+          activeShape={renderActiveShape}
+          data={processData}
+          innerRadius={80}
+          outerRadius={120}
+          fill="#8884d8"
+          dataKey="counter"
+          onMouseEnter={onPieEnter}
+        >
+          {processData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
+
 const Statistics = ({ apiUrl }) => {
   const [data, setData] = useState([]);
   const [types, setTypes] = useState([]);
@@ -91,7 +199,7 @@ const Statistics = ({ apiUrl }) => {
     };
 
     fetchUsers();
-  }, []);
+  }, [apiUrl]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -146,7 +254,6 @@ const Statistics = ({ apiUrl }) => {
     setActiveIndex(index);
   };
 
-
   return (
     <div className="mt-2 p-4 border-2 border-gray-300 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">Statistics</h2>
@@ -161,7 +268,6 @@ const Statistics = ({ apiUrl }) => {
             {users.map(user => (
               <option key={user.id} value={user.id}>{user.name}</option>
             ))}
-
           </select>
         </div>
         <div>
@@ -169,7 +275,6 @@ const Statistics = ({ apiUrl }) => {
           <DatePicker
             selected={startDate}
             onChange={date => setStartDate(date)}
-            dateFormat="yyyy-MM-dd"
             className="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -178,71 +283,60 @@ const Statistics = ({ apiUrl }) => {
           <DatePicker
             selected={endDate}
             onChange={date => setEndDate(date)}
-            dateFormat="yyyy-MM-dd"
             className="border rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <ClipLoader size={50} color="#007bff" />
-        </div>
-      ) : error ? (
-        <div className="text-center text-red-600 p-4">
-          Error: {error}. Please try again later.
-        </div>
-      ) : data.length === 0 && types.length === 0 ? (
-        <div className="text-center p-4">
-          No data available for the selected user. Please try a different selection.
-        </div>
-      ) : (
-        <div className="flex flex-col space-y-8">
-          {/* Bar Chart */}
-          <div className="flex-1 bg-white p-4 rounded-lg shadow">
-            <h3 className="text-center text-xl font-semibold mb-4">Number of Nodes Created Over Time</h3>
-            <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
+      <div className="mb-6">
+        {error && <div className="text-red-500">{error}</div>}
+        {loading ? (
+          <ClipLoader />
+        ) : (
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" angle={-45} textAnchor="end" height={70} />
+              <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} />
-              <Legend verticalAlign="top" height={36} />
-              <Bar dataKey="nodes" fill="#4299E1" />
+              <Tooltip />
+              <Legend />
               <Brush dataKey="date" height={30} stroke="#8884d8" />
+              <Bar dataKey="nodes" fill="#8884d8" />
             </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+      <div className='flex flex-row justify-between'>
+        <div className="mb-6 w-1/2 border-r-2 border-gray-300">
+          <h3 className="text-xl font-semibold mb-4 text-center">Number of Nodes by Type</h3>
+          {loading ? (
+            <ClipLoader />
+          ) : (
+            <ResponsiveContainer width="100%" height={400}>
+              <PieChart>
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape}
+                  data={types}
+                  innerRadius={80}
+                  outerRadius={120}
+                  fill="#8884d8"
+                  dataKey="count"
+                  onMouseEnter={onPieEnter}
+                >
+                  {types.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
             </ResponsiveContainer>
-          </div>
-
-          {/* Pie Chart */}
-          {types.length > 0 && (
-            <div className="flex-1 bg-white p-4 rounded-lg shadow">
-              <h3 className="text-center text-xl font-semibold mb-4">Distribution of Node Types</h3>
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Pie
-                    activeIndex={activeIndex}
-                    activeShape={renderActiveShape}
-                    data={types}
-                    innerRadius={80}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="count"
-                    onMouseEnter={onPieEnter}
-                  >
-                    {types.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
           )}
         </div>
-      )}
+        <div className="w-1/2">
+          <h3 className="text-xl font-semibold mb-4 text-center">User Process Nodes</h3>
+          <UserProcessNodesPieChart selectedUser={selectedUser} apiUrl={apiUrl} />
+        </div>
+</div>
+
     </div>
   );
 };

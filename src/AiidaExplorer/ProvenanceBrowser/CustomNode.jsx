@@ -209,14 +209,14 @@ const CustomNode = ({ data }) => {
         style={{ background: '#555' }}
         onConnect={(params) => console.log('handle onConnect', params)}
       />
-      {showTooltip && (
+      {/* {showTooltip && (
         <Tooltip
           details={data}
           position={tooltipPosition}
           containerRef={nodeRef}
           apiUrl="https://aiida.materialscloud.org/mc3d/api/v4"
         />
-      )}
+      )} */}
     </div>
   );
 };

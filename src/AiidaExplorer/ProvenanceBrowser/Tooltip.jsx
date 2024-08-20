@@ -35,7 +35,7 @@ const Tooltip = ({ details, position, containerRef, apiUrl }) => {
 
   return (
     <div
-      className="absolute bg-white text-gray-800 border border-gray-200 rounded-lg shadow-md p-4 text-sm"
+      className="absolute bg-white z-50 text-gray-800 border border-gray-200 rounded-lg shadow-md p-4 text-sm"
       style={{ top: tooltipPosition.y, left: tooltipPosition.x }}
     >
       {loading && <div>Loading...</div>}
