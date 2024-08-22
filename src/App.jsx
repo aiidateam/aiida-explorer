@@ -25,37 +25,36 @@ const Home = ({ setCustomApiUrl }) => {
     }
   };
   return (
-<div className="flex justify-center items-center h-[90vh]">
-  <div className="flex-col m-auto justify-center items-center">
-    <ul className="m-auto flex justify-center">
-      <li className="bg-transparent text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded">
-        <Link to="/mc3d">Explore MC3D</Link>
-      </li>
-      <li className="bg-transparent text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded">
-        <Link to="/mc2d">Explore MC2D</Link>
-      </li>
-    </ul>
-    <br />
-    <form onSubmit={handleSubmit} className="flex">
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputvalue(e.target.value)}
-        placeholder="Enter custom API URL"
-        className="px-6 py-2 border border-gray-300"
-      />
-      <button
-        type="submit"
-        className="flex items-center justify-center border border-blue-400 py-3 px-4 bg-blue-400 text-white"
-      >
-        <IconContext.Provider value={{ className: "text-white" }}>
-          <FaArrowRight />
-        </IconContext.Provider>
-      </button>
-    </form>
-  </div>
-</div>
-
+    <div className="flex justify-center items-center h-[90vh]">
+      <div className="flex-col m-auto justify-center items-center">
+        <ul className="m-auto flex justify-center">
+          <li className="bg-transparent text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded">
+            <Link to="/mc3d">Explore MC3D</Link>
+          </li>
+          <li className="bg-transparent text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded">
+            <Link to="/mc2d">Explore MC2D</Link>
+          </li>
+        </ul>
+        <br />
+        <form onSubmit={handleSubmit} className="flex">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputvalue(e.target.value)}
+            placeholder="Enter custom API URL"
+            className="px-6 py-2 border border-gray-300"
+          />
+          <button
+            type="submit"
+            className="flex items-center justify-center border border-blue-400 py-3 px-4 bg-blue-400 text-white"
+          >
+            <IconContext.Provider value={{ className: "text-white" }}>
+              <FaArrowRight />
+            </IconContext.Provider>
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
