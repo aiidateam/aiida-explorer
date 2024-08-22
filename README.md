@@ -1,5 +1,7 @@
 # Next-gen AiiDA provenance explorer
 
+[![NPM Version](https://img.shields.io/npm/v/aiida-explorer)](https://www.npmjs.com/package/aiida-explorer)
+
 React component to explore AiiDA provenance.
 
 This is a new version under development with the goal to replace https://github.com/materialscloud-org/aiida-explorer
