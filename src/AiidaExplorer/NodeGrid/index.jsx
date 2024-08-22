@@ -14,12 +14,18 @@ async function fetchFullTypeCounts(apiEndpoint) {
   }
 }
 
-async function fetchNodesPaginated(apiEndpoint, fullType, page, entriesPerPage = 20) {
+async function fetchNodesPaginated(
+  apiEndpoint,
+  fullType,
+  page,
+  entriesPerPage = 20
+) {
   let url = `${apiEndpoint}/nodes/page/${page}`;
   url += `?perpage=${entriesPerPage}&full_type="${fullType}"&orderby=-ctime`;
   if (fullType.includes("process")) {
     url += "&attributes=true";
-    url += "&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception";
+    url +=
+      "&attributes_filter=process_label,process_state,exit_status,exit_message,process_status,exception";
   }
   const response = await fetch(url);
   const result = await response.json();
@@ -42,7 +48,12 @@ const NodeGrid = ({ apiUrl }) => {
     setLoading(true);
     if (selectedNodeFilter && page >= 1) {
       try {
-        const result = await fetchNodesPaginated(baseUrl, selectedNodeFilter.full_type, page, entriesPerPage);
+        const result = await fetchNodesPaginated(
+          baseUrl,
+          selectedNodeFilter.full_type,
+          page,
+          entriesPerPage
+        );
         setData(result);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -63,12 +74,14 @@ const NodeGrid = ({ apiUrl }) => {
 
   useEffect(() => {
     setLoading(true);
-    fetchFullTypeCounts(baseUrl).then((counts) => {
-      setFullTypeCounts(counts);
-      if (counts.subspaces) {
-        setSelectedNodeFilter(counts.subspaces[0]);
-      }
-    }).finally(() => setLoading(false));
+    fetchFullTypeCounts(baseUrl)
+      .then((counts) => {
+        setFullTypeCounts(counts);
+        if (counts.subspaces) {
+          setSelectedNodeFilter(counts.subspaces[0]);
+        }
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -92,7 +105,9 @@ const NodeGrid = ({ apiUrl }) => {
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-2 py-1 ${i === currentPage ? "bg-blue-200" : "bg-gray-100"} text-sm rounded`}
+          className={`px-2 py-1 ${
+            i === currentPage ? "bg-blue-200" : "bg-gray-100"
+          } text-sm rounded`}
         >
           {i}
         </button>

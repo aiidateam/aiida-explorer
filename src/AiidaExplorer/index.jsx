@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Routes,
-  Route,
-  useNavigate,
-  useParams,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, useParams, Navigate } from "react-router-dom";
 import DetailsPage from "./NodeDetails/DetailsPage";
 import NodeGrid from "./NodeGrid";
 import Statistics from "./Statistics/Statistics";
@@ -15,55 +9,21 @@ import ComputersGrid from "./NodeGrid/ComputersGrid";
 import ErrorBoundary from "./ErrorBoundary";
 
 const AiidaExplorer = ({ apiUrl }) => {
-  const [moduleName, setModuleName] = useState(
-    () => sessionStorage.getItem("moduleName") || ""
-  );
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      sessionStorage.removeItem("moduleName");
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
-
   return (
     <div className="p-1">
       <Tabs apiUrl={apiUrl} />
       <ErrorBoundary>
         <Routes>
-          <Route path="" element={<NodeGrid apiUrl={apiUrl} />} />
+          <Route path="/" element={<NodeGrid apiUrl={apiUrl} />} />
           <Route
             path="/details/:uuid"
-            element={
-              <DetailsPage
-                apiUrl={apiUrl}
-              />
-            }
+            element={<DetailsPage apiUrl={apiUrl} />}
           />
-          <Route
-            path="/details/"
-            element={
-              <Search
-                apiUrl={apiUrl}
-              />
-            }
-          />
-          <Route
-            path="/statistics/"
-            element={
-              <Statistics apiUrl = {apiUrl}
-              />
-            }
-          />
+          <Route path="/details/" element={<Search apiUrl={apiUrl} />} />
+          <Route path="/statistics/" element={<Statistics apiUrl={apiUrl} />} />
           <Route
             path="/computers/"
-            element={
-              <ComputersGrid apiUrl = {apiUrl}
-              />
-            }
+            element={<ComputersGrid apiUrl={apiUrl} />}
           />
           {/* <Route path="/:moduleName/*" element={<ModuleRoutes setModuleName={setModuleName} />} /> */}
         </Routes>
@@ -87,7 +47,10 @@ const ModuleRoutes = ({ setModuleName }) => {
       <Routes>
         <Route index element={<NodeGridWrapper />} />
         <Route path="search" element={<SearchWrapper />} />
-        <Route path="details/:uuid" element={<DetailsPage moduleName={moduleName} /> } />
+        <Route
+          path="details/:uuid"
+          element={<DetailsPage moduleName={moduleName} />}
+        />
         <Route path="statistics" element={<StatisticsWrapper />} />
         <Route path="computers" element={<ComputersGridWrapper />} />
         <Route path="*" element={<Navigate to={`/${moduleName}`} replace />} />
