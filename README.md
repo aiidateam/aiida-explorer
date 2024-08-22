@@ -10,12 +10,18 @@ Install via
 npm install aiida-explorer
 ```
 
-And use with
+And use with the following (note that the components needs to be inside a `Routes` object as it contains `Route` objects itself.)
 
 ```javascript
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import AiidaExplorer from "./AiidaExplorer";
 
-<AiidaExplorer apiUrl={aiidaRestApiUrl} />;
+<BrowserRouter>
+  <Routes>
+    <Route path="/*" element={<AiidaExplorer apiUrl={aiidaRestApiUrl} />} />
+  </Routes>
+</BrowserRouter>;
 ```
 
 where `aiidaRestApiUrl` is the base url of the [AiiDA REST API](https://aiida.readthedocs.io/projects/aiida-core/en/v2.6.2/reference/rest_api.html).
