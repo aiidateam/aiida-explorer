@@ -24,8 +24,6 @@ const CENTRAL_X = 600;
 const CENTRAL_Y = 300;
 const INPUT_X = 200;
 const OUTPUT_X = 1000;
-// const LIMIT = 1000;
-
 const LoadMoreNode = ({ data }) => (
   <div 
     className="load-more-node"
@@ -156,30 +154,34 @@ const GraphBrowser = ({ apiUrl }) => {
 
   const fetchCentralNode = async (uuid) => {
     try {
-      const res = await fetch(`${apiUrl}/nodes/${uuid}`);
+      const res = await fetch(`${API_URL}/nodes/${uuid}`);
       const data = await res.json();
-      const nodeType = data.data.nodes[0].node_type;
-      const label = extractLabel(nodeType);
+      const node = data.data.nodes[0];
+      const nodeType = node.node_type;
+      const label = node.label || extractLabel(nodeType);
+      console.log(`Fetched central node: ${uuid}, Label: ${label}, Type: ${nodeType}`);
       return { nodeType, label };
     } catch (error) {
       console.error('Error fetching central node:', error);
       return null;
     }
-  };  
-  const fetchAndSetCentralNode = async () => {
-    if (uuid) {
-      const nodeInfo = await fetchCentralNode(uuid);
-      if (nodeInfo) {
-        setCentralNode(nodeInfo.label);
-        console.log(nodeInfo.label, "-->Central");
-      }
-    }
   };
-  
+
   useEffect(() => {
+    const fetchAndSetCentralNode = async () => {
+      if (uuid) {
+        const nodeInfo = await fetchCentralNode(uuid);
+        if (nodeInfo) {
+          setCentralNode(nodeInfo.label);
+          console.log(nodeInfo.label, "-->Central");
+        }
+      }
+    };
+  
     fetchAndSetCentralNode();
   }, [uuid]);
 
+  
   const fetchLinks = async (uuid, fullType, direction = "incoming", offset = 0) => {
     let url = `${API_URL}/nodes/${uuid}/links/${direction}`;
     url += `?orderby=+ctime&full_type="${fullType}"`;
@@ -221,11 +223,46 @@ const GraphBrowser = ({ apiUrl }) => {
   const generateUniqueId = (prefix = 'id') => {
     return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
   };
+  
+  useEffect(() => {
+    const fetchAndSetCentralNode = async () => {
+      if (uuid) {
+        const nodeInfo = await fetchCentralNode(uuid);
+        if (nodeInfo) {
+          setCentralNode(nodeInfo.label);
+          console.log(nodeInfo.label, "-->Central");
+          
+          // Update the nodes to preserve the central node's label
+          setNodes(currentNodes => 
+            currentNodes.map(node => 
+              node.id === uuid 
+                ? { ...node, data: { ...node.data, label: nodeInfo.label } }
+                : node
+            )
+          );
+        }
+      }
+    };
+  
+    fetchAndSetCentralNode();
+  }, [uuid]);
 
   const createNode = useCallback((nodeData, x, y, style = {}) => {
     const isCentralNode = nodeData.uuid === uuid;
     const isPreviouslySelected = nodeData.uuid === previouslySelectedNode;
-    let label = isCentralNode ? centralNode : extractLabel(nodeData.node_type);
+    let label;
+  
+    if (isCentralNode) {
+      label = nodeData.label || centralNode || extractLabel(nodeData.node_type);
+    } else {
+      label = extractLabel(nodeData.node_type);
+    }
+  
+    if (isCentralNode && !label) {
+      label = 'Central Node';
+    }
+  
+    console.log(`Creating node: ${nodeData.uuid}, Label: ${label}, IsCentral: ${isCentralNode}`);
   
     return {
       id: nodeData.uuid,
@@ -242,18 +279,6 @@ const GraphBrowser = ({ apiUrl }) => {
       style,
     };
   }, [uuid, centralNode, previouslySelectedNode]);
-
-  useEffect(() => {
-    const fetchAndSetCentralNode = async () => {
-      if (uuid) {
-        const nodeType = await fetchCentralNode(uuid);
-        setCentralNode(nodeType.label);
-        console.log(nodeType.label, "-->Central"); 
-      }
-    };
-    
-    fetchAndSetCentralNode();
-  }, []);
 
  const createEdge = useCallback((source, target, label, isOutgoing, index) => ({
     id: generateUniqueId(`e${source}-${target}`),
@@ -312,10 +337,11 @@ const GraphBrowser = ({ apiUrl }) => {
   const displayNodes = (nodeData, nodeUuid) => {
     const newNodes = [];
     const newEdges = [];
-      // const d = new Date();
-      // let time = d.getTime();
-    const centralNode = createNode({ uuid: nodeUuid, node_type: 'central' }, CENTRAL_X, CENTRAL_Y+100);
-    newNodes.push(centralNode);
+      const existingCentralNode = nodes.find(node => node.id === nodeUuid);
+      const centralNodeLabel = existingCentralNode ? existingCentralNode.data.label : null;
+    
+      const centralNode = createNode({ uuid: nodeUuid, node_type: 'central', label: centralNodeLabel }, CENTRAL_X, CENTRAL_Y+100);
+      newNodes.push(centralNode);
   
     const createNodesWithLoadMore = (nodes, startX, startY, yIncrement, type, isReverse = false) => {
       if (nodes.length === 0) return;
@@ -395,39 +421,6 @@ const GraphBrowser = ({ apiUrl }) => {
     fetchNodes(uuid);
   }, [uuid]);
 
-  //   const { uuid } = node.data;
-  //   setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
-  //   navigate(`/${moduleName}/details/${uuid}`);
-  // }, [navigate, moduleName]);
-
-  // const handleNodeClick = useCallback((event, node) => {
-  //   const { uuid } = node.data;
-  //   setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
-  //   setIsTransitioning(true);
-
-  //   setNodes((nds) =>
-  //     nds.map((n) => ({
-  //       ...n,
-  //       position: { x: CENTRAL_X, y: CENTRAL_Y },
-  //       style: { ...n.style, transition: 'all 0.5s ease-in-out' },
-  //     }))
-  //   );
-
-  //   setEdges((eds) =>
-  //     eds.map((e) => ({
-  //       ...e,
-  //       style: { ...e.style, opacity: 0, transition: 'opacity 0.5s ease-in-out' },
-  //     }))
-  //   );
-
-  //   setTimeout(() => {
-  //     fetchNodes(uuid);
-  //     setIsTransitioning(false);
-  //   }, 500);
-
-  //   navigate(`/${moduleName}/details/${uuid}`);
-  // }, [navigate, moduleName, fetchNodes]);
-
   const handleNodeClick = useCallback((event, node) => {
     if (node.type === 'loadMore') {
       handleLoadMore(node.data.type);
@@ -437,7 +430,6 @@ const GraphBrowser = ({ apiUrl }) => {
     const { uuid } = node.data;
     setPreviouslySelectedNode(uuid);
     setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
-    // setClickedNodes((prevClickedNodes) => [...prevClickedNodes, uuid]);
     setIsTransitioning(true);
     setAnimationPhase('shrinking');
 
@@ -454,6 +446,7 @@ const GraphBrowser = ({ apiUrl }) => {
         ...n,
         position: { x: CENTRAL_X, y: CENTRAL_Y },
         style: { ...n.style, transition: 'all 0.5s ease-in-out' },
+        data: { ...n.data, label: n.data.label } 
       }))
     );
 
@@ -578,7 +571,7 @@ const toggleEdgeLabels = () => {
           containerRef={containerRef}
         />
       )}
-       <Breadcrumbs breadcrumbs={breadcrumbs} handleBreadcrumbClick={handleBreadcrumbClick} />
+       {/* <Breadcrumbs breadcrumbs={breadcrumbs} handleBreadcrumbClick={handleBreadcrumbClick} /> */}
       {showButtons && (
         <div className="fixed bottom-16 right-1/4 transform translate-x-1/2 flex justify-between items-center w-full max-w-xs bg-white p-4 rounded-lg shadow-lg">
           <button

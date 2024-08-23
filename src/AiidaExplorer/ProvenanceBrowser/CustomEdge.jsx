@@ -57,7 +57,6 @@ const CustomEdge = ({
      labelY =  targetY 
   }
 
-  console.log(data.label , sourceX , targetX)
   const labelWidth = data?.label ? data.label.length * 6 : 0; 
   const labelHeight = 14; 
   const padding = 4; 

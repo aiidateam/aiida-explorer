@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+
+const dataCache = {};
 
 const Tooltip = ({ details, position, containerRef, apiUrl }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -15,21 +17,33 @@ const Tooltip = ({ details, position, containerRef, apiUrl }) => {
     }
   }, [position]);
 
+  const fetchData = useCallback(async (uuid) => {
+    if (dataCache[uuid]) {
+      setFetchedData(dataCache[uuid]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiUrl}/nodes/${uuid}`);
+      const data = await response.json();
+      const nodeData = data.data.nodes[0];
+      
+      dataCache[uuid] = nodeData;
+      
+      setFetchedData(nodeData);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
   useEffect(() => {
     if (details && details.uuid) {
-      setLoading(true);
-      fetch(`${apiUrl}/nodes/${details.uuid}`)
-        .then(response => response.json())
-        .then(data => {
-          setFetchedData(data.data.nodes[0]);
-          setLoading(false);
-        })
-        .catch(err => {
-          setError(err);
-          setLoading(false);
-        });
+      fetchData(details.uuid);
     }
-  }, [details]);
+  }, [details, fetchData]);
 
   if (!details) return null;
 
