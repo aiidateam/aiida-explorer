@@ -23,7 +23,7 @@ const ComputersGrid = ({ apiUrl }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const baseUrl = `${apiUrl}`;
-  const [selectedNode, setSelectedNode] = useState({ full_type: '' });
+  const [selectedNode, setSelectedNode] = useState(null);  
 
   const fetchComputers = async (page) => {
     setIsLoading(true);
@@ -41,40 +41,30 @@ const ComputersGrid = ({ apiUrl }) => {
       setIsLoading(false);
     }
   };
-
   const fetchFullTypeCounts = async (apiEndpoint) => {
     try {
       const response = await axios.get(`${apiEndpoint}/nodes/full_types_count/`);
       console.log("Full type counts fetched:", response.data.data);
-      setFullTypeCounts(response.data.data);  
+      setFullTypeCounts(response.data.data);
+      return response.data.data;
     } catch (error) {
       console.error("Error fetching full type counts:", error);
       setError("Failed to fetch full type counts");
+      return null;
     }
   };
   
   useEffect(() => {
     const fetchInitialData = async () => {
       await fetchComputers(currentPage);
-      await fetchFullTypeCounts(baseUrl);  
-    };
-  
-    fetchInitialData();
-  }, [currentPage, baseUrl]);  
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      await fetchComputers(currentPage);
-  
       const counts = await fetchFullTypeCounts(baseUrl);
       if (counts) {
-        console.log("Setting full type counts:", counts);
         setFullTypeCounts(counts);
       }
     };
   
     fetchInitialData();
-  }, []);
+  }, [currentPage, baseUrl]);
 
   const handleDataFetched = (data) => {
     console.log("Computers data received in parent:", data);
@@ -154,12 +144,13 @@ const ComputersGrid = ({ apiUrl }) => {
     <div className="flex w-full mx-auto py-2 px-0 text-sm">
       <div className="w-1/5">
       <FilterSidebar
-        // fullTypeCounts={fullTypeCounts}
+        fullTypeCounts={fullTypeCounts}
         onSelectNode={handleDataFetched}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         setSelectedNode={setSelectedNode}
         onDataFetched={handleDataFetched}
+        selectedNode={selectedNode}
       />
       </div>
       <div className="w-4/5 ml-2">

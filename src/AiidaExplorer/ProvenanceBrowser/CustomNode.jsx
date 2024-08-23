@@ -24,7 +24,7 @@ const getNodeStyle = (label , isPreviouslySelected) => {
     case 'calcjobnode':
       return {
         background: '#F5B1CD',
-        borderRadius: '40%',
+        borderRadius: '4px',
         width: '170px',
         height: '80px',
         display: 'flex',
@@ -37,7 +37,7 @@ const getNodeStyle = (label , isPreviouslySelected) => {
     case 'workchainnode':
       return {
         background: '#f5b7b1',
-        borderRadius: '40%',
+        borderRadius: '4px',
         width: '170px',
         height: '80px',
         display: 'flex',

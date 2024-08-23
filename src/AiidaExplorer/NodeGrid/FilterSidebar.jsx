@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import { useNavigate , useLocation } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 
 const buildTree = (node) => {
   let subspaces = node.subspaces || [];
@@ -13,15 +14,19 @@ const buildTree = (node) => {
 };
 
 const TreeNode = ({ node, onSelectNode, selectedNode }) => {
-  const isSelected = node.full_type === selectedNode.full_type;
+  const isSelected = selectedNode && node.full_type === selectedNode.full_type;
   const [isExpanded, setIsExpanded] = useState(isSelected);
+  const navigate = useNavigate();
   const location = useLocation();
-
   const expandAndSelect = () => {
     setIsExpanded(!isExpanded);
     onSelectNode(node);
-    navigate("/");
   };
+  if (location.pathname.includes('/computers')) {
+    const newPath = location.pathname.split('/').slice(0, -1).join('/');
+    navigate(newPath);
+  }
+  
 
   return (
     <div className="ml-0 mt-1">
@@ -52,13 +57,14 @@ const TreeNode = ({ node, onSelectNode, selectedNode }) => {
     </div>
   );
 };
-
 const TreeView = ({ fullTypeCounts, selectedNode, onSelectNode }) => {
   let loading = fullTypeCounts == null;
 
   if (loading) {
     return (
-      <div className="text-center text-gray-700 bg-blue-100">Loading...</div>
+      <div className="loading-animation m-auto flex justify-center text-center">
+      <ClipLoader size={30} color="#007bff" />
+    </div>
     );
   }
   console.log(fullTypeCounts);
@@ -94,9 +100,14 @@ const FilterSidebar = ({
 }) => {
   const navigate = useNavigate();
   console.log(fullTypeCounts);
+  if (!fullTypeCounts) {
+    <div className="loading-animation m-auto flex justify-center text-center">
+    <ClipLoader size={30} color="#007bff" />
+  </div>
+  }
   const handleClick = () => {
     const currentPath = location.pathname;
-    navigate(`${currentPath}computers`);
+    navigate(`${currentPath}/computers`);
   };
 
   return (
