@@ -3,6 +3,9 @@
 ## Proposal Link
 [AIIDA-GOOGLE SUMMER OF CODE 2024](https://docs.google.com/document/d/1VQOJ9eUC1KmGdjK3tjwNfsAXz1ttTVwR7MdOs2SziRA/edit?usp=sharing)
 
+## Github Repo
+[aiida-explorer](https://github.com/aiidateam/aiida-explorer)
+
 ### **Mentors:**
 - **Kristjan Eimre**
 - **Edan Bainglass**
