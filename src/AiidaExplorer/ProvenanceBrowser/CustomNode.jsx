@@ -1,10 +1,10 @@
-import React, { memo, useEffect, useState , useRef } from 'react';
+import React, { memo, useEffect, useState, useRef } from 'react';
 import { Handle, Position } from 'reactflow';
-import Tooltip from './Tooltip'; 
+import Tooltip from './Tooltip';
 
-const apiCache = {}; 
+const apiCache = {};
 
-const getNodeStyle = (label , isPreviouslySelected) => {
+const getNodeStyle = (label, isPreviouslySelected) => {
   if (!label) {
     return {
       background: '#FFCC80',
@@ -30,7 +30,7 @@ const getNodeStyle = (label , isPreviouslySelected) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000', 
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
         transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
@@ -43,49 +43,10 @@ const getNodeStyle = (label , isPreviouslySelected) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000', 
+        border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
         transition: 'all 0.3s ease-in-out',
         overflow: 'hidden',
       };
-    // case 'structuredata':
-    //   return {
-    //     background: '#85c1e9',
-    //     borderRadius: '8px',
-    //     width: '150px',
-    //     height: '60px',
-    //     display: 'flex',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
-    //     transition: 'all 0.3s ease-in-out',
-    //     overflow: 'hidden',
-    //   };
-    // case 'dict':
-    //   return {
-    //     background: '#9999FF',
-    //     borderRadius: '8px',
-    //     width: '150px',
-    //     height: '60px',
-    //     display: 'flex',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
-    //     transition: 'all 0.3s ease-in-out',
-    //     overflow: 'hidden',
-    //   };
-    // case 'upfdata':
-    //   return {
-    //     background: '#d2b4de',
-    //     borderRadius: '8px',
-    //     width: '150px',
-    //     height: '60px',
-    //     display: 'flex',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     border: isPreviouslySelected ? '2px solid blue' : '1px solid #000',
-    //     transition: 'all 0.3s ease-in-out',
-    //     overflow: 'hidden',
-    //   };
     default:
       return {
         background: '#82e0aa',
@@ -101,11 +62,11 @@ const getNodeStyle = (label , isPreviouslySelected) => {
       };
   }
 };
+
 const CustomNode = ({ data }) => {
   const [subtitle, setSubtitle] = useState('');
-  const [labelRe, setLabel] = useState();
+  const [labelRe, setLabelRe] = useState(data.label);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [nodeData, setNodeData] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const nodeRef = useRef(null);
 
@@ -143,11 +104,10 @@ const CustomNode = ({ data }) => {
             }
           }
 
-          if (response) {
+          if (response.ok) {
             const result = await response.json();
-            console.log(result)
-            setLabel(extractLabel(result.data.nodes[0].node_type));
-
+            const nodeType = extractLabel(result.data.nodes[0].node_type);
+            setLabelRe(nodeType); // Update labelRe state here
             const nodeDetails = result.data?.nodes?.[0]?.process_type;
             if (nodeDetails) {
               const parts = nodeDetails.split(':');
@@ -157,9 +117,11 @@ const CustomNode = ({ data }) => {
 
           const fetchedNodeData = { subtitle, label: data.label };
           apiCache[data.uuid] = fetchedNodeData;
-          setNodeData(fetchedNodeData);
+          setSubtitle(subtitle);
         } else {
-          setNodeData(apiCache[data.uuid]);
+          const cachedData = apiCache[data.uuid];
+          setLabelRe(cachedData.label);
+          setSubtitle(cachedData.subtitle);
         }
       } catch (error) {
         console.error('Error fetching node data:', error);
@@ -168,24 +130,25 @@ const CustomNode = ({ data }) => {
     };
 
     fetchNodeData();
-  }, [data.uuid]);
+  }, [data.uuid, data.label]);
 
-  const handleMouseEnter = (event) => {
-    setTooltipPosition({ x: event.clientX, y: event.clientY });
-    setShowTooltip(true);
-  };
+  // const handleMouseEnter = (event) => {
+  //   setTooltipPosition({ x: event.clientX, y: event.clientY });
+  //   setShowTooltip(true);
+  // };
 
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
-  };
+  // const handleMouseLeave = () => {
+  //   setShowTooltip(false);
+  // };
 
-  console.log(labelRe)
+  console.log('labelRe:', labelRe);
+
   return (
     <div
       ref={nodeRef}
-      style={getNodeStyle(data.label)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      style={getNodeStyle(data.label)} 
+      // onMouseEnter={handleMouseEnter}
+      // onMouseLeave={handleMouseLeave}
     >
       <Handle
         type="target"
@@ -193,13 +156,13 @@ const CustomNode = ({ data }) => {
         style={{ background: '#555' }}
         onConnect={(params) => console.log('handle onConnect', params)}
       />
-      <div className='flex-col'>
+      <div className="flex-col">
         <div className="text-sm text-center whitespace-nowrap overflow-hidden overflow-ellipsis">
-          {extractLabel(labelRe) || data.label}
+          {labelRe}
         </div>
-        {nodeData?.subtitle && (
+        {subtitle && (
           <div className="text-xs font-thin text-center whitespace-nowrap overflow-hidden overflow-ellipsis mt-1">
-            <i>{nodeData.subtitle}</i>
+            <i>{subtitle}</i>
           </div>
         )}
       </div>
@@ -209,14 +172,6 @@ const CustomNode = ({ data }) => {
         style={{ background: '#555' }}
         onConnect={(params) => console.log('handle onConnect', params)}
       />
-      {/* {showTooltip && (
-        <Tooltip
-          details={data}
-          position={tooltipPosition}
-          containerRef={nodeRef}
-          apiUrl="https://aiida.materialscloud.org/mc3d/api/v4"
-        />
-      )} */}
     </div>
   );
 };

@@ -76,7 +76,7 @@ const CustomEdge = ({
       />
       <path
         id={id}
-        style={{ ...style, strokeWidth: data.isPreviouslySelected ? 2 : 1, stroke: edgeColor , transition: 'all 0.3s ease-in-out' }}
+        style={{ ...style, strokeWidth: data.isPreviouslySelected ? 3 : 1, stroke: edgeColor , transition: 'all 0.3s ease-in-out' }}
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
