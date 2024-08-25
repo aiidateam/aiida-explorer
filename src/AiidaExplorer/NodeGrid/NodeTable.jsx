@@ -1,42 +1,55 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
 } from "@tanstack/react-table";
 import { ClipLoader } from 'react-spinners';
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
-const NodeTable = ({ data, isLoading }) => {
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
-
+const NodeTable = ({ data, loading, sorting, onSort }) => {
   const navigate = useNavigate();
 
   const columnHelper = createColumnHelper();
-
-  if (isLoading) {
-    return (
-      <div className="loading-animation m-auto flex justify-center text-center">
-        <ClipLoader size={30} color="#007bff" />
-      </div>
-    );
-  }
 
   const switchToDetailsView = (uuid) => {
     navigate(`details/${uuid}`);
   };
 
+  const SortableHeader = ({ column, children }) => {
+    const isSortable = ['mtime', 'ctime', 'uuid'].includes(column);
+    const currentSort = sorting.column === column ? sorting.order : null;
+
+    return (
+      <div className="flex items-center">
+        {children}
+        {isSortable && (
+          <div className="ml-2 flex flex-col">
+            <button
+              onClick={() => onSort(column)}
+              className={`text-xs ${currentSort === 'asc' ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              ▲
+            </button>
+            <button
+              onClick={() => onSort(column)}
+              className={`text-xs ${currentSort === 'desc' ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              ▼
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const columns = [
     columnHelper.accessor("uuid", {
-      header: "UUID",
+      header: ({ column }) => (
+        <SortableHeader column="uuid">UUID</SortableHeader>
+      ),
       cell: (info) => info.getValue(),
     }),
     columnHelper.accessor("node_type", {
@@ -44,11 +57,15 @@ const NodeTable = ({ data, isLoading }) => {
       cell: (info) => info.getValue(),
     }),
     columnHelper.accessor("ctime", {
-      header: "Creation Time",
+      header: ({ column }) => (
+        <SortableHeader column="ctime">Creation Time</SortableHeader>
+      ),
       cell: (info) => format(new Date(info.getValue()), "yyyy-MM-dd"),
     }),
     columnHelper.accessor("mtime", {
-      header: "Modification Time",
+      header: ({ column }) => (
+        <SortableHeader column="mtime">Modification Time</SortableHeader>
+      ),
       cell: (info) => format(new Date(info.getValue()), "yyyy-MM-dd"),
     }),
     columnHelper.accessor("user_id", {
@@ -75,65 +92,16 @@ const NodeTable = ({ data, isLoading }) => {
   const table = useReactTable({
     data,
     columns,
-    state: {
-      pagination,
-    },
-    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    // getSortedRowModel: getSortedRowModel(),
-    // getFilteredRowModel: getFilteredRowModel(),
-    manualPagination: true,
   });
 
-  // const PaginationControls = () => {
-  //   const pageCount = table.getPageCount();
-  //   const currentPage = table.getState().pagination.pageIndex + 1;
-
-  //   return (
-  //     <div className="flex justify-center items-center space-x-2 my-2">
-  //       <button
-  //         onClick={() => table.setPageIndex(0)}
-  //         disabled={!table.getCanPreviousPage()}
-  //         className="px-2 py-1 border rounded disabled:opacity-50"
-  //       >
-  //         «
-  //       </button>
-  //       <button
-  //         onClick={() => table.previousPage()}
-  //         disabled={!table.getCanPreviousPage()}
-  //         className="px-2 py-1 border rounded disabled:opacity-50"
-  //       >
-  //         ‹
-  //       </button>
-  //       {Array.from({ length: pageCount }, (_, i) => i + 1).map((page) => (
-  //         <button
-  //           key={page}
-  //           onClick={() => table.setPageIndex(page - 1)}
-  //           className={`px-2 py-1 border rounded ${
-  //             page === currentPage ? "bg-gray-300" : "hover:bg-gray-200"
-  //           }`}
-  //         >
-  //           {page}
-  //         </button>
-  //       ))}
-  //       <button
-  //         onClick={() => table.nextPage()}
-  //         disabled={!table.getCanNextPage()}
-  //         className="px-2 py-1 border rounded disabled:opacity-50"
-  //       >
-  //         ›
-  //       </button>
-  //       <button
-  //         onClick={() => table.setPageIndex(pageCount - 1)}
-  //         disabled={!table.getCanNextPage()}
-  //         className="px-2 py-1 border rounded disabled:opacity-50"
-  //       >
-  //         »
-  //       </button>
-  //     </div>
-  //   );
-  // };
+  if (loading) {
+    return (
+      <div className="loading-animation m-auto flex justify-center text-center">
+        <ClipLoader size={30} color="#007bff" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -147,33 +115,10 @@ const NodeTable = ({ data, isLoading }) => {
                   className="p-2 border-b text-left bg-blue-50"
                 >
                   {header.isPlaceholder ? null : (
-                    <div>
-                      <div
-                        {...{
-                          className: header.column.getCanSort()
-                            ? "cursor-pointer select-none"
-                            : "",
-                          onClick: header.column.getToggleSortingHandler(),
-                        }}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </div>
-                      {/* {header.column.getCanFilter() ? (
-                        <div>
-                          <input
-                            value={header.column.getFilterValue() ?? ""}
-                            onChange={(e) =>
-                              header.column.setFilterValue(e.target.value)
-                            }
-                            placeholder={`Filter ${header.column.columnDef.header}`}
-                            className="w-full mt-1 p-1 text-xs border rounded"
-                          />
-                        </div>
-                      ) : null} */}
-                    </div>
+                    flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )
                   )}
                 </th>
               ))}
@@ -192,7 +137,6 @@ const NodeTable = ({ data, isLoading }) => {
           ))}
         </tbody>
       </table>
-      {/* <PaginationControls />  */}
     </div>
   );
 };

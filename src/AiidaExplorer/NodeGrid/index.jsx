@@ -18,10 +18,12 @@ async function fetchNodesPaginated(
   apiEndpoint,
   fullType,
   page,
-  entriesPerPage = 20
+  entriesPerPage = 20,
+  sortColumn = 'ctime',
+  sortOrder = 'desc'
 ) {
   let url = `${apiEndpoint}/nodes/page/${page}`;
-  url += `?perpage=${entriesPerPage}&full_type="${fullType}"&orderby=-ctime`;
+  url += `?perpage=${entriesPerPage}&full_type="${fullType}"&orderby=${sortOrder === 'desc' ? '-' : ''}${sortColumn}`;
   if (fullType.includes("process")) {
     url += "&attributes=true";
     url +=
@@ -43,6 +45,8 @@ const NodeGrid = ({ apiUrl }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedNodeFilter, setSelectedNodeFilter] = useState(null);
   const [fullTypeCounts, setFullTypeCounts] = useState(null);
+  const [sorting, setSorting] = useState({ column: 'ctime', order: 'desc' });
+
 
   const fetchData = async (page) => {
     setLoading(true);
@@ -52,7 +56,9 @@ const NodeGrid = ({ apiUrl }) => {
           baseUrl,
           selectedNodeFilter.full_type,
           page,
-          entriesPerPage
+          entriesPerPage,
+          sorting.column,
+          sorting.order
         );
         setData(result);
       } catch (error) {
@@ -86,12 +92,19 @@ const NodeGrid = ({ apiUrl }) => {
 
   useEffect(() => {
     fetchData(currentPage);
-  }, [selectedNodeFilter, currentPage]);
+  }, [selectedNodeFilter, currentPage ,  sorting]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= getTotalPages()) {
       setCurrentPage(newPage);
     }
+  };
+
+  const handleSort = (column) => {
+    setSorting(prevSorting => ({
+      column,
+      order: prevSorting.column === column && prevSorting.order === 'asc' ? 'desc' : 'asc',
+    }));
   };
 
   const renderPaginationControls = () => {
@@ -154,7 +167,8 @@ const NodeGrid = ({ apiUrl }) => {
               <ClipLoader size={50} color="#007bff" />
             </div>
           ) : (
-            <NodeTable data={data} loading={loading} />
+            <NodeTable data={data} loading={loading} sorting={sorting}
+              onSort={handleSort}/>
           )}
         </div>
         <div className="flex justify-between items-center mt-4">
