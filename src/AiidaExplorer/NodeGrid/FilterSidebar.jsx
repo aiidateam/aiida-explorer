@@ -112,9 +112,22 @@ const FilterSidebar = ({
     <ClipLoader size={30} color="#007bff" />
   </div>
   }
+  const joinPaths = (...parts) => {
+    return parts
+      .map((part, i) => {
+        if (i === 0) {
+          return part.trim().replace(/\/*$/, '')
+        } else {
+          return part.trim().replace(/(^\/|\/*$)/g, '')
+        }
+      })
+      .filter(x => x.length)
+      .join('/')
+  }
+  
   const handleClick = () => {
     const currentPath = location.pathname;
-    navigate(`${currentPath}/computers`);
+    navigate(joinPaths(currentPath, 'computers'));
   };
 
   return (
