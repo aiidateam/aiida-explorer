@@ -30,6 +30,7 @@ const DetailsPage = ({ apiUrl }) => {
   const searchParams = new URLSearchParams(location.search);
   const isFromComputersGrid = searchParams.get('source') === 'computersGrid';
 
+  console.log(isFromComputersGrid);
 
   const formatFormula = (formula) => {
     return formula.split(/(\d+)/).map((part, index) =>
@@ -133,8 +134,8 @@ const DetailsPage = ({ apiUrl }) => {
 
   return (
 <div>
-  <div className="flex flex-col md:flex-row h-[100vh] mx-4 p-5">
-    <div className={`w-full md:w-1/2 ${isFromComputersGrid ? 'w-full' : 'w-full md:w-1/2'} p-6 border-2 mb-4 md:mb-0 md:mr-2  rounded-lg relative `}>
+  <div className="flex w-full flex-col md:flex-row h-[100vh] mx-4 p-5">
+    <div className={` ${isFromComputersGrid ? 'w-full h-[100vh]' : 'w-full md:w-1/2'} p-6 border-2 mb-4 md:mb-0 md:mr-2  rounded-lg relative `}>
       <div className='p-5 relative border-2 bg-gray-50 border-gray-300 rounded'>
          <div className='border-2 border-gray-300 absolute top-[-1rem] left-[2%] px-3 py-1 bg-gray-200 z-10 align-middle items-center'>
           <h1 className="text-xl font-semibold text-center">Overview</h1>

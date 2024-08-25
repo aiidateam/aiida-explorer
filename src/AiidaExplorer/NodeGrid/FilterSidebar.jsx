@@ -16,16 +16,23 @@ const buildTree = (node) => {
 const TreeNode = ({ node, onSelectNode, selectedNode }) => {
   const isSelected = selectedNode && node.full_type === selectedNode.full_type;
   const [isExpanded, setIsExpanded] = useState(isSelected);
+  const [shouldNavigate, setShouldNavigate] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
+
   const expandAndSelect = () => {
     setIsExpanded(!isExpanded);
     onSelectNode(node);
+    setShouldNavigate(true);
   };
-  if (location.pathname.includes('/computers')) {
-    const newPath = location.pathname.split('/').slice(0, -1).join('/');
-    navigate(newPath);
-  }
+  useEffect(() => {
+    if (shouldNavigate && location.pathname.includes('/computers')) {
+      const newPath = location.pathname.split('/').slice(0, -1).join('/');
+      navigate(newPath);
+      setShouldNavigate(false);
+    }
+  }, [shouldNavigate, location.pathname, navigate]);
   
 
   return (
