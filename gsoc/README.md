@@ -1,75 +1,85 @@
-# Google Summer of Code 2024 project report
+# Google Summer of Code 2024 Project Report
 
 ## Proposal Link
 [AIIDA-GOOGLE SUMMER OF CODE 2024](https://docs.google.com/document/d/1VQOJ9eUC1KmGdjK3tjwNfsAXz1ttTVwR7MdOs2SziRA/edit?usp=sharing)
 
-## Github Repo
+## GitHub Repository
 [aiida-explorer](https://github.com/aiidateam/aiida-explorer)
 
-### **Mentors:**
-- **Kristjan Eimre**
-- **Edan Bainglass**
-- **Xing Wang**
-- **Jusong Yu**
+### Mentors:
+- Kristjan Eimre
+- Edan Bainglass
+- Xing Wang
+- Jusong Yu
 
 ---
 
-## **Project Overview**
+## Project Overview
 
-The objective of this project is to develop an **intuitive tool in React** for browsing **AiiDA graphs**, effectively replacing the **outdated AiiDA Provenance Browser** currently used in **Materials Cloud Explore**. 
+The goal of this project is to build an easy-to-use tool in React for exploring AiiDA graphs. This tool will replace the old AiiDA Provenance Browser currently used in Materials Cloud Explore.
 
-This new tool will interface seamlessly with AiiDA via a **REST API**, allowing users to:
+The new tool connects smoothly with AiiDA using a REST API, and it lets users:
 
-- **Dynamically explore graphs.**
-- **Clearly differentiate between input and output nodes.**
-- **Fully visualize all connecting nodes.**
-- **Preview node details without the need for page redirection.**
+- Explore graphs interactively.
+- Easily see the difference between input and output nodes.
+- View all the nodes connected to each other.
+- Check out node details without needing to open a new page.
 
-The end goal is to create an **AiiDA node graph viewer** that is both robust and user-friendly, which will be developed in React and potentially published as a reusable component on the npm repository**.
-
----
-
-## **Key Improvements Compared to Previous Version**
-
-- **Modernized User Interface:** 
-  - Upgraded the existing interface from **AngularJS to React**, providing a more **streamlined** and **responsive experience**.
-
-- **Enhanced Functionality:** 
-  - Added new features that were missing in the previous implementation, ensuring a more **comprehensive tool for users**.
-
-- **Increased Node Threshold:** 
-  - Expanded the node display limit to handle **larger and more complex graphs effectively**.
+The final aim is to create a strong and user-friendly AiiDA node graph viewer. This viewer is being built with React and might even be published as a reusable component on the npm repository.
 
 ---
 
-## **Project Outcome**
+## Key Improvements Compared to the Previous Version
 
-### **Node Grid Component:**
+- **Updated User Interface:** 
+  - The old interface was built with angular.js. We have now upgraded it to React, which makes the tool look and feel smoother and more responsive.
+
+- **Better Features:** 
+  - We've added new functions that were missing in the old version, so now users can do more with this tool.
+
+- **Can Handle Larger Graphs:** 
+  - The tool can now display more nodes at once, which is helpful for working with bigger and more complex graphs.
+
+---
+
+## Project Outcome
+
+### Node Grid Component:
 ![Node Grid](images/grid.png "Grid")
 
-The **Node Grid Component** lets you **select the type of Node** you want to explore. Once a type is selected, you can view all possible options available under that category.
+The Node Grid Component allows users to explore nodes by their types. Here’s what it can do:
 
-### **Node Details Page:**
+- **Filter by Node Type:** You can choose to see only certain types of nodes, like data nodes, process nodes, or computer nodes.
+- **Sort Nodes:** You can sort the nodes based on different fields.
+- **Filter Section and Table:** On the left side of the image, you see the filter options. On the right side, there's a table that lists all the nodes that match the filter. 
+- **Details Button:** Each node in the table has a button that takes you to the Node Details Page (described below).
+
+### Node Details Page:
 
 ![Node Details](images/Details.png "Details Page")
 
-This page displays **detailed information** about the selected Node. If the selected Node has **visualization capabilities**, it can be viewed in the **Rich View**. 
+The Node Details Page shows all the important information about a node. You can view the node’s details in two ways: as raw data or in a rich view.
 
-- **Left Side:** Shows detailed node information.
-- **Right Side:** Contains the **main graph component** which helps in visualizing the Node structure and related Nodes. They are arranged in a way that helps to **better segregate** them.
+- **Left Side:** This part of the page shows all the node’s details, like general information, attributes, and extra data.
+- **Right Side:** This part contains a graph that shows how the selected node is connected to other nodes. The nodes are arranged to make it easy to see different types of connections. If you click on another node in this graph, it will open that node's detail page.
 
-### **Statistics Section:**
+### Statistics Section:
 
 ![Statistics](images/Statistics.png "Statistics Page")
 
-The **Statistics** also contains statistics about the selected Node, providing relevant information depending on the users who created those nodes.
+The Statistics section shows data about the AiiDA database, including general information about the nodes and details about the users who created them.
 
 ---
 
-## **Future Goals**
+## Future Outlook
 
-As of now, our implementation supports the **local provenance view**. Looking ahead, we’re planning to introduce the **global provenance view**. 
+### Current Functionality:
+Right now, the tool works well for looking at the local provenance view (the view that shows how nodes are connected within a small area). However, there are still some issues:
 
-This broader perspective will allow you to **visualize interconnected nodes** on a larger scale, rather than focusing solely on a **small subset of nodes**.
+- **Graph Browser Bugs:** Sometimes the connections between nodes appear from the wrong side.
+- **Data Loading Issues:** Occasionally, the data doesn’t load correctly.
+
+### Future Goals:
+In the future, we plan to add a global provenance view. This new feature will allow users to see how nodes are connected on a larger scale, not just within a small area.
 
 ---
