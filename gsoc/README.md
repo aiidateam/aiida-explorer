@@ -25,14 +25,14 @@ The new tool connects smoothly with AiiDA using a REST API, and it lets users:
 - View all the nodes connected to each other.
 - Check out node details without needing to open a new page.
 
-The final aim is to create a strong and user-friendly AiiDA node graph viewer. This viewer is being built with React and might even be published as a reusable component on the npm repository.
+The final aim is to create a strong and user-friendly AiiDA node graph viewer. This viewer was built with React and was published as a reusable component on the npm repository.
 
 ---
 
 ## Key Improvements Compared to the Previous Version
 
 - **Updated User Interface:** 
-  - The old interface was built with angular.js. We have now upgraded it to React, which makes the tool look and feel smoother and more responsive.
+  - The old interface was built with angular.js, which is now a deprecated framework. We have now upgraded it to React, which makes the tool look and feel smoother and more responsive.
 
 - **Better Features:** 
   - We've added new functions that were missing in the old version, so now users can do more with this tool.
@@ -69,6 +69,11 @@ The Node Details Page shows all the important information about a node. You can 
 
 The Statistics section shows data about the AiiDA database, including general information about the nodes and details about the users who created them.
 
+## Publishing and Deployment
+
+- The **AiidaExplorer** component has been published to the npm repository. You can find it [here](https://www.npmjs.com/package/aiida-explorer).
+- A demo page that illustrates the usage:
+  - **Netlify Pages** [here](https://aiida-explorer.netlify.app/) 
 ---
 
 ## Future Outlook
