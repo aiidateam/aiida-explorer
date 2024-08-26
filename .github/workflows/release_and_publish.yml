@@ -23,8 +23,8 @@ jobs:
       - name: Install project dependencies
         run: npm clean-install
 
-      - name: Build the dist folder
-        run: npm run build
+      - name: Build the dist folder including only the library
+        run: npm run build:lib
 
       - name: Create GitHub Release
         id: create_release

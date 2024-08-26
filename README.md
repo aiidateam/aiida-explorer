@@ -17,7 +17,7 @@ And use with the following (note that the components needs to be inside a `Route
 ```javascript
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import AiidaExplorer from "./AiidaExplorer";
+import AiidaExplorer from "aiida-explorer";
 
 <BrowserRouter>
   <Routes>
@@ -39,12 +39,12 @@ npm install
 npm run dev
 ```
 
-### Building and testing locally
+### Building and testing locally the library
 
-To build and test locally in an external application (e.g. before publishing to npm), use
+To build just the `AiidaExplorer` component and test locally in an external application (e.g. before publishing to npm), use
 
 ```
-npm run build
+npm run build:lib
 npm pack
 ```
 
@@ -54,7 +54,7 @@ which will create a `.tgz` file that can then be installed by the external appli
 npm install /path/to/aiida-explorer-x.y.z.tgz
 ```
 
-### Publishing a new version
+### Publishing a new version of the library on npm
 
 To make a new version and publish to npm via GitHub Actions:
 
