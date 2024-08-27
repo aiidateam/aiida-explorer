@@ -28,11 +28,16 @@ import AiidaExplorer from "aiida-explorer";
 
 where `aiidaRestApiUrl` is the base url of the [AiiDA REST API](https://aiida.readthedocs.io/projects/aiida-core/en/v2.6.2/reference/rest_api.html).
 
+Note that this repository contains
+
+1. the `AiidaExplorer` component (library), which is also published to `npm`; and
+2. a demo page illustrating the usage, which is deployed to github pages.
+
 ## Development
 
 ### Using the demo page
 
-For development, start the demo page (in `src/App.jsx`) by
+For development, start the demo page by
 
 ```
 npm install
@@ -41,16 +46,16 @@ npm run dev
 
 ### Building and testing locally the library
 
-To build just the `AiidaExplorer` component and test locally in an external application (e.g. before publishing to npm), use
+To build just the `AiidaExplorer` component and test locally in an external application (e.g. before publishing to `npm`), use
 
-```
+```bash
 npm run build:lib
 npm pack
 ```
 
 which will create a `.tgz` file that can then be installed by the external application via
 
-```
+```bash
 npm install /path/to/aiida-explorer-x.y.z.tgz
 ```
 
@@ -61,4 +66,10 @@ To make a new version and publish to npm via GitHub Actions:
 ```bash
 npm version <major/minor/patch>
 git push --follow-tags
+```
+
+### Deploying the demo page to github-pages
+
+```
+npm run deploy
 ```

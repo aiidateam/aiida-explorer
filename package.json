@@ -12,12 +12,13 @@
   ],
   "scripts": {
     "dev": "vite",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
     "build": "vite build",
     "build:lib": "vite build --mode lib",
+    "build:gh-pages": "vite build --mode gh-pages",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build:gh-pages",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.17.3",

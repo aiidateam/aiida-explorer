@@ -20,6 +20,11 @@ export default defineConfig(({ mode }) => {
         },
       },
     };
+  } else if (mode === "gh-pages") {
+    return {
+      base: "/aiida-explorer/",
+      plugins: [react()],
+    };
   } else {
     return {
       base: "/",
