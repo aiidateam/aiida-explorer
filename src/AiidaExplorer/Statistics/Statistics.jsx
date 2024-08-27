@@ -56,6 +56,8 @@ const renderActiveShape = (props) => {
   const ey = my;
   const textAnchor = cos >= 0 ? 'start' : 'end';
 
+  console.log(payload)
+
   return (
     <g>
       <Sector
@@ -102,32 +104,39 @@ const UserProcessNodesPieChart = ({ selectedUser, apiUrl }) => {
       const endpoint = userId
         ? `${apiUrl}/nodes/full_types_count?user=${userId}`
         : `${apiUrl}/nodes/full_types_count`;
-
+  
       const response = await axios.get(endpoint);
       const data = response.data;
-
+  
+      const totalEntries = data.data.subspaces[1].counter; 
       const processedData = [];
-
+  
       const recursiveProcess = (node) => {
-        if (node.full_type.startsWith("process")) {
-          processedData.push({ full_type: node.full_type, counter: node.counter });
+        if (node.full_type && node.full_type.trim().includes("process")) {
+          const percentage = ((node.counter / totalEntries) * 100).toFixed(2);
+          processedData.push({ 
+            type: node.full_type, 
+            counter: node.counter,
+            label: `${node.label} (${percentage}%, ${node.counter} entries)`
+          });
         }
-
+  
         if (node.subspaces && node.subspaces.length > 0) {
           node.subspaces.forEach((subspace) => {
             recursiveProcess(subspace);
           });
         }
       };
-
-      recursiveProcess(data.data);
-
+  
+      recursiveProcess(data.data.subspaces[1]);
       return processedData;
     } catch (error) {
       console.error("Error fetching the data", error);
       return [];
     }
   };
+  
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,6 +162,7 @@ const UserProcessNodesPieChart = ({ selectedUser, apiUrl }) => {
           activeIndex={activeIndex}
           activeShape={renderActiveShape}
           data={processData}
+          // label={(entry) => entry.label}
           innerRadius={80}
           outerRadius={120}
           fill="#8884d8"
@@ -163,6 +173,7 @@ const UserProcessNodesPieChart = ({ selectedUser, apiUrl }) => {
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
+        {/* <Tooltip formatter={(value, name) => [`${value} entries`, name]} /> */}
       </PieChart>
     </ResponsiveContainer>
   );
@@ -216,14 +227,12 @@ const Statistics = ({ apiUrl }) => {
         const responseData = await response.json();
 
         if (responseData && responseData.data) {
-          // Update timeline data
           const formattedData = Object.entries(responseData.data.ctime_by_day || {}).map(([date, nodes]) => ({
             date,
             nodes
           }));
           setData(formattedData);
 
-          // Update types data
           if (responseData.data.types) {
             const formattedTypes = Object.entries(responseData.data.types).map(([type, count]) => ({
               type,
