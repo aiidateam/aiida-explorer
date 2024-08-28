@@ -2,9 +2,18 @@
 
 [![NPM Version](https://img.shields.io/npm/v/aiida-explorer)](https://www.npmjs.com/package/aiida-explorer)
 
-React component to explore AiiDA provenance.
+A React component to explore AiiDA provenance.
 
-This is a new version under development with the goal to replace https://github.com/materialscloud-org/aiida-explorer
+This is a new version under development with the goal to replace https://github.com/materialscloud-org/aiida-explorer.
+
+The initial version of this tool was created by Sharan Poojari during Google Summer of Code 2024 (see [the final report](https://github.com/aiidateam/aiida-explorer/blob/gsoc/gsoc/README.md)).
+
+This repository contains
+
+1. the `AiidaExplorer` component (library), which is also published to `npm`; and
+2. a demo page illustrating the usage, which is deployed to github pages.
+
+## Installation and usage
 
 Install via
 
@@ -27,11 +36,6 @@ import AiidaExplorer from "aiida-explorer";
 ```
 
 where `aiidaRestApiUrl` is the base url of the [AiiDA REST API](https://aiida.readthedocs.io/projects/aiida-core/en/v2.6.2/reference/rest_api.html).
-
-Note that this repository contains
-
-1. the `AiidaExplorer` component (library), which is also published to `npm`; and
-2. a demo page illustrating the usage, which is deployed to github pages.
 
 ## Development
 
