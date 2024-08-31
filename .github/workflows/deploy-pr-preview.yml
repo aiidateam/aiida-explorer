@@ -27,7 +27,7 @@ jobs:
       - name: Set vite base path variable
         env:
           PR_NUMBER: ${{ github.event.number }}
-        run: echo "VITE_BASE_PATH=/aiida-explorer/pr-preview/pr-${PR_NUMBER}" >> $GITHUB_ENV
+        run: echo "VITE_BASE_PATH=/aiida-explorer/pr-preview/pr-${PR_NUMBER}/" >> $GITHUB_ENV
 
       - name: Install and Build
         if: github.event.action != 'closed'
