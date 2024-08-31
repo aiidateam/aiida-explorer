@@ -5,6 +5,10 @@ import { libInjectCss } from "vite-plugin-lib-inject-css";
 
 import * as packageJson from "./package.json";
 
+// When deploying the demo page, `base:` needs to be the full subpath of the URL.
+// e.g. if deployed to `domain.com/pr-preview/pr-5`, then you need to set `base: '/pr-preview/pr-5'`
+// read it from an env variable to allow the various different deploy destinations.
+
 export default defineConfig(({ mode }) => {
   if (mode === "lib") {
     return {
@@ -20,15 +24,9 @@ export default defineConfig(({ mode }) => {
         },
       },
     };
-  } else if (mode === "gh-pages") {
-    return {
-      base: "/aiida-explorer/",
-      plugins: [react()],
-    };
-  } else {
-    return {
-      base: "/",
-      plugins: [react()],
-    };
   }
+  return {
+    plugins: [react()],
+    base: process.env.VITE_BASE_PATH || "/",
+  };
 });
