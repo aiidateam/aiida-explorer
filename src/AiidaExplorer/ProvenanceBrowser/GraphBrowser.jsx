@@ -86,6 +86,7 @@ const GraphBrowser = ({ apiUrl }) => {
   const [animationPhase, setAnimationPhase] = useState('idle');
   const [previouslySelectedNode, setPreviouslySelectedNode] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [tooltipData, setTooltipData] = useState([]);
 
 
   const API_URL = `${apiUrl}`
@@ -313,6 +314,7 @@ const GraphBrowser = ({ apiUrl }) => {
     try {
       console.log("Fetching data for", nodeUuid);
       const data = await fetchAllLinks(nodeUuid);
+      setTooltipData(data);
       console.log("Received data:", data);
       if (!data) {
         console.log("No data received");
@@ -569,6 +571,7 @@ const toggleEdgeLabels = () => {
           details={tooltipDetails}
           position={tooltipPosition}
           containerRef={containerRef}
+          tooltipData={tooltipData}
         />
       )}
        {/* <Breadcrumbs breadcrumbs={breadcrumbs} handleBreadcrumbClick={handleBreadcrumbClick} /> */}
