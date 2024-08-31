@@ -11,7 +11,7 @@ The initial version of this tool was created by Sharan Poojari during Google Sum
 This repository contains
 
 1. the `AiidaExplorer` component (library), which is also published to `npm`; and
-2. a demo page illustrating the usage, which is deployed to github pages.
+2. a demo page illustrating the usage, which is deployed to github pages (https://aiidateam.github.io/aiida-explorer/).
 
 ## Installation and usage
 
@@ -74,6 +74,8 @@ git push --follow-tags
 
 ### Deploying the demo page to github-pages
 
-```
-npm run deploy
-```
+The demo page is deployed to Github pages automatically from the `main` branch.
+
+Additionally, any pull request gets deployed in it's own subpath as well.
+
+Manual deployment to Github pages should not be done, as that might break any PR previews.

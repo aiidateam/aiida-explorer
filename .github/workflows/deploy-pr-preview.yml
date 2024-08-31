@@ -1,0 +1,41 @@
+name: Deploy PR previews
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-20.04
+    if: github.repository == 'aiidateam/aiida-explorer'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set vite base path variable
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: echo "VITE_BASE_PATH=/aiida-explorer/pr-preview/pr-${PR_NUMBER}" >> $GITHUB_ENV
+
+      - name: Install and Build
+        if: github.event.action != 'closed'
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./dist/
