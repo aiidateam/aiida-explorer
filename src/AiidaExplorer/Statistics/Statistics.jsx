@@ -308,8 +308,8 @@ const Statistics = ({ apiUrl }) => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Brush dataKey="date" height={30} stroke="#8884d8" />
-              <Bar dataKey="nodes" fill="#8884d8" />
+              <Brush dataKey="date" height={30} stroke="#8884d0" />
+              <Bar dataKey="nodes" fill="#8884d0" />
             </BarChart>
           </ResponsiveContainer>
         )}
