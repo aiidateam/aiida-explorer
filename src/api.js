@@ -1,6 +1,6 @@
 const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
-import { layoutGraph } from "./graphController";
+import { layoutGraphWithEdges } from "./graphController";
 import { enhanceNodes } from "./nodeController";
 
 export async function fetchNodeById(nodeId) {
@@ -48,22 +48,32 @@ export async function fetchGraphByNodeId(nodeId) {
   const linksIn = incoming?.data?.incoming || [];
   const linksOut = outgoing?.data?.outgoing || [];
 
+  console.log("RN", rootNode);
+
   const allNodes = [
     {
       id: rootNode.uuid,
       data: {
-        label: rootNode.label,
+        label: rootNode.node_type.split(".").filter(Boolean).pop(),
         node_type: rootNode.node_type,
         pos: "center",
       },
     },
     ...linksIn.map((l) => ({
       id: l.uuid,
-      data: { label: l.label || l.uuid, node_type: l.node_type, pos: "input" },
+      data: {
+        label: l.node_type.split(".").filter(Boolean).pop(),
+        node_type: l.node_type,
+        pos: "input",
+      },
     })),
     ...linksOut.map((l) => ({
       id: l.uuid,
-      data: { label: l.label || l.uuid, node_type: l.node_type, pos: "output" },
+      data: {
+        label: l.node_type.split(".").filter(Boolean).pop(),
+        node_type: l.node_type,
+        pos: "output",
+      },
     })),
   ];
 
@@ -71,31 +81,11 @@ export async function fetchGraphByNodeId(nodeId) {
 
   const styledNodes = enhanceNodes(allNodes);
 
-  const positionedNodes = layoutGraph(styledNodes);
+  const { nodes, edges } = layoutGraphWithEdges(
+    styledNodes.find((n) => n.data.pos === "center"),
+    styledNodes.filter((n) => n.data.pos === "input"),
+    styledNodes.filter((n) => n.data.pos === "output")
+  );
 
-  const edges = [];
-
-  linksIn.forEach((link) => {
-    edges.push({
-      id: `e-${link.uuid}-${rootNode.uuid}`,
-      source: link.uuid.toString(), // must match node.id
-      target: rootNode.uuid.toString(), // must match node.id
-      type: "smoothstep",
-      style: { stroke: "green", strokeWidth: 2 },
-      markerEnd: { type: "arrow", color: "green", width: 20, height: 15 },
-    });
-  });
-
-  linksOut.forEach((link) => {
-    edges.push({
-      id: `e-${rootNode.uuid}-${link.uuid}`,
-      source: rootNode.uuid.toString(), // must match node.id
-      target: link.uuid.toString(), // must match node.id
-      type: "smoothstep",
-      style: { stroke: "orange", strokeWidth: 2 },
-      markerEnd: { type: "arrow", color: "orange", width: 20, height: 15 },
-    });
-  });
-
-  return { nodes: positionedNodes, edges };
+  return { nodes, edges };
 }

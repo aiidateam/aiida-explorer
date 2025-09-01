@@ -1,3 +1,5 @@
+import { Position } from "reactflow";
+
 /**
  * Assign positions to nodes based on type or index.
  * Does NOT handle edges, colors, or arrows.
@@ -5,28 +7,62 @@
  * @param {Object} options - Optional layout config.
  * @returns {Array} nodes - The same nodes array with added .position
  */
-export function layoutGraph(nodes, options = {}) {
+export function layoutGraphWithEdges(
+  centerNode,
+  inputNodes,
+  outputNodes,
+  options = {}
+) {
   const spacingX = options.spacingX || 200;
   const spacingY = options.spacingY || 150;
-  const rootX = options.rootX || 400;
-  const rootY = options.rootY || 100;
 
-  return nodes.map((node, index) => {
-    let position = { x: rootX, y: rootY };
+  const centerX = options.centerX || window.innerWidth / 2;
+  const centerY = options.centerY || window.innerHeight / 2;
 
-    switch (node.data.pos) {
-      case "input":
-        position = { x: rootX - spacingX, y: rootY + index * spacingY };
-        break;
-      case "output":
-        position = { x: rootX + spacingX, y: rootY + index * spacingY };
-        break;
-      case "center":
-      default:
-        position = { x: rootX, y: rootY };
-        break;
-    }
+  const nodes = [];
+  const edges = [];
 
-    return { ...node, position };
+  // 1️⃣ Center node
+  nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
+
+  // 2️⃣ Inputs: distribute left
+  inputNodes.forEach((node, i) => {
+    const offsetY = (i - (inputNodes.length - 1) / 2) * spacingY;
+    nodes.push({
+      ...node,
+      position: { x: centerX - spacingX, y: centerY + offsetY },
+    });
+
+    edges.push({
+      id: `e-${node.id}-${centerNode.id}`,
+      source: node.id,
+      target: centerNode.id,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+      type: "smoothstep",
+      style: { stroke: "green", strokeWidth: 2 },
+      markerEnd: { type: "arrow", color: "green", width: 20, height: 15 },
+    });
   });
+
+  // 3️⃣ Outputs: distribute right
+  outputNodes.forEach((node, i) => {
+    const offsetY = (i - (outputNodes.length - 1) / 2) * spacingY;
+    nodes.push({
+      ...node,
+      position: { x: centerX + spacingX, y: centerY + offsetY },
+    });
+
+    edges.push({
+      id: `e-${centerNode.id}-${node.id}`,
+      source: centerNode.id,
+      sourcePosition: Position.Right, // connect from right side
+      target: node.id,
+      type: "smoothstep",
+      style: { stroke: "orange", strokeWidth: 2 },
+      markerEnd: { type: "arrow", color: "orange", width: 20, height: 15 },
+    });
+  });
+
+  return { nodes, edges };
 }
