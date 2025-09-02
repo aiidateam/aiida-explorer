@@ -9,6 +9,7 @@ export default function DataTable({
   if (!data || data.length < 1) {
     return null;
   }
+
   return (
     <div className="p-2">
       {/* Title */}
