@@ -1,6 +1,21 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
 
+// Utility to darken a hex color by a percentage
+function darkenColorWithAlpha(hex, percent) {
+  // Extract RGB and alpha
+  let r = parseInt(hex.slice(1, 3), 16);
+  let g = parseInt(hex.slice(3, 5), 16);
+  let b = parseInt(hex.slice(5, 7), 16);
+  let a = hex.length === 9 ? parseInt(hex.slice(7, 9), 16) / 255 : 1;
+
+  r = Math.max(0, r - r * percent);
+  g = Math.max(0, g - g * percent);
+  b = Math.max(0, b - b * percent);
+
+  return `rgba(${r | 0}, ${g | 0}, ${b | 0}, ${a})`;
+}
+
 function getColors(type) {
   if (type?.startsWith("process"))
     return { background: "#fc5e5eff", color: "#000" };
@@ -12,11 +27,18 @@ function getColors(type) {
 export default function HorizontalNode({ data, selected }) {
   const colors = getColors(data.node_type);
 
+  // Black border takes precedence if selected
+  const borderColor = selected
+    ? "#000" // selected node overrides
+    : data.pos === "center"
+    ? darkenColorWithAlpha(colors.background, 0.3)
+    : "transparent"; // default
+
   return (
     <div
       style={{
         ...colors,
-        border: selected ? "3px solid #000" : "2px solid transparent",
+        border: `3px solid ${borderColor}`,
         minWidth: 100,
         textAlign: "center",
         padding: 10,

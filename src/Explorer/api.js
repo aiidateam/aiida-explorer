@@ -3,6 +3,7 @@ const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
 import { layoutGraphWithEdges } from "./FlowChart/graphController";
 
+// get the simple printout of a node.
 export async function fetchNodeById(nodeId) {
   if (!nodeId) return null;
 
@@ -16,6 +17,36 @@ export async function fetchNodeById(nodeId) {
   }
 }
 
+// get the actual content of a node.
+export async function fetchNodeContents(nodeId) {
+  if (!nodeId) return null;
+
+  const endpoints = ["attributes", "comments", "extras"];
+
+  try {
+    const results = await Promise.all(
+      endpoints.map(async (ep) => {
+        const res = await fetch(
+          `${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+        );
+        if (!res.ok) return null;
+        return res.json();
+      })
+    );
+
+    const [attributesRes, commentsRes, extrasRes] = results;
+    return {
+      attributes: attributesRes?.data?.attributes ?? {},
+      comments: commentsRes?.data?.attributes ?? {},
+      extras: extrasRes?.data?.attributes ?? {},
+    };
+  } catch (err) {
+    console.error("Error fetching node contents:", err);
+    return null;
+  }
+}
+
+// get all links to a node (currently unpaginated)
 export async function fetchLinks(nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
