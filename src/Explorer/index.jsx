@@ -56,7 +56,7 @@ export default function Explorer() {
       // Keep selection if still present
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id
+          (n) => n.id === selectedNode.id,
         );
         setSelectedNode(stillExists || null);
       }
@@ -90,6 +90,8 @@ export default function Explorer() {
     if (!updatedData.download) {
       let download;
       if (node.data.label === "StructureData") {
+        download = await fetchCif(node.id);
+      } else if (node.data.label === "CifData") {
         download = await fetchCif(node.id);
       } else {
         download = await fetchJson(node.id);

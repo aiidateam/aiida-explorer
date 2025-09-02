@@ -32,11 +32,11 @@ export async function fetchNodeContents(nodeId) {
     const results = await Promise.all(
       endpoints.map(async (ep) => {
         const res = await fetch(
-          `${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+          `${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
         );
         if (!res.ok) return null;
         return res.json();
-      })
+      }),
     );
 
     // for now we fetch all these regardless of data type.
@@ -65,8 +65,8 @@ export async function fetchJson(nodeId) {
   try {
     const res = await fetch(
       `${BASE_URL}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=json`
+        nodeId,
+      )}/download?download_format=json`,
     );
 
     if (!res.ok) return null;
@@ -83,15 +83,13 @@ export async function fetchCif(nodeId) {
   try {
     const res = await fetch(
       `${BASE_URL}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=cif&download=false`
+        nodeId,
+      )}/download?download_format=cif&download=false`,
     );
 
     if (!res.ok) return { cifText: null };
 
     const result = await res.json();
-
-    console.log("r", result.data.download.data);
 
     const cifText = result.data.download.data || null;
 
@@ -174,7 +172,7 @@ export async function fetchGraphByNodeId(nodeId) {
   const { nodes, edges } = layoutGraphWithEdges(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
-    allNodes.filter((n) => n.data.pos === "output")
+    allNodes.filter((n) => n.data.pos === "output"),
   );
 
   return { nodes, edges };

@@ -11,7 +11,7 @@ export function layoutGraphWithEdges(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
   const spacingX = options.spacingX || 200;
   const spacingY = options.spacingY || 80;

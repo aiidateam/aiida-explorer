@@ -31,8 +31,8 @@ export default function HorizontalNode({ data, selected }) {
   const borderColor = selected
     ? "#000" // selected node overrides
     : data.pos === "center"
-    ? darkenColorWithAlpha(colors.background, 0.3)
-    : "transparent"; // default
+      ? darkenColorWithAlpha(colors.background, 0.3)
+      : "transparent"; // default
 
   return (
     <div
