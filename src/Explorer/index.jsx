@@ -3,9 +3,19 @@ import { useSearchParams } from "react-router-dom";
 import FlowChart from "./FlowChart";
 import SidePane from "./SidePane";
 import DebugPane from "./DebugPane";
+import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
-import { fetchGraphByNodeId, fetchNodeContents } from "./api";
+import {
+  fetchGraphByNodeId,
+  fetchNodeContents,
+  fetchCif,
+  fetchJson,
+} from "./api";
 
+// full component handler for the aiidaexplorer.
+//  this manages states passes data to the subcomponents...
+// in principle as this grows we should really think about
+// seperation of concerns for ease of development but meh.
 export default function Explorer() {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
@@ -14,7 +24,7 @@ export default function Explorer() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const rootNodeIdParam =
-    searchParams.get("root") || "030bf271-2c94-4d93-8314-7f82f271bd44";
+    searchParams.get("rootNode") || "030bf271-2c94-4d93-8314-7f82f271bd44";
   const [rootNodeId, setRootNodeId] = useState(rootNodeIdParam);
 
   const [selectedNode, setSelectedNode] = useState(null);
@@ -22,105 +32,113 @@ export default function Explorer() {
   const [timeTaken, setTimeTaken] = useState(null);
 
   // --------------------------
-  // Load graph whenever rootNodeId or extraNodeData changes
+  // Load graph whenever rootNodeId changes
   // --------------------------
   useEffect(() => {
     let mounted = true;
 
-    async function loadGraph(selectNodeId = null) {
+    async function loadGraph() {
       const start = performance.now();
       const { nodes: fetchedNodes, edges: fetchedEdges } =
         await fetchGraphByNodeId(rootNodeId);
 
       if (!mounted) return;
 
-      // Merge any extra node data
+      // Merge in cached extra data
       const nodesWithExtras = fetchedNodes.map((n) => ({
         ...n,
-        data: {
-          ...n.data,
-          ...(extraNodeData[n.id] || {}),
-        },
+        data: { ...n.data, ...(extraNodeData[n.id] || {}) },
       }));
 
       setNodes(nodesWithExtras);
       setEdges(fetchedEdges);
 
-      if (selectNodeId) {
-        const nodeToSelect = nodesWithExtras.find((n) => n.id === selectNodeId);
-        setSelectedNode(nodeToSelect || null);
-      } else {
-        setSelectedNode(null);
+      // Keep selection if still present
+      if (selectedNode) {
+        const stillExists = nodesWithExtras.find(
+          (n) => n.id === selectedNode.id
+        );
+        setSelectedNode(stillExists || null);
       }
 
       setTimeTaken(performance.now() - start);
     }
 
-    loadGraph(selectedNode?.id);
+    loadGraph();
 
     return () => {
       mounted = false;
     };
-  }, [rootNodeId, extraNodeData]);
+  }, [rootNodeId]); // no extraNodeData here → avoids refires
 
   // --------------------------
-  // Track visited nodes in breadcrumbs
+  // Cache + merge helper
   // --------------------------
-  const handleNodeVisit = (node) => {
-    setBreadcrumbs((prev) => {
-      // const filtered = prev.filter((n) => n.id !== node.id); // remove duplicates
-      const updated = [...prev, node]; // append to end
-      return updated.slice(-MAX_BREADCRUMBS);
-    });
+  const ensureNodeData = async (node) => {
+    let updatedData = { ...node.data };
+
+    // Fetch extras if missing
+    if (!extraNodeData[node.id]) {
+      const extraData = await fetchNodeContents(node.id);
+      setExtraNodeData((prev) => ({ ...prev, [node.id]: extraData }));
+      updatedData = { ...updatedData, ...extraData };
+    } else {
+      updatedData = { ...updatedData, ...extraNodeData[node.id] };
+    }
+
+    // Fetch download if missing
+    if (!updatedData.download) {
+      let download;
+      if (node.data.label === "StructureData") {
+        download = await fetchCif(node.id);
+      } else {
+        download = await fetchJson(node.id);
+      }
+      updatedData = { ...updatedData, download };
+
+      // also cache download in extraNodeData
+      setExtraNodeData((prev) => ({
+        ...prev,
+        [node.id]: { ...(prev[node.id] || {}), download },
+      }));
+    }
+
+    return { ...node, data: updatedData };
   };
 
   // --------------------------
-  // Handle double-click (refocus + fetch extra data)
+  // Single click
+  // --------------------------
+  const handleNodeSelect = async (node) => {
+    const enrichedNode = await ensureNodeData(node);
+    setSelectedNode(enrichedNode);
+  };
+
+  // --------------------------
+  // Double click (refocus)
   // --------------------------
   const handleDoubleClick = async (node) => {
+    if (breadcrumbs[breadcrumbs.length - 1]?.id !== node.id) {
+      setBreadcrumbs((prev) => [...prev, node].slice(-MAX_BREADCRUMBS));
+    }
+
     setRootNodeId(node.id);
-    setSearchParams({ root: node.id });
+    setSearchParams({ rootNode: node.id });
 
-    handleNodeVisit(node); // update breadcrumbs
-
-    const extraData = await fetchNodeContents(node.id);
-    setExtraNodeData((prev) => ({ ...prev, [node.id]: extraData }));
-
-    setSelectedNode({
-      ...node,
-      data: { ...node.data, ...extraData },
-    });
+    const enrichedNode = await ensureNodeData(node);
+    setSelectedNode(enrichedNode);
   };
 
   // --------------------------
-  // Handle single click
+  // Breadcrumb click
   // --------------------------
-  const handleNodeSelect = (node) => {
-    setSelectedNode(node);
-  };
-
-  const handleBreadcrumbClick = async (node) => {
-    // 1️⃣ Remove all breadcrumbs after the clicked node
-    setBreadcrumbs((prev) => {
-      const index = prev.findIndex((n) => n.id === node.id);
-      if (index === -1) return prev; // node not found
-      return prev.slice(0, index + 1); // keep everything up to clicked node
-    });
-
-    // 2️⃣ Update root node and search params
+  const handleBreadcrumbClick = async (node, idx) => {
+    setBreadcrumbs((prev) => prev.slice(0, idx + 1));
     setRootNodeId(node.id);
-    setSearchParams({ root: node.id });
+    setSearchParams({ rootNode: node.id });
 
-    // 3️⃣ Merge extra data (cached or fetch)
-    const extraData =
-      extraNodeData[node.id] || (await fetchNodeContents(node.id));
-    setExtraNodeData((prev) => ({ ...prev, [node.id]: extraData }));
-
-    // 4️⃣ Update selectedNode
-    setSelectedNode({
-      ...node,
-      data: { ...node.data, ...extraData },
-    });
+    const enrichedNode = await ensureNodeData(node);
+    setSelectedNode(enrichedNode);
   };
 
   return (
@@ -142,19 +160,16 @@ export default function Explorer() {
 
         {/* Right-hand panel */}
         <div className="w-[900px] flex flex-col h-full">
-          {/* Sidebar */}
-          <div className="flex-none h-2/3 border-b border-gray-300 overflow-y-auto">
+          <div className="flex-none h-1/4 border-b border-gray-300 overflow-y-auto">
             <SidePane selectedNode={selectedNode} timeTaken={timeTaken} />
           </div>
-
-          {/* Debug pane */}
           <div className="flex-1 overflow-y-auto">
-            <DebugPane nodes={nodes} edges={edges} timeTaken={timeTaken} />
+            <VisualiserPane selectedNode={selectedNode} />
           </div>
         </div>
       </div>
 
-      {/* Breadcrumbs at the bottom */}
+      {/* Breadcrumbs */}
       <div className="flex-none h-12 border-t border-gray-300">
         <Breadcrumbs
           trail={breadcrumbs}
