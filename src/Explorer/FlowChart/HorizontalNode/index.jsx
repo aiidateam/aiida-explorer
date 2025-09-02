@@ -1,5 +1,5 @@
 import React from "react";
-import { Handle, Position } from "reactflow";
+import { Handle, Position, useViewport } from "reactflow";
 
 // Utility to darken a hex color by a percentage
 function darkenColorWithAlpha(hex, percent) {
@@ -25,14 +25,15 @@ function getColors(type) {
 }
 
 export default function HorizontalNode({ data, selected }) {
+  const { zoom } = useViewport(); // hook present for future use
+
   const colors = getColors(data.node_type);
 
-  // Black border takes precedence if selected
   const borderColor = selected
-    ? "#000" // selected node overrides
+    ? "#000"
     : data.pos === "center"
-      ? darkenColorWithAlpha(colors.background, 0.3)
-      : "transparent"; // default
+      ? darkenColorWithAlpha(colors.background, 0.4)
+      : "transparent";
 
   return (
     <div
@@ -45,9 +46,17 @@ export default function HorizontalNode({ data, selected }) {
         borderRadius: 5,
       }}
     >
-      <Handle type="target" position={Position.Left} />
-      <div>{data.label}</div>
-      <Handle type="source" position={Position.Right} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ pointerEvents: "none" }}
+      />
+      <div style={{ fontSize: 14, color: colors.color }}>{data.label}</div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ pointerEvents: "none" }}
+      />
     </div>
   );
 }

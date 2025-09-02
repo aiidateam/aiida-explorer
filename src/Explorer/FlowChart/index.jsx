@@ -50,6 +50,7 @@ export default function FlowChart({
   return (
     <div className="w-full h-full">
       <ReactFlow
+        className="bg-slate-50"
         nodes={mappedNodes}
         edges={edges}
         nodeTypes={nodeTypes}

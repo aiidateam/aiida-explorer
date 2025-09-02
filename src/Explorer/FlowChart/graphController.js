@@ -25,7 +25,8 @@ export function layoutGraphWithEdges(
   // Center node
   nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
 
-  // sort the nodes
+  // TODO - this sort currently sorts by ID, which is not neccessarily the same as ctime
+  // (I have no idea why...??)
   inputNodes.sort((a, b) => Number(a.id) - Number(b.id));
   outputNodes.sort((a, b) => Number(a.id) - Number(b.id));
 
@@ -60,7 +61,7 @@ export function layoutGraphWithEdges(
     edges.push({
       id: `e-${centerNode.id}-${node.id}`,
       source: centerNode.id,
-      sourcePosition: Position.Right, // connect from right side
+      sourcePosition: Position.Right,
       target: node.id,
       type: "smoothstep",
       style: { stroke: "orange", strokeWidth: 2 },
