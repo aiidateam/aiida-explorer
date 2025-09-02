@@ -1,7 +1,7 @@
+// Fetching and network building controlled here.
 const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
-import { layoutGraphWithEdges } from "./graphController";
-import { enhanceNodes } from "./nodeController";
+import { layoutGraphWithEdges } from "./FlowChart/graphController";
 
 export async function fetchNodeById(nodeId) {
   if (!nodeId) return null;
@@ -20,6 +20,10 @@ export async function fetchLinks(nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
   try {
+    console.log(
+      "API HIT:",
+      `${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/links/incoming`
+    );
     const [incomingRes, outgoingRes] = await Promise.all([
       fetch(`${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/links/incoming`),
       fetch(`${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/links/outgoing`),
@@ -57,6 +61,7 @@ export async function fetchGraphByNodeId(nodeId) {
         label: rootNode.node_type.split(".").filter(Boolean).pop(),
         node_type: rootNode.node_type,
         pos: "center",
+        aiida: rootNode,
       },
     },
     ...linksIn.map((l) => ({
@@ -65,6 +70,7 @@ export async function fetchGraphByNodeId(nodeId) {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
         pos: "input",
+        aiida: l,
       },
     })),
     ...linksOut.map((l) => ({
@@ -73,18 +79,15 @@ export async function fetchGraphByNodeId(nodeId) {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
         pos: "output",
+        aiida: l,
       },
     })),
   ];
 
-  console.log(allNodes);
-
-  const styledNodes = enhanceNodes(allNodes);
-
   const { nodes, edges } = layoutGraphWithEdges(
-    styledNodes.find((n) => n.data.pos === "center"),
-    styledNodes.filter((n) => n.data.pos === "input"),
-    styledNodes.filter((n) => n.data.pos === "output")
+    allNodes.find((n) => n.data.pos === "center"),
+    allNodes.filter((n) => n.data.pos === "input"),
+    allNodes.filter((n) => n.data.pos === "output")
   );
 
   return { nodes, edges };

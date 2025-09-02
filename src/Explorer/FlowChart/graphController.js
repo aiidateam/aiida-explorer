@@ -22,10 +22,14 @@ export function layoutGraphWithEdges(
   const nodes = [];
   const edges = [];
 
-  // 1️⃣ Center node
+  // Center node
   nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
 
-  // 2️⃣ Inputs: distribute left
+  // sort the nodes
+  inputNodes.sort((a, b) => Number(a.id) - Number(b.id));
+  outputNodes.sort((a, b) => Number(a.id) - Number(b.id));
+
+  // Inputs: distribute left
   inputNodes.forEach((node, i) => {
     const offsetY = (i - (inputNodes.length - 1) / 2) * spacingY;
     nodes.push({
@@ -45,7 +49,7 @@ export function layoutGraphWithEdges(
     });
   });
 
-  // 3️⃣ Outputs: distribute right
+  // Outputs: distribute right
   outputNodes.forEach((node, i) => {
     const offsetY = (i - (outputNodes.length - 1) / 2) * spacingY;
     nodes.push({
