@@ -1,6 +1,8 @@
 import React from "react";
 import { Handle, Position, useViewport } from "reactflow";
 
+import { getNodeDisplay } from "./nodeUtils";
+
 // Utility to darken a hex color by a percentage
 function darkenColorWithAlpha(hex, percent) {
   // Extract RGB and alpha
@@ -32,17 +34,43 @@ export default function HorizontalNode({ data, selected }) {
   const borderColor = selected
     ? "#000"
     : data.pos === "center"
-      ? darkenColorWithAlpha(colors.background, 0.4)
-      : "transparent";
+    ? darkenColorWithAlpha(colors.background, 0.4)
+    : "transparent";
+
+  // ----------
+  // Dynamic text based on zoom percent
+  // ----------
+  let textHtml;
+  let fontSize;
+
+  if (zoom > 1.2) {
+    // Zoomed IN -> show more details, smaller font
+    fontSize = 12;
+    textHtml = (
+      <div style={{ fontSize, color: colors.color }}>
+        {data.label}
+        <br />
+        <span style={{ fontSize: fontSize * 0.75, opacity: 0.8 }}>
+          {getNodeDisplay(data)}
+        </span>
+      </div>
+    );
+  } else {
+    // Zoomed OUT -> show only main label, bigger font
+    fontSize = 16;
+    textHtml = (
+      <div style={{ fontSize, color: colors.color }}>{data.label}</div>
+    );
+  }
 
   return (
     <div
       style={{
         ...colors,
         border: `3px solid ${borderColor}`,
-        minWidth: 100,
+        minWidth: 120,
         textAlign: "center",
-        padding: 10,
+        padding: 5,
         borderRadius: 5,
       }}
     >
@@ -51,7 +79,7 @@ export default function HorizontalNode({ data, selected }) {
         position={Position.Left}
         style={{ pointerEvents: "none" }}
       />
-      <div style={{ fontSize: 14, color: colors.color }}>{data.label}</div>
+      {textHtml}
       <Handle
         type="source"
         position={Position.Right}

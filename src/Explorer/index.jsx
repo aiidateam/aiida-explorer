@@ -16,15 +16,16 @@ import {
 //  this manages states passes data to the subcomponents...
 // in principle as this grows we should really think about
 // seperation of concerns for ease of development but meh.
-export default function Explorer() {
+export default function Explorer({ baseUrl = "", startingNode = "" }) {
+  console.log(baseUrl);
+  console.log(startingNode);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const MAX_BREADCRUMBS = 20;
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const rootNodeIdParam =
-    searchParams.get("rootNode") || "030bf271-2c94-4d93-8314-7f82f271bd44";
+  const rootNodeIdParam = searchParams.get("rootNode") || startingNode;
   const [rootNodeId, setRootNodeId] = useState(rootNodeIdParam);
 
   const [selectedNode, setSelectedNode] = useState(null);
@@ -40,7 +41,7 @@ export default function Explorer() {
     async function loadGraph() {
       const start = performance.now();
       const { nodes: fetchedNodes, edges: fetchedEdges } =
-        await fetchGraphByNodeId(rootNodeId);
+        await fetchGraphByNodeId(baseUrl, rootNodeId);
 
       if (!mounted) return;
 
@@ -56,7 +57,7 @@ export default function Explorer() {
       // Keep selection if still present
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id,
+          (n) => n.id === selectedNode.id
         );
         setSelectedNode(stillExists || null);
       }
@@ -79,7 +80,7 @@ export default function Explorer() {
 
     // Fetch extras if missing
     if (!extraNodeData[node.id]) {
-      const extraData = await fetchNodeContents(node.id);
+      const extraData = await fetchNodeContents(baseUrl, node.id);
       setExtraNodeData((prev) => ({ ...prev, [node.id]: extraData }));
       updatedData = { ...updatedData, ...extraData };
     } else {
@@ -90,11 +91,11 @@ export default function Explorer() {
     if (!updatedData.download) {
       let download;
       if (node.data.label === "StructureData") {
-        download = await fetchCif(node.id);
+        download = await fetchCif(baseUrl, node.id);
       } else if (node.data.label === "CifData") {
-        download = await fetchCif(node.id);
+        download = await fetchCif(baseUrl, node.id);
       } else {
-        download = await fetchJson(node.id);
+        download = await fetchJson(baseUrl, node.id);
       }
       updatedData = { ...updatedData, download };
 
@@ -114,6 +115,15 @@ export default function Explorer() {
   const handleNodeSelect = async (node) => {
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
+
+    // Update the graph nodes so HorizontalNode re-renders
+    setNodes((prevNodes) =>
+      prevNodes.map((n) =>
+        n.id === node.id
+          ? { ...n, data: { ...n.data, ...enrichedNode.data } }
+          : n
+      )
+    );
   };
 
   // --------------------------

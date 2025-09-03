@@ -9,11 +9,11 @@ const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 // --------------------------
 
 // get a simple printout of a node.
-export async function fetchNodeById(nodeId) {
+export async function fetchNodeById(baseUrl, nodeId) {
   if (!nodeId) return null;
 
   try {
-    const res = await fetch(`${BASE_URL}/nodes/${encodeURIComponent(nodeId)}`);
+    const res = await fetch(`${baseUrl}/nodes/${encodeURIComponent(nodeId)}`);
     if (!res.ok) return null;
     return res.json();
   } catch (err) {
@@ -23,50 +23,46 @@ export async function fetchNodeById(nodeId) {
 }
 
 // get the content of a node.
-export async function fetchNodeContents(nodeId) {
+export async function fetchNodeContents(baseUrl, nodeId) {
   if (!nodeId) return null;
 
   const endpoints = ["attributes", "comments", "extras", "derived_properties"];
+  const results = {};
 
-  try {
-    const results = await Promise.all(
-      endpoints.map(async (ep) => {
-        const res = await fetch(
-          `${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
-        );
-        if (!res.ok) return null;
-        return res.json();
-      }),
-    );
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+      );
 
-    // for now we fetch all these regardless of data type.
-    // TODO - improve this logic to only fetch whats needed for each node?
-    const [attributesRes, commentsRes, extrasRes, derivedPropertiesRes] =
-      results;
+      if (!res.ok) {
+        if (res.status !== 404) {
+          console.warn(`Endpoint ${ep} failed for node ${nodeId}:`, res.status);
+        }
+        continue; // skip this endpoint if not found
+      }
 
-    return {
-      attributes: attributesRes?.data?.attributes ?? attributesRes ?? {},
-      comments: commentsRes?.data?.comments ?? commentsRes ?? {},
-      extras: extrasRes?.data?.extras ?? extrasRes ?? {},
-      derived_properties: derivedPropertiesRes?.data?.derived_properties ?? {},
-    };
-  } catch (err) {
-    console.error("Error fetching node contents:", err);
-    return null;
+      const data = await res.json();
+      results[ep] = data?.data?.[ep] ?? data ?? {};
+    } catch (err) {
+      console.error(`Error fetching ${ep} for node ${nodeId}:`, err);
+    }
   }
+
+  return results;
 }
 
 // --------------------------
 // defined datatype api hits are here
 // --------------------------
-export async function fetchJson(nodeId) {
+export async function fetchJson(baseUrl, nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
   try {
     const res = await fetch(
-      `${BASE_URL}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/download?download_format=json`,
+      `${baseUrl}/nodes/${encodeURIComponent(
+        nodeId
+      )}/download?download_format=json`
     );
 
     if (!res.ok) return null;
@@ -77,14 +73,14 @@ export async function fetchJson(nodeId) {
   }
 }
 
-export async function fetchCif(nodeId) {
+export async function fetchCif(baseUrl, nodeId) {
   if (!nodeId) return { cifText: null };
 
   try {
     const res = await fetch(
-      `${BASE_URL}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/download?download_format=cif&download=false`,
+      `${baseUrl}/nodes/${encodeURIComponent(
+        nodeId
+      )}/download?download_format=cif&download=false`
     );
 
     if (!res.ok) return { cifText: null };
@@ -105,13 +101,13 @@ export async function fetchCif(nodeId) {
 // --------------------------
 
 // get all links to a node (currently unpaginated)
-export async function fetchLinks(nodeId) {
+export async function fetchLinks(baseUrl, nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
   try {
     const [incomingRes, outgoingRes] = await Promise.all([
-      fetch(`${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/links/incoming`),
-      fetch(`${BASE_URL}/nodes/${encodeURIComponent(nodeId)}/links/outgoing`),
+      fetch(`${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/incoming`),
+      fetch(`${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing`),
     ]);
 
     const incoming = incomingRes.ok ? await incomingRes.json() : [];
@@ -128,12 +124,12 @@ export async function fetchLinks(nodeId) {
  * Fetch a node and all its immediate input nodes, returning
  * nodes and edges suitable for React Flow.
  */
-export async function fetchGraphByNodeId(nodeId) {
-  const rootNodeRaw = await fetchNodeById(nodeId);
+export async function fetchGraphByNodeId(baseUrl, nodeId) {
+  const rootNodeRaw = await fetchNodeById(baseUrl, nodeId);
   const rootNode = rootNodeRaw.data.nodes[0];
   if (!rootNode) return { nodes: [], edges: [] };
 
-  const { incoming, outgoing } = await fetchLinks(nodeId);
+  const { incoming, outgoing } = await fetchLinks(baseUrl, nodeId);
   const linksIn = incoming?.data?.incoming || [];
   const linksOut = outgoing?.data?.outgoing || [];
 
@@ -172,7 +168,7 @@ export async function fetchGraphByNodeId(nodeId) {
   const { nodes, edges } = layoutGraphWithEdges(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
-    allNodes.filter((n) => n.data.pos === "output"),
+    allNodes.filter((n) => n.data.pos === "output")
   );
 
   return { nodes, edges };
