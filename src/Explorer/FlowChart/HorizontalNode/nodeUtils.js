@@ -1,7 +1,5 @@
 // switch function that determines node printing based on AiiDA built ins.
-// since the aiida data is gathered for free and will not require additional fetches (via singleclicks)
-// we should prefer them.
-
+// basic aiida node data is gathered as a neccessity so we can render uuids without additional fetches
 export function getNodeDisplay(node) {
   const fallback = `uuid: ${node.aiida.uuid.split("-")[0]}`;
 
@@ -42,10 +40,14 @@ export function getNodeDisplay(node) {
         ? node.extras.formula_hill
         : fallback;
 
-    case "UpfData":
-      return node.aiida?.link_label !== undefined
-        ? `Upf: ${node.aiida.link_label}`
-        : fallback;
+    // unclear what we should render for UpfData on click??
+    // for now we render the psuedo type and element
+    case "UpfData": {
+      const element = node.download?.pseudo_potential?.header?.element;
+      const psType = node.download?.pseudo_potential?.header?.pseudo_type;
+
+      return psType && element ? `Pseudo: ${psType} - ${element}` : fallback;
+    }
 
     case "BandsData":
       const bands = node.attributes?.["array|bands"];

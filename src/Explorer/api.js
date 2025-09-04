@@ -1,5 +1,9 @@
 // Fetching of data and graph network building controlled here.
-import { layoutGraphWithEdges } from "./FlowChart/graphController";
+import {
+  layoutGraphDefault,
+  layoutGraphFan,
+  layoutGraphStaircase,
+} from "./FlowChart/graphController";
 
 // TODO move this to the APP scope to allow easy api changing.
 const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
@@ -151,6 +155,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
         pos: "input",
+        link_label: l.link_label,
         aiida: l,
       },
     })),
@@ -160,12 +165,14 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
         pos: "output",
+        link_label: l.link_label,
+
         aiida: l,
       },
     })),
   ];
 
-  const { nodes, edges } = layoutGraphWithEdges(
+  const { nodes, edges } = layoutGraphFan(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
     allNodes.filter((n) => n.data.pos === "output")
