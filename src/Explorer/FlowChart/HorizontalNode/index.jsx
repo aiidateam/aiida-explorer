@@ -56,7 +56,7 @@ export default function HorizontalNode({ data, selected }) {
       {data.label}
       {zoom > 1.2 && <br />}
       {zoom > 1.2 && (
-        <span className="text-[9px] opacity-80">{getNodeDisplay(data)}</span>
+        <span className="text-[9px] opacity-80 ">{getNodeDisplay(data)}</span>
       )}
     </div>
   );

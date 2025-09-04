@@ -13,7 +13,7 @@ A React application for traversing and visualizing AiiDA nodes via the AiiDA RES
 - **Caching of extra node data** to reduce redundant API calls.
 - URL updates for easy sharing of specific nodes (e.g., `?rootNode=<id>`).
 
-### Features to do:
+### Features to do (TODO):
 
 - add/change Sidepane to include:
   - Raw / Rich information.
@@ -23,7 +23,7 @@ A React application for traversing and visualizing AiiDA nodes via the AiiDA RES
 
 - ?? Add breadcrumbs SearchParams? will people want to share the exact path they clicked (this seems messy and kinda hard.)
 
-- Add pagination / better rendering for large datasets. Some nodes will hit the 400 limit...
+- Add pagination / better rendering for large datasets. Some nodes will hit the 400 limit, the old grid view seems to use pagination to get nodes fast.
 
 ## Installation
 

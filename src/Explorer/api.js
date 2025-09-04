@@ -56,6 +56,32 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   return results;
 }
 
+// get the full_types of a root aiida API
+export async function fetchAPIFullTypes(baseUrl) {
+  try {
+    const res = await fetch(`${baseUrl}/nodes/full_types`);
+    if (!res.ok) return null;
+    return res.json();
+  } catch (err) {
+    console.error("Error fetching node:", err);
+    return null;
+  }
+}
+
+export async function fetchGroups(baseUrl) {
+  try {
+    const res = await fetch(`${baseUrl}/groups`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    // Return only the array of groups
+    return json?.data?.groups || [];
+  } catch (err) {
+    console.error("Error fetching groups:", err);
+    return [];
+  }
+}
+
 // --------------------------
 // defined datatype api hits are here
 // --------------------------
@@ -172,7 +198,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
     })),
   ];
 
-  const { nodes, edges } = layoutGraphFan(
+  const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
     allNodes.filter((n) => n.data.pos === "output")

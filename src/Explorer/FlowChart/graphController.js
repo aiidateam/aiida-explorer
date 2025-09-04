@@ -2,7 +2,7 @@ import { Position } from "reactflow";
 
 // TODO - refactor this to its own folder.
 
-// Define a priority order for node labels
+// Precompute priority map
 const nodeTypePriority = [
   "WorkChainNode",
   "CalcFunctionNode",
@@ -18,14 +18,19 @@ const nodeTypePriority = [
   "Bool",
   "List",
   "Str",
+  "Code",
 ];
 
-// Comparator that uses the priority order
+// TODO - test where this is scoped w.r.t the client? this may be worse performance if its called repeated
+const priorityMap = nodeTypePriority.reduce((acc, label, idx) => {
+  acc[label] = idx;
+  return acc;
+}, {});
+
+// Comparator using map (O(1) lookup)
 function sortNodesByType(a, b) {
-  const idxA = nodeTypePriority.indexOf(a.data.label);
-  const idxB = nodeTypePriority.indexOf(b.data.label);
-  const indexA = idxA === -1 ? Number.MAX_SAFE_INTEGER : idxA;
-  const indexB = idxB === -1 ? Number.MAX_SAFE_INTEGER : idxB;
+  const indexA = priorityMap[a.data.label] ?? Number.MAX_SAFE_INTEGER;
+  const indexB = priorityMap[b.data.label] ?? Number.MAX_SAFE_INTEGER;
   return indexA - indexB;
 }
 
@@ -35,7 +40,7 @@ export function layoutGraphDefault(
   outputNodes,
   options = {}
 ) {
-  const spacingX = options.spacingX || 200;
+  const spacingX = options.spacingX || 300;
   const spacingY = options.spacingY || 80;
 
   const centerX = options.centerX || window.innerWidth / 2;

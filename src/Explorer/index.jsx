@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import FlowChart from "./FlowChart";
 import SidePane from "./SidePane";
+import GridViewer from "./GridViewer";
+import GridViewer2 from "./GridViewer2";
+
 import DebugPane from "./DebugPane";
 import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
@@ -12,13 +15,21 @@ import {
   fetchJson,
 } from "./api";
 
-// full component handler for the aiidaexplorer.
-//  this manages states passes data to the subcomponents...
-// in principle as this grows we should really think about
-// seperation of concerns for ease of development but meh.
+const columns = [
+  { header: "ID", accessor: "id" },
+  { header: "Name", accessor: "name" },
+  { header: "Type", accessor: "type" },
+];
+
+const data = [
+  { id: "1", name: "Node A", type: "calc" },
+  { id: "2", name: "Node B", type: "var" },
+  { id: "3", name: "Node C", type: "output" },
+];
+
+// full component handler for  aiidaexplorer.
+//  this manages all states and data to the subcomponents...
 export default function Explorer({ baseUrl = "", startingNode = "" }) {
-  console.log(baseUrl);
-  console.log(startingNode);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -156,8 +167,13 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
   return (
     <div className="flex flex-col h-screen">
       {/* Main content */}
+      <div className="flex-none h-1/4 overflow-auto border-b border-gray-300">
+        <GridViewer baseUrl={baseUrl} />
+      </div>
+      <div className="flex-none h-1/4 overflow-auto border-b border-gray-300">
+        <GridViewer2 baseUrl={baseUrl} />
+      </div>
       <div className="flex flex-1 overflow-hidden">
-        {/* Flow diagram */}
         <div className="flex-1 border-r border-gray-300 h-full min-w-0">
           <FlowChart
             nodes={nodes}
