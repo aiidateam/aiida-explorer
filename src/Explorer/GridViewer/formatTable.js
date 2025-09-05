@@ -34,7 +34,7 @@ export default function formatTableData(nodes) {
     columnOrder.forEach((label) => {
       // find the original key for this label
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label
+        (k) => columnLabels[k] === label,
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key]);

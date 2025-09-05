@@ -41,7 +41,7 @@ export default function HorizontalNode({ data, selected }) {
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos
+    data.pos,
   );
 
   // ----------

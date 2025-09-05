@@ -36,7 +36,7 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
       );
 
       if (!res.ok) {
@@ -68,20 +68,6 @@ export async function fetchAPIFullTypes(baseUrl) {
   }
 }
 
-export async function fetchGroups(baseUrl) {
-  try {
-    const res = await fetch(`${baseUrl}/groups`);
-    if (!res.ok) return null;
-
-    const json = await res.json();
-    // Return only the array of groups
-    return json?.data?.groups || [];
-  } catch (err) {
-    console.error("Error fetching groups:", err);
-    return [];
-  }
-}
-
 // --------------------------
 // defined datatype api hits are here
 // --------------------------
@@ -91,8 +77,8 @@ export async function fetchJson(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=json`
+        nodeId,
+      )}/download?download_format=json`,
     );
 
     if (!res.ok) return null;
@@ -109,8 +95,8 @@ export async function fetchCif(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=cif&download=false`
+        nodeId,
+      )}/download?download_format=cif&download=false`,
     );
 
     if (!res.ok) return { cifText: null };
@@ -123,6 +109,43 @@ export async function fetchCif(baseUrl, nodeId) {
   } catch (err) {
     console.error("Error fetching node:", err);
     return { cifText: null };
+  }
+}
+
+export async function fetchGroups(baseUrl) {
+  try {
+    const res = await fetch(`${baseUrl}/groups`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    // Return only the array of groups
+    return json?.data?.groups || [];
+  } catch (err) {
+    console.error("Error fetching groups:", err);
+    return [];
+  }
+}
+
+/// -------------------------
+// query builder requires a POST
+export async function fetchFromQueryBuilder(baseUrl, postMsg) {
+  try {
+    const res = await fetch(`${baseUrl}/querybuilder/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(postMsg),
+    });
+
+    if (!res.ok) {
+      console.error("QueryBuilder request failed:", res.status, res.statusText);
+      return [];
+    }
+
+    const json = await res.json();
+    return json?.data || [];
+  } catch (err) {
+    console.error("Error fetching from QueryBuilder:", err);
+    return [];
   }
 }
 
@@ -201,7 +224,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
   const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
-    allNodes.filter((n) => n.data.pos === "output")
+    allNodes.filter((n) => n.data.pos === "output"),
   );
 
   return { nodes, edges };

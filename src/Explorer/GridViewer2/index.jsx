@@ -1,9 +1,34 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
-import TreeDropdown from "../../components/TreeDropdown";
-import { fetchGroups } from "../api";
-
+import { fetchGroups, fetchFromQueryBuilder } from "../api"; // make sure fetchFromQueryBuilder is exported
 import formatTableData, { columnOrder } from "./formatTable";
+
+function makeGroupNodesQuery(groupLabel) {
+  return {
+    path: [
+      {
+        entity_type: "group.core",
+        orm_base: "group",
+        tag: "group",
+      },
+      {
+        entity_type: "", // matches any node type
+        orm_base: "node",
+        tag: "node",
+        joining_keyword: "with_group",
+        joining_value: "group",
+      },
+    ],
+    filters: {
+      group: {
+        label: groupLabel, // filter dynamically by label
+      },
+    },
+    project: {
+      node: ["id", "uuid", "node_type", "label", "ctime", "mtime"], // return only useful fields
+    },
+  };
+}
 
 export function GroupButtons({ baseUrl, onSelectGroup }) {
   const [groups, setGroups] = useState([]);
@@ -16,7 +41,7 @@ export function GroupButtons({ baseUrl, onSelectGroup }) {
     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
       {groups.map((group) => (
         <button
-          key={group.id}
+          key={group.label}
           onClick={() => onSelectGroup(group)}
           style={{
             padding: "8px 12px",
@@ -34,81 +59,45 @@ export function GroupButtons({ baseUrl, onSelectGroup }) {
 }
 
 export default function GridViewer2({ baseUrl = "" }) {
-  const [data, setData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [tableDataRaw, setTableDataRaw] = useState([]);
-  const [selectedNode, setSelectedNode] = useState(null); // track selected node
-  const [openNodes, setOpenNodes] = useState({}); // persist open nodes on dropdown
 
-  useEffect(() => {
-    if (!baseUrl) return;
-
-    async function loadData() {
-      try {
-        const download = await fetchGroups(baseUrl);
-        if (!download) return;
-        setData(download);
-
-        console.log("d", download);
-      } catch (err) {
-        console.error("Failed to fetch tree data", err);
-      }
-    }
-
-    loadData();
-  }, [baseUrl]);
-
-  const toggleNode = (full_type) => {
-    setOpenNodes((prev) => ({
-      ...prev,
-      [full_type]: !prev[full_type],
-    }));
-  };
-
-  const handleNodeSelect = useCallback(
-    async (node) => {
-      console.log("Selected node:", node);
-      setSelectedNode(node);
-
-      try {
-        const url = `${baseUrl}/nodes/page/1?perpage=10&full_type="${node.full_type}"&orderby=-ctime`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch node data");
-
-        const nodeData = await res.json();
-        const nodes = nodeData.data.nodes || [];
-        setTableDataRaw(nodes);
-        console.log("raw TD", nodes);
-
-        // format table data
-        setTableData(formatTableData(nodes));
-      } catch (err) {
-        console.error("Error fetching node data:", err);
-      }
-    },
-    [baseUrl]
-  );
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   const columns = columnOrder;
 
+  //
+  async function handleSelectGroup(group) {
+    setSelectedGroup(group);
+
+    try {
+      const postMsg = makeGroupNodesQuery(group.label);
+      const result = await fetchFromQueryBuilder(baseUrl, postMsg);
+      const nodes = result.node;
+      console.log(nodes);
+
+      // format into table-friendly shape
+      const formatted = formatTableData(nodes);
+      setTableData(formatted);
+
+      console.log("Nodes in group", group.label, nodes);
+    } catch (err) {
+      console.error("Failed to fetch nodes for group", group, err);
+    }
+  }
+
   return (
     <div className="flex gap-4 mt-2 ml-2 max-h-[600px] overflow-auto">
-      {/* Tree dropdowns on the left */}
       <div className="flex-shrink-0">
-        <h3 className="my-2 mx-2"> All Groups:</h3>
-        <GroupButtons
-          baseUrl="https://aiida.materialscloud.org/mc3d-pbe-v1/api/v4"
-          onSelectGroup={(group) => console.log("Selected group:", group)}
-        />
+        <h3 className="my-2 mx-2">Filter By Group</h3>
+        <GroupButtons baseUrl={baseUrl} onSelectGroup={handleSelectGroup} />
       </div>
 
       {/* Table on the right */}
       <div className="flex-1">
-        {tableData.length > 0 && selectedNode && (
+        {tableData.length > 0 && (
           <DataTable
-            title={`Full Type fetch data for ${
-              selectedNode.full_type.split(".").slice(-2)[0]
-            }:`}
+            title={`Nodes in group: ${selectedGroup?.label}`}
             columns={columns}
             data={tableData}
           />

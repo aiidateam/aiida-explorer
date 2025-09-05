@@ -68,7 +68,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       // Keep selection if still present
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id
+          (n) => n.id === selectedNode.id,
         );
         setSelectedNode(stillExists || null);
       }
@@ -132,8 +132,8 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       prevNodes.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n
-      )
+          : n,
+      ),
     );
   };
 

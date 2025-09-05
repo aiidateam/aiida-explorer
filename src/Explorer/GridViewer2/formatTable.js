@@ -1,6 +1,7 @@
 // column label mappings
 const columnLabels = {
   uuid: "Unique ID",
+  label: "Label",
   full_type: "Type",
   ctime: "Created",
   mtime: "Modified",
@@ -8,7 +9,13 @@ const columnLabels = {
 };
 
 // desired column order (by labels)
-export const columnOrder = ["Unique ID", "Type", "Created", "Modified"];
+export const columnOrder = [
+  "Unique ID",
+  "Label",
+  "Type",
+  "Created",
+  "Modified",
+];
 
 // optional: per-column formatting
 function formatValue(label, value) {
@@ -34,7 +41,7 @@ export default function formatTableData(nodes) {
     columnOrder.forEach((label) => {
       // find the original key for this label
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label
+        (k) => columnLabels[k] === label,
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key]);
