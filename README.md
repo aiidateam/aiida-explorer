@@ -21,50 +21,40 @@ A React application for traversing and visualizing AiiDA nodes via the AiiDA RES
 
 - Integrate AiiDA explorer statistics page; (although this should probably be just a standalone hover)
 
-- ?? Add breadcrumbs SearchParams? will people want to share the exact path they clicked (this seems messy and kinda hard.)
-
 - Add pagination / better rendering for large datasets. Some nodes will hit the 400 limit, the old grid view seems to use pagination to get nodes fast.
+
+- Fix flaky bug of central nodes rendering their linklabel after visiting a two nodal graph.
 
 ## Installation
 
-1. Clone the repository:
-
-```bash
-git clone <repo-url>
-cd <repo-folder>
-```
-
-2. Install dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Start the development server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Open your browser at the URL displayed in the terminal (usually `http://localhost:5173`).
+Ensure the desired **AiiDA REST API** endpoint is configured in `App.jsx` and goto `http://localhost:5173`.
 
-## Usage
+## Development
 
-- Click on nodes to inspect their metadata in the **Side Pane**.
-- Double click to refocus the graph on a node and fetch additional metadata.
-- Use the **Breadcrumbs** at the bottom to navigate previously visited nodes.
-- The **Debug Pane** shows raw node and edge data for advanced inspection.
+### Notes and warnings;
 
-## Configuration
+The ReactFlow builtin nodes are a little difficult to style/rotate etc; we have built a custom "HorizontalNode" component that controls default colors, label positions etc. This is a little inconvenient since control of shape is quite hard.
 
-- Ensure the **AiiDA REST API** endpoint is configured in `api.js` or your environment.
-- Optional: Adjust the **max breadcrumbs** displayed by changing the `MAX_BREADCRUMBS` constant in `Explorer.jsx`.
+### Modularity and control;
 
-## Tech Stack
+When making additional, isolation is important. The Explore react component should act as a controller and wrapper for modular components that in principle function by themself. File/Module scope is regularly used to define only things a component should be aware of.
 
-- **React 18 + Vite**
-- **React Flow** for graph visualization
-- **Tailwind CSS** for styling
-- **AiiDA REST API** for node data
+Currently this is upheld; some components share context to update their internal state but this is managed externally by the Explorer controller, which effectively tracks global state.
 
----
+For common/simple components (layout managers, tables/Dropdowns etc), these shoudl be placed in the /components directory, with the expectation that this may eventually fall into a fully fledged library.
+
+### Styling
+
+Most of the styling is handled largely by Tailwind and a little further control is through inline css. Exposing "componentStyle" as a prop gives control on the appearance of individual components without having to hack the styling with css overrides. These can defined such to only append to the baseStyle (since tailwind is right-to-left priority) so that the basestyle is not overwritten.

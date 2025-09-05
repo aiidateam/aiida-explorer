@@ -49,15 +49,36 @@ export default function KpointsDataVisualiser({
 
   return (
     <div className="w-full h-full p-4 space-y-6 overflow-y-auto">
-      <DataTable title="Cell" columns={cellColumns} data={cellData} />
-      <DataTable title="Mesh" columns={meshColumns} data={meshData} />
-      <DataTable title="Offset" columns={offsetColumns} data={offsetData} />
-      <DataTable title="PBC Flags" columns={pbcColumns} data={pbcData} />
+      <DataTable
+        title="Cell"
+        columns={cellColumns}
+        data={cellData}
+        sortableCols={false}
+      />
+      <DataTable
+        title="Mesh"
+        columns={meshColumns}
+        data={meshData}
+        sortableCols={false}
+      />
+      <DataTable
+        title="Offset"
+        columns={offsetColumns}
+        data={offsetData}
+        sortableCols={false}
+      />
+      <DataTable
+        title="PBC Flags"
+        columns={pbcColumns}
+        data={pbcData}
+        sortableCols={false}
+      />
       <DataTable
         key="explicit_kpoints_abs"
         title="Explicit K-points (Absolute)"
         columns={kpointColumns}
         data={kpointData}
+        sortableCols={false}
       />
     </div>
   );

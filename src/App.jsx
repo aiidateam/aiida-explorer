@@ -14,9 +14,11 @@ function App() {
   const MC3D_node = "03b0d538-dbb6-4b9d-8ce5-da8173155104";
 
   const twodtopo = "https://aiida.materialscloud.org/2dtopo/api/v4";
-  const twodtopo_node = "03b0d538-dbb6-4b9d-8ce5-da8173155104";
+  const twodtopo_node = "0021c3ee-6f98-47cf-ab1c-b267ff8203b6";
 
-  return <Explorer baseUrl={twodtopo} startingNode={twodtopo_node} />;
+  return (
+    <Explorer baseUrl={twodtopo} strIdentifier={"TEST ID"} startingNode={"1"} />
+  );
 }
 
 export default App;

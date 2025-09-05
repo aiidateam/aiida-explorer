@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import FlowChart from "./FlowChart";
 import SidePane from "./SidePane";
 import GridViewer from "./GridViewer";
-import GridViewer2 from "./GridViewer2";
+import GroupsViewer from "./GroupsViewer";
 
 import DebugPane from "./DebugPane";
 import VisualiserPane from "./VisualiserPane";
@@ -13,23 +13,18 @@ import {
   fetchNodeContents,
   fetchCif,
   fetchJson,
+  fetchNodeRepoList,
 } from "./api";
 
-const columns = [
-  { header: "ID", accessor: "id" },
-  { header: "Name", accessor: "name" },
-  { header: "Type", accessor: "type" },
-];
-
-const data = [
-  { id: "1", name: "Node A", type: "calc" },
-  { id: "2", name: "Node B", type: "var" },
-  { id: "3", name: "Node C", type: "output" },
-];
+import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 
 // full component handler for  aiidaexplorer.
-//  this manages all states and data to the subcomponents...
-export default function Explorer({ baseUrl = "", startingNode = "" }) {
+//  this manages all states and data to the subcomponents.
+export default function Explorer({
+  baseUrl = "",
+  strIdentifier = "",
+  startingNode = "",
+}) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -42,6 +37,11 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
   const [selectedNode, setSelectedNode] = useState(null);
   const [extraNodeData, setExtraNodeData] = useState({});
   const [timeTaken, setTimeTaken] = useState(null);
+
+  const [isGroupsOpen, setIsGroupsOpen] = useState(() => {
+    // if startingNode is empty string, open the Groups overlay
+    return startingNode === "";
+  });
 
   // --------------------------
   // Load graph whenever rootNodeId changes
@@ -68,7 +68,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       // Keep selection if still present
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id,
+          (n) => n.id === selectedNode.id
         );
         setSelectedNode(stillExists || null);
       }
@@ -81,7 +81,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
     return () => {
       mounted = false;
     };
-  }, [rootNodeId]); // no extraNodeData here → avoids refires
+  }, [rootNodeId]); //
 
   // --------------------------
   // Cache + merge helper
@@ -117,6 +117,20 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       }));
     }
 
+    // Fetch repo list if missing
+    if (!updatedData.repo_list) {
+      let repo_list = {};
+      if (node.data.label === "FolderData") {
+        repo_list = await fetchNodeRepoList(baseUrl, node.id);
+      }
+
+      if (node.data.label === "RemoteData") {
+        repo_list = await fetchNodeRepoList(baseUrl, node.id);
+        console.log(repo_list);
+      }
+      updatedData = { ...updatedData, repo_list };
+    }
+
     return { ...node, data: updatedData };
   };
 
@@ -132,8 +146,8 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       prevNodes.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n,
-      ),
+          : n
+      )
     );
   };
 
@@ -165,14 +179,68 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen relative">
+      {/* absolute means we render it ontop the other content, dropping this also looks okay imo... */}
+      {/* toggle button - hide if Table View is open*/}
+      {!isGroupsOpen && (
+        <button
+          className="group absolute top-4 left-4 z-50 px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg
+               flex items-center gap-1 hover:text-blue-800"
+          onClick={() => setIsGroupsOpen(true)}
+        >
+          <GroupIcon
+            size={24}
+            className="text-blue-600 group-hover:text-blue-800 transition-colors"
+          />
+          <span className="transition-colors">Table View</span>
+        </button>
+      )}
+      {/* Overlay always rendered */}
+      <div
+        className={`
+          fixed inset-0 z-40 flex items-center justify-center bg-black/30
+          transition-all duration-500 ease-in-out
+          ${
+            isGroupsOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }
+        `}
+        onClick={() => setIsGroupsOpen(false)} // click outside closes
+      >
+        <div
+          className={`
+            bg-white w-5/6 h-5/6 rounded-lg shadow-xl overflow-auto relative
+            transform transition-all duration-500 ease-in-out
+            ${isGroupsOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"}
+          `}
+          onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+        >
+          {/* X button inside */}
+          <button
+            className="absolute top-3 right-3 p-2"
+            onClick={() => setIsGroupsOpen(false)}
+          >
+            <XIcon
+              size={24}
+              className="text-slate-800 hover:text-red-800 transition-colors duration-400"
+            />
+          </button>
+          <div className="flex flex-col h-full gap-2">
+            {/* Top panel */}
+            <div className="flex-1 overflow-auto border-b-2 border-gray-300">
+              <GridViewer baseUrl={baseUrl} />
+            </div>
+
+            {/* Bottom panel */}
+            <div className="flex-1 overflow-auto">
+              <GroupsViewer baseUrl={baseUrl} />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main content */}
-      <div className="flex-none h-1/4 overflow-auto border-b border-gray-300">
-        <GridViewer baseUrl={baseUrl} />
-      </div>
-      <div className="flex-none h-1/4 overflow-auto border-b border-gray-300">
-        <GridViewer2 baseUrl={baseUrl} />
-      </div>
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 border-r border-gray-300 h-full min-w-0">
           <FlowChart
@@ -196,7 +264,6 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
           </div>
         </div>
       </div>
-
       {/* Breadcrumbs */}
       <div className="flex-none h-12 border-t border-gray-300">
         <Breadcrumbs
@@ -205,6 +272,15 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
           maxItems={MAX_BREADCRUMBS}
         />
       </div>
+      {/* Optional animation keyframes in global CSS */}
+      <style>
+        {`
+          @keyframes fadeScaleIn {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+        `}
+      </style>
     </div>
   );
 }

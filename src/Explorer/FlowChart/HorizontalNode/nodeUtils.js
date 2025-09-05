@@ -1,5 +1,7 @@
 // switch function that determines node printing based on AiiDA built ins.
 // basic aiida node data is gathered as a neccessity so we can render uuids without additional fetches
+
+// TODO - implement all of these in a nice way.
 export function getNodeDisplay(node) {
   const fallback = `uuid: ${node.aiida.uuid.split("-")[0]}`;
 
@@ -31,11 +33,29 @@ export function getNodeDisplay(node) {
     // These are AiiDA but easy to describe with a short string.
     // -----
     case "KpointsData":
-      return node.attributes?.mesh !== undefined
-        ? `Grid: ${node.attributes.mesh[0]} × ${node.attributes.mesh[1]} × ${node.attributes.mesh[2]}`
-        : fallback;
+      console.log("Kpoints Data");
+      console.log(node);
+
+      if (node.attributes?.mesh) {
+        const [x, y, z] = node.attributes.mesh;
+        return `Grid: ${x} × ${y} × ${z}`;
+      }
+
+      if (node.attributes?.labels && node.attributes?.label_numbers) {
+        return `Path: ${node.attributes.labels.join(" → ")}`;
+      }
+
+      return fallback;
 
     case "StructureData":
+      console.log("n", node);
+      if (node.extras?.formula_hill) {
+        return node.extras?.formula_hill;
+      }
+
+      if (node.derived_properties?.formula) {
+        return node.derived_properties?.formula;
+      }
       return node.extras?.formula_hill !== undefined
         ? node.extras.formula_hill
         : fallback;
@@ -45,6 +65,8 @@ export function getNodeDisplay(node) {
     case "UpfData": {
       const element = node.download?.pseudo_potential?.header?.element;
       const psType = node.download?.pseudo_potential?.header?.pseudo_type;
+
+      console.log("upf");
 
       return psType && element ? `Pseudo: ${psType} - ${element}` : fallback;
     }

@@ -36,7 +36,7 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
       );
 
       if (!res.ok) {
@@ -54,6 +54,22 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   }
 
   return results;
+}
+
+// fetch node repo list
+export async function fetchNodeRepoList(baseUrl, nodeId) {
+  if (!nodeId) return null;
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch (err) {
+    console.error("Error fetching node:", err);
+    return null;
+  }
 }
 
 // get the full_types of a root aiida API
@@ -77,8 +93,8 @@ export async function fetchJson(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/download?download_format=json`,
+        nodeId
+      )}/download?download_format=json`
     );
 
     if (!res.ok) return null;
@@ -95,8 +111,8 @@ export async function fetchCif(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/download?download_format=cif&download=false`,
+        nodeId
+      )}/download?download_format=cif&download=false`
     );
 
     if (!res.ok) return { cifText: null };
@@ -224,7 +240,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
   const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
-    allNodes.filter((n) => n.data.pos === "output"),
+    allNodes.filter((n) => n.data.pos === "output")
   );
 
   return { nodes, edges };

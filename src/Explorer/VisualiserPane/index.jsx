@@ -2,10 +2,12 @@ import StructureVisualizer from "mc-react-structure-visualizer";
 
 import { StructDownloadButton } from "mc-react-library";
 import KpointsDataVisualiser from "./KpointsDataVisualiser";
+import FolderDataVisualiser from "./FolderDataVisualiser";
 
 const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
 // handler for the visualiser pane
+// TODO move the structureData/CifData to its own file.
 export default function VisualiserPane({ selectedNode }) {
   if (!selectedNode)
     return <div className="w-full h-full p-4">No node selected</div>;
@@ -48,6 +50,18 @@ export default function VisualiserPane({ selectedNode }) {
         derivedProperties={selectedNode.data.derived_properties}
       />
     );
+  }
+
+  if (selectedNode.data.label === "FolderData") {
+    // TODO clean this up...
+    const repoList = selectedNode.data?.repo_list?.data?.repo_list || [];
+    return <FolderDataVisualiser repoList={repoList} />;
+  }
+
+  if (selectedNode.data.label === "RemoteData") {
+    // TODO clean this up...
+    const repoList = selectedNode.data?.repo_list?.data?.repo_list || [];
+    return <FolderDataVisualiser repoList={repoList} />;
   }
 
   return (

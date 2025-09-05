@@ -38,7 +38,7 @@ export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const spacingX = options.spacingX || 300;
   const spacingY = options.spacingY || 80;
@@ -65,7 +65,7 @@ export function layoutGraphDefault(
     });
 
     edges.push({
-      id: `e-${node.id}-${centerNode.id}`,
+      id: `e-${node.id}->${centerNode.id}`,
       source: node.id,
       target: centerNode.id,
       sourcePosition: Position.Right,
@@ -85,7 +85,7 @@ export function layoutGraphDefault(
     });
 
     edges.push({
-      id: `e-${centerNode.id}-${node.id}`,
+      id: `e-${centerNode.id}->${node.id}`,
       source: centerNode.id,
       sourcePosition: Position.Right,
       target: node.id,
@@ -103,7 +103,7 @@ export function layoutGraphStaircase(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const spacingX = options.spacingX || 200;
   const spacingY = options.spacingY || 80;
@@ -163,7 +163,7 @@ export function layoutGraphFan(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const radius = options.radius ?? 350;
   const maxAngle = options.maxAngle ?? Math.PI / 1.5; // 60 degrees spread
@@ -187,9 +187,7 @@ export function layoutGraphFan(
     const startAngle = -maxAngle / 2;
     const endAngle = maxAngle / 2;
     const angles = nodesArray.map((_, i) =>
-      total === 1
-        ? 0
-        : startAngle + (i / (total - 1)) * (endAngle - startAngle),
+      total === 1 ? 0 : startAngle + (i / (total - 1)) * (endAngle - startAngle)
     );
 
     nodesArray.forEach((node, i) => {

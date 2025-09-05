@@ -56,15 +56,16 @@ export default function GridViewer({ baseUrl = "" }) {
         console.error("Error fetching node data:", err);
       }
     },
-    [baseUrl],
+    [baseUrl]
   );
 
   const columns = columnOrder;
 
   return (
-    <div className="flex gap-4 mt-2 ml-2 max-h-[600px] overflow-auto">
+    <div className="flex gap-4 mt-2 ml-2 overflow-auto">
       {/* Tree dropdowns on the left */}
       <div className="flex-shrink-0">
+        <h3 className="pb-2 px-2">AiiDA node datatypes:</h3>
         {data?.data?.subspaces?.map((subspace) => (
           <TreeDropdown
             key={subspace.full_type}
@@ -80,7 +81,7 @@ export default function GridViewer({ baseUrl = "" }) {
       <div className="flex-1">
         {tableData.length > 0 && selectedNode && (
           <DataTable
-            title={`Full Type fetch data for ${
+            title={`All nodes with datatype ${
               selectedNode.full_type.split(".").slice(-2)[0]
             }:`}
             columns={columns}
