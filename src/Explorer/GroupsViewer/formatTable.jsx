@@ -1,6 +1,9 @@
+import React from "react";
+
 // column label mappings
 const columnLabels = {
   uuid: "Unique ID",
+  label: "Label",
   full_type: "Type",
   ctime: "Created",
   mtime: "Modified",
@@ -8,7 +11,14 @@ const columnLabels = {
 };
 
 // desired column order (by labels)
-export const columnOrder = ["Unique ID", "Type", "Created", "Modified"];
+export const columnOrder = [
+  "Unique ID",
+  "Label",
+  "Type",
+  "Created",
+  "Modified",
+  "",
+];
 
 // optional: per-column formatting
 function formatValue(label, value) {
@@ -32,14 +42,24 @@ export default function formatTableData(nodes) {
   return nodes.map((row) => {
     const newRow = {};
     columnOrder.forEach((label) => {
-      // find the original key for this label
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label,
+        (k) => columnLabels[k] === label
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key]);
       }
     });
+
+    // Add extra goto column
+    newRow[""] = (
+      <a
+        href={`/?rootNode=${row.uuid}`}
+        className="px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
+      >
+        View
+      </a>
+    );
+
     return newRow;
   });
 }

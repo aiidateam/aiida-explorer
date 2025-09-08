@@ -26,7 +26,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
-  const MAX_BREADCRUMBS = 20;
+  const MAX_BREADCRUMBS = 10;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const rootNodeIdParam = searchParams.get("rootNode") || startingNode;
@@ -66,7 +66,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       // Keep selection if still present
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id,
+          (n) => n.id === selectedNode.id
         );
         setSelectedNode(stillExists || null);
       }
@@ -159,8 +159,8 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       prevNodes.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n,
-      ),
+          : n
+      )
     );
   };
 

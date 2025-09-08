@@ -56,10 +56,10 @@ export default function GridViewer({ baseUrl = "" }) {
         console.error("Error fetching node data:", err);
       }
     },
-    [baseUrl],
+    [baseUrl]
   );
 
-  const columns = columnOrder;
+  const columns = [...columnOrder];
 
   return (
     <div className="flex gap-4 mt-2 ml-2 overflow-auto">
@@ -86,6 +86,7 @@ export default function GridViewer({ baseUrl = "" }) {
             }:`}
             columns={columns}
             data={tableData}
+            sortableCols={["Unique ID", "Type", "Created", "Modified"]}
           />
         )}
       </div>

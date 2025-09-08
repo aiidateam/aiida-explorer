@@ -65,7 +65,7 @@ export default function GroupsViewer({ baseUrl = "" }) {
   // we dont want someone spamclicking to crash the API.
   const [cache, setCache] = useState({});
 
-  const columns = columnOrder;
+  const columns = [...columnOrder];
 
   async function handleSelectGroup(group) {
     setSelectedGroup(group);
@@ -107,6 +107,7 @@ export default function GroupsViewer({ baseUrl = "" }) {
             title={`${tableData.length} nodes in group: ${selectedGroup?.label}`}
             columns={columns}
             data={tableData}
+            sortableCols={["Unique ID", "Type", "Created", "Modified"]}
           />
         )}
       </div>

@@ -44,6 +44,7 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
           {/* Download button in top-right corner */}
           <div className="absolute top-8 right-8 z-50">
             <StructDownloadButton
+              key={`visualiser-${label}-${aiida.uuid}`}
               aiida_rest_url={baseUrl}
               uuid={aiida.uuid}
               download_formats={dlFormats}
@@ -51,7 +52,11 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
           </div>
           {/* Visualizer fills the container */}
           <div className="w-full h-full">
-            <StructureVisualizer cifText={cifText} initSupercell={[2, 2, 2]} />
+            <StructureVisualizer
+              key={`visualiser-${label}-${aiida.uuid}`}
+              cifText={cifText}
+              initSupercell={[2, 2, 2]}
+            />
           </div>
         </div>
       );
@@ -60,6 +65,7 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     case "KpointsData":
       return (
         <KpointsDataVisualiser
+          key={`visualiser-${label}-${aiida.uuid}`}
           download={download}
           attributes={attributes}
           derivedProperties={derived_properties}
@@ -69,6 +75,7 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     case "UpfData":
       return (
         <UpfDataVisualiser
+          key={`visualiser-${label}-${aiida.uuid}`}
           baseUrl={baseUrl}
           nodeId={selectedNode.data.aiida.uuid}
           download={download}
@@ -79,16 +86,32 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     case "FolderData":
     case "RemoteData": {
       const repoList = repo_list?.data?.repo_list || [];
-      return <FolderDataVisualiser repoList={repoList} />;
+      return (
+        <FolderDataVisualiser
+          key={`visualiser-${label}-${aiida.uuid}`}
+          repoList={repoList}
+        />
+      );
     }
 
     case "CalcJobNode": {
       const repoList = repo_list?.data?.repo_list || [];
-      return <CalcJobVisualiser files={files} attributes={attributes} />;
+      return (
+        <CalcJobVisualiser
+          key={`visualiser-${label}-${aiida.uuid}`}
+          files={files}
+          attributes={attributes}
+        />
+      );
     }
 
     // if the dtype is unknown we just render the dicts in the data as tables.
     default:
-      return <DictDataVisualiser data={selectedNode.data} />;
+      return (
+        <DictDataVisualiser
+          key={`visualiser-${label}-${aiida.uuid}`}
+          data={selectedNode.data}
+        />
+      );
   }
 }
