@@ -34,8 +34,14 @@ export default function DataTable({
   data = [],
   maxWidth = "1500px",
   sortableCols = true,
+  renderIfMissing = false,
 }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  // Skip rendering if no data and not forced
+  if (!renderIfMissing && (!data || data.length === 0)) {
+    return null;
+  }
 
   const sortedData = useMemo(() => {
     if (!sortConfig.key) return data;

@@ -56,7 +56,7 @@ export default function GridViewer({ baseUrl = "" }) {
         console.error("Error fetching node data:", err);
       }
     },
-    [baseUrl]
+    [baseUrl],
   );
 
   const columns = columnOrder;

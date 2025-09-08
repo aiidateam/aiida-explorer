@@ -14,17 +14,15 @@ import {
   fetchCif,
   fetchJson,
   fetchNodeRepoList,
+  fetchFiles,
+  fetchRetrievedUUID,
 } from "./api";
 
 import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 
 // full component handler for  aiidaexplorer.
 //  this manages all states and data to the subcomponents.
-export default function Explorer({
-  baseUrl = "",
-  strIdentifier = "",
-  startingNode = "",
-}) {
+export default function Explorer({ baseUrl = "", startingNode = "" }) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -68,7 +66,7 @@ export default function Explorer({
       // Keep selection if still present
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id
+          (n) => n.id === selectedNode.id,
         );
         setSelectedNode(stillExists || null);
       }
@@ -126,9 +124,24 @@ export default function Explorer({
 
       if (node.data.label === "RemoteData") {
         repo_list = await fetchNodeRepoList(baseUrl, node.id);
-        console.log(repo_list);
       }
       updatedData = { ...updatedData, repo_list };
+    }
+
+    if (!updatedData.files) {
+      let files = {};
+      if (node.data.label === "CalcJobNode") {
+        // calcjob nodes need to know where their retrieved node is...
+        // so we messily generate it here and append it to the data structure
+        if (!updatedData.retrievedUUID) {
+          const retrID = await fetchRetrievedUUID(baseUrl, node.id);
+          updatedData = { ...updatedData, retrievedUUID: retrID };
+        }
+
+        // we now use this appended UUID to render get the file downlpoad paths properly.
+        files = await fetchFiles(baseUrl, node.id, updatedData.retrievedUUID);
+      }
+      updatedData = { ...updatedData, files };
     }
 
     return { ...node, data: updatedData };
@@ -146,8 +159,8 @@ export default function Explorer({
       prevNodes.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n
-      )
+          : n,
+      ),
     );
   };
 
@@ -260,7 +273,7 @@ export default function Explorer({
             <SidePane selectedNode={selectedNode} timeTaken={timeTaken} />
           </div>
           <div className="flex-1 overflow-y-auto">
-            <VisualiserPane selectedNode={selectedNode} />
+            <VisualiserPane baseUrl={baseUrl} selectedNode={selectedNode} />
           </div>
         </div>
       </div>

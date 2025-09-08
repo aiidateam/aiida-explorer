@@ -17,7 +17,10 @@ function App() {
   const twodtopo_node = "0021c3ee-6f98-47cf-ab1c-b267ff8203b6";
 
   return (
-    <Explorer baseUrl={twodtopo} strIdentifier={"TEST ID"} startingNode={"1"} />
+    <Explorer
+      baseUrl={twodtopo}
+      startingNode={"0021c3ee-6f98-47cf-ab1c-b267ff8203b6"}
+    />
   );
 }
 

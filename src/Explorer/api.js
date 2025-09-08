@@ -36,7 +36,7 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
       );
 
       if (!res.ok) {
@@ -62,7 +62,7 @@ export async function fetchNodeRepoList(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`,
     );
     if (!res.ok) return null;
     return res.json();
@@ -87,14 +87,110 @@ export async function fetchAPIFullTypes(baseUrl) {
 // --------------------------
 // defined datatype api hits are here
 // --------------------------
+
+// helper api hit that fetches the retrieved folder UUID for a specific node
+export async function fetchRetrievedUUID(baseUrl, nodeId) {
+  if (!nodeId) return null;
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`,
+    );
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    console.log("d", data);
+    const nodes = data?.data?.outgoing || [];
+
+    const retrievedNode = nodes.find((n) => n.link_label === "retrieved");
+    return retrievedNode?.uuid || null;
+  } catch (err) {
+    console.error("Error fetching node:", err);
+    return null;
+  }
+}
+
+// calcJobs have a special endpoint (input_files/output_files)
+// annoyingly this calcjob node has information about the retrieved files but no information about the node they were retrieved from...
+// as a result this method relies on
+export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
+  if (!nodeId) return null;
+
+  const endpoints = ["input_files", "output_files"];
+  const results = {};
+
+  console.log("1", retrievedNodeId);
+
+  for (const ep of endpoints) {
+    try {
+      const url = `${baseUrl}/calcjobs/${encodeURIComponent(nodeId)}/${ep}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        if (res.status !== 404) {
+          console.warn(`Endpoint ${ep} failed for node ${nodeId}:`, res.status);
+        }
+        continue;
+      }
+
+      const json = await res.json();
+
+      // Safely extract the files array
+      const files = Array.isArray(json.data?.[ep])
+        ? json.data[ep]
+        : Array.isArray(json.data)
+          ? json.data
+          : [];
+
+      // Determine which node's repository to use
+      console.log(nodeId);
+      const repoNodeId = ep === "input_files" ? nodeId : retrievedNodeId;
+
+      // Filter files and add download URL
+      const processedFiles = files
+        .filter((f) => f.type === "FILE")
+        .map((file) => ({
+          ...file,
+          downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
+            repoNodeId,
+          )}/repo/contents?filename=%22${encodeURIComponent(file.name)}%22`,
+        }));
+
+      results[ep] = processedFiles;
+    } catch (err) {
+      console.error(`Error fetching ${ep} for node ${nodeId}:`, err);
+    }
+  }
+
+  return results;
+}
+
+// currently unused method but is a useful way to get the contents of a file.
+export async function fetchFileContents(baseUrl, nodeId, filename) {
+  if (!nodeId) return { incoming: [], outgoing: [] };
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/nodes/${encodeURIComponent(
+        nodeId,
+      )}/repo/contents?filename=${filename}`,
+    );
+
+    if (!res.ok) return null;
+    return res.json();
+  } catch (err) {
+    console.error("Error fetching node:", err);
+    return null;
+  }
+}
+
 export async function fetchJson(baseUrl, nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=json`
+        nodeId,
+      )}/download?download_format=json`,
     );
 
     if (!res.ok) return null;
@@ -111,8 +207,8 @@ export async function fetchCif(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=cif&download=false`
+        nodeId,
+      )}/download?download_format=cif&download=false`,
     );
 
     if (!res.ok) return { cifText: null };
@@ -167,6 +263,7 @@ export async function fetchFromQueryBuilder(baseUrl, postMsg) {
 
 // --------------------------
 // node connection hits are here.
+// TODO - these can maybe be moved into a different place or modularised.
 // --------------------------
 
 // get all links to a node (currently unpaginated)
@@ -201,8 +298,6 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
   const { incoming, outgoing } = await fetchLinks(baseUrl, nodeId);
   const linksIn = incoming?.data?.incoming || [];
   const linksOut = outgoing?.data?.outgoing || [];
-
-  console.log("RN", rootNode);
 
   const allNodes = [
     {
@@ -240,7 +335,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
   const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === "center"),
     allNodes.filter((n) => n.data.pos === "input"),
-    allNodes.filter((n) => n.data.pos === "output")
+    allNodes.filter((n) => n.data.pos === "output"),
   );
 
   return { nodes, edges };

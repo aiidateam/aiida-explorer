@@ -33,9 +33,6 @@ export function getNodeDisplay(node) {
     // These are AiiDA but easy to describe with a short string.
     // -----
     case "KpointsData":
-      console.log("Kpoints Data");
-      console.log(node);
-
       if (node.attributes?.mesh) {
         const [x, y, z] = node.attributes.mesh;
         return `Grid: ${x} × ${y} × ${z}`;
@@ -48,7 +45,6 @@ export function getNodeDisplay(node) {
       return fallback;
 
     case "StructureData":
-      console.log("n", node);
       if (node.extras?.formula_hill) {
         return node.extras?.formula_hill;
       }
@@ -65,8 +61,6 @@ export function getNodeDisplay(node) {
     case "UpfData": {
       const element = node.download?.pseudo_potential?.header?.element;
       const psType = node.download?.pseudo_potential?.header?.pseudo_type;
-
-      console.log("upf");
 
       return psType && element ? `Pseudo: ${psType} - ${element}` : fallback;
     }
