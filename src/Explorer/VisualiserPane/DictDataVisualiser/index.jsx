@@ -20,8 +20,8 @@ export default function DictDataVisualiser({ data = {} }) {
         value === null || value === undefined
           ? "—"
           : typeof value === "object"
-          ? JSON.stringify(value, null, 2)
-          : String(value),
+            ? JSON.stringify(value, null, 2)
+            : String(value),
     }));
   };
 

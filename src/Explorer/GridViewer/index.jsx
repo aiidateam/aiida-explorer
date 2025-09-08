@@ -5,6 +5,7 @@ import { fetchAPIFullTypes } from "../api";
 
 import formatTableData, { columnOrder } from "./formatTable";
 
+// TODO add pagination
 export default function GridViewer({ baseUrl = "" }) {
   const [data, setData] = useState([]);
   const [tableData, setTableData] = useState([]);
@@ -56,7 +57,7 @@ export default function GridViewer({ baseUrl = "" }) {
         console.error("Error fetching node data:", err);
       }
     },
-    [baseUrl]
+    [baseUrl],
   );
 
   const columns = [...columnOrder];
