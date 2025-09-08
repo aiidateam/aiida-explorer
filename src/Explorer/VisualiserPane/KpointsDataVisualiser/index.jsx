@@ -53,7 +53,7 @@ export default function KpointsDataVisualiser({
       x: row[0],
       y: row[1],
       z: row[2],
-    }),
+    })
   );
 
   return (

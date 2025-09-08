@@ -53,7 +53,7 @@ When making additional, isolation is important. The Explore react component shou
 
 Currently this is upheld; some components share context to update their internal state but this is managed externally by the Explorer controller, which effectively tracks global state.
 
-For common/simple components (layout managers, tables/Dropdowns etc), these shoudl be placed in the /components directory, with the expectation that this may eventually fall into a fully fledged library.
+For common/simple components (layout managers, tables/Dropdowns etc), these should be placed in the /components directory, with the expectation that this may eventually fall into a fully fledged library.
 
 ### Styling
 

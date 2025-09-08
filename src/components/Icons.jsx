@@ -66,30 +66,46 @@ export function XIcon({ size = 14, className = "" }) {
   );
 }
 
+// download icon that supports url or json data
 export function DownloadIcon({
-  data = {},
+  data = null,
+  downloadUrl = null,
   filename = "data.json",
   size = 14,
   className = "",
 }) {
   const handleDownload = () => {
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    if (downloadUrl) {
+      // Directly download from provided URL
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.click();
+      return;
+    }
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
+    if (data) {
+      // Fallback to JSON blob download
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
 
-    URL.revokeObjectURL(url);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
     <button
       type="button"
       onClick={handleDownload}
-      title="Download JSON"
+      title="Download"
       className="p-1 hover:text-blue-600"
     >
       <svg

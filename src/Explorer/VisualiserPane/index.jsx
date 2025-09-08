@@ -4,6 +4,7 @@ import KpointsDataVisualiser from "./KpointsDataVisualiser";
 import FolderDataVisualiser from "./FolderDataVisualiser";
 import DictDataVisualiser from "./DictDataVisualiser";
 import CalcJobVisualiser from "./CalcJobVisualiser";
+import UpfDataVisualiser from "./UpfDataVisualiser";
 
 const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
@@ -62,6 +63,16 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
           download={download}
           attributes={attributes}
           derivedProperties={derived_properties}
+        />
+      );
+
+    case "UpfData":
+      return (
+        <UpfDataVisualiser
+          baseUrl={baseUrl}
+          nodeId={selectedNode.data.aiida.uuid}
+          download={download}
+          attributes={attributes}
         />
       );
 
