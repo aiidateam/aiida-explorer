@@ -37,15 +37,10 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
 
   const [selectedNode, setSelectedNode] = useState(null);
   const [extraNodeData, setExtraNodeData] = useState({});
-  const [timeTaken, setTimeTaken] = useState(null);
 
-  const [isGroupsOpen, setIsGroupsOpen] = useState(() => {
-    // if startingNode is empty string, open the Groups overlay
-    return startingNode === "";
+  const [activeOverlay, setActiveOverlay] = useState(() => {
+    return rootNodeIdParam === "" ? "groups1" : null;
   });
-
-  const [activeOverlay, setActiveOverlay] = useState(null);
-
   // --------------------------
   // Load graph whenever rootNodeId changes
   // --------------------------
@@ -69,14 +64,13 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       setEdges(fetchedEdges);
 
       // Keep selection if still present
+      // unsure if this is needed - seems defumct
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id,
+          (n) => n.id === selectedNode.id
         );
         setSelectedNode(stillExists || null);
       }
-
-      setTimeTaken(performance.now() - start);
     }
 
     loadGraph();
@@ -84,7 +78,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
     return () => {
       mounted = false;
     };
-  }, [rootNodeId]); //
+  }, [rootNodeId]);
 
   // --------------------------
   // Cache + merge helper
@@ -164,8 +158,8 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
       prevNodes.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n,
-      ),
+          : n
+      )
     );
   };
 
@@ -284,7 +278,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
         {/* Right-hand panel */}
         <div className="w-[900px] flex flex-col h-full">
           <div className="flex-none h-1/4 border-b border-gray-300 overflow-y-auto">
-            <SidePane selectedNode={selectedNode} timeTaken={timeTaken} />
+            <SidePane selectedNode={selectedNode} />
           </div>
           <div className="flex-1 overflow-y-auto">
             <VisualiserPane baseUrl={baseUrl} selectedNode={selectedNode} />

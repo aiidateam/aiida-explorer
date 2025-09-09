@@ -66,7 +66,7 @@ export default function GroupsViewer2({ baseUrl = "" }) {
 
       // Remove duplicates by UUID
       const uniqueNodes = Array.from(
-        new Map(allNodes.map((n) => [n.uuid, n])).values(),
+        new Map(allNodes.map((n) => [n.uuid, n])).values()
       );
 
       setTableData(formatTableData(uniqueNodes));
@@ -76,45 +76,47 @@ export default function GroupsViewer2({ baseUrl = "" }) {
   };
 
   return (
-    <div className="flex gap-4 mt-2 ml-2 overflow-auto">
-      {/* Group checkboxes */}
-      <div>
-        <h4 className="font-medium m-2">Filter by Defined Groups</h4>
+    <div className="flex gap-4 p-3 overflow-auto w-full items-start">
+      {/* Left filter panel */}
+      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 pr-4 rounded">
+        <h4 className="font-medium mb-2">Filter by Defined Groups</h4>
         {sortGroups(groups).map((g) => (
-          <label key={g.label} className="flex items-center gap-1 mx-2">
+          <label key={g.label} className="flex items-start gap-2 mb-2">
             <input
               type="checkbox"
+              className="mt-1"
               checked={selectedGroups.includes(g.label)}
               onChange={(e) =>
                 setSelectedGroups((prev) =>
                   e.target.checked
                     ? [...prev, g.label]
-                    : prev.filter((x) => x !== g.label),
+                    : prev.filter((x) => x !== g.label)
                 )
               }
             />
-            {g.label}
+            <span className="truncate block" title={g.label}>
+              {g.label}
+            </span>
           </label>
         ))}
 
         <button
           onClick={fetchFilteredNodes}
-          className="px-2 py-1 m-2 rounded bg-indigo-700 text-white hover:bg-indigo-700 transition"
+          className="px-3 py-1 mb-2 ml-2 rounded bg-indigo-700 text-white hover:bg-indigo-800 transition"
         >
           Apply
         </button>
       </div>
 
-      {/* Table */}
-      <div className="flex-1">
-        {tableData.length > 0 && (
-          <DataTable
-            title={`${tableData.length} nodes`}
-            columns={columnOrder}
-            data={tableData}
-            sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
-          />
-        )}
+      {/* Right table panel */}
+      <div className="flex-1 bg-white p-2 rounded">
+        <DataTable
+          title={`${tableData.length} unique nodes in selected Groups`}
+          columns={columnOrder}
+          data={tableData || []}
+          sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
+          renderIfMissing={true}
+        />
       </div>
     </div>
   );

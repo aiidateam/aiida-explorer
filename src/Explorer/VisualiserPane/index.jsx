@@ -6,6 +6,8 @@ import DictDataVisualiser from "./DictDataVisualiser";
 import CalcJobVisualiser from "./CalcJobVisualiser";
 import UpfDataVisualiser from "./UpfDataVisualiser";
 
+import RawDataVisualiser from "./RawDataVisualiser";
+
 const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
 export default function VisualiserPane({ baseUrl, selectedNode }) {
@@ -58,6 +60,16 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
               initSupercell={[2, 2, 2]}
             />
           </div>
+          <RawDataVisualiser
+            key={`visualiser-${label}-${aiida.uuid}`}
+            label={label}
+            aiida={aiida}
+            download={download}
+            attributes={attributes}
+            derived_properties={derived_properties}
+            repo_list={repo_list}
+            files={files}
+          />
         </div>
       );
     }
@@ -106,11 +118,24 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     }
 
     // if the dtype is unknown we just render the dicts in the data as tables.
+    // default:
+    //   return (
+    //     <DictDataVisualiser
+    //       key={`visualiser-${label}-${aiida.uuid}`}
+    //       data={selectedNode.data}
+    //     />
+
     default:
       return (
-        <DictDataVisualiser
+        <RawDataVisualiser
           key={`visualiser-${label}-${aiida.uuid}`}
-          data={selectedNode.data}
+          label={label}
+          aiida={aiida}
+          download={download}
+          attributes={attributes}
+          derived_properties={derived_properties}
+          repo_list={repo_list}
+          files={files}
         />
       );
   }
