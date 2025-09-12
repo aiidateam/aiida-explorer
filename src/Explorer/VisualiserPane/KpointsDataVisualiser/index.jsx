@@ -1,6 +1,8 @@
 import DataTable from "../../../components/DataTable";
 import { DownloadIcon } from "../../../components/Icons";
 
+import { omitGraphKeys } from "../../utils";
+
 // This could be extended to use the BZ visualiser from this data (if possible);
 // If a nice parser for VASP/QE/etc exists we could in principle also allow multiple download types.
 export default function KpointsDataVisualiser({ nodeData = {} }) {
@@ -62,8 +64,8 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
         <h3 className="text-2xl">Kpoints Data</h3>
         {/* for now we are downloading all the props. */}
         <DownloadIcon
-          data={{ download, attributes, derivedProperties }}
-          filename={"kpoints.json"}
+          data={omitGraphKeys(nodeData)}
+          filename={`${nodeData.aiida.uuid}_KpointNodeDetails.json`}
           size={22}
           className="pb-0.5"
         />

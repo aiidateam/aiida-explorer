@@ -4,7 +4,6 @@ import FlowChart from "./FlowChart";
 import SidePane from "./SidePane";
 import GridViewer from "./GridViewer";
 import GroupsViewer from "./GroupsViewer";
-import GroupsViewer2 from "./GroupsViewer2";
 
 import DebugPane from "./DebugPane";
 import VisualiserPane from "./VisualiserPane";
@@ -102,6 +101,8 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
         download = await fetchCif(baseUrl, node.id);
       } else if (node.data.label === "CifData") {
         download = await fetchCif(baseUrl, node.id);
+      } else if (node.data.label === "BandsData") {
+        download = await fetchJson(baseUrl, node.id);
       } else {
         download = await fetchJson(baseUrl, node.id);
       }
@@ -203,17 +204,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
               size={24}
               className="text-blue-600 group-hover:text-blue-800 transition-colors"
             />
-            <span className="transition-colors">Group View 1</span>
-          </button>
-          <button
-            className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
-            onClick={() => setActiveOverlay("groups2")}
-          >
-            <GroupIcon
-              size={24}
-              className="text-blue-600 group-hover:text-blue-800 transition-colors"
-            />
-            <span className="transition-colors">Group View 2</span>
+            <span className="transition-colors">Query database</span>
           </button>
           <button
             className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
@@ -240,7 +231,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
         onClick={() => setActiveOverlay(null)}
       >
         <div
-          className={`bg-white w-5/6 h-5/6 rounded-lg shadow-xl overflow-auto relative
+          className={`bg-white w-full mx-4 h-5/6 rounded-xl shadow-xl overflow-auto relative
         transform transition-all duration-500 ease-in-out
         ${activeOverlay ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
           onClick={(e) => e.stopPropagation()}
@@ -255,8 +246,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
             />
           </button>
 
-          {activeOverlay === "groups1" && <GroupsViewer2 baseUrl={baseUrl} />}
-          {activeOverlay === "groups2" && <GroupsViewer baseUrl={baseUrl} />}
+          {activeOverlay === "groups1" && <GroupsViewer baseUrl={baseUrl} />}
           {activeOverlay === "fulltypes" && <GridViewer baseUrl={baseUrl} />}
         </div>
       </div>

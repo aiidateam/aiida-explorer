@@ -74,9 +74,6 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
           <KpointsDataVisualiser
             key={`visualiser-${label}-${aiida.uuid}`}
             nodeData={selectedNode.data}
-            download={download}
-            attributes={attributes}
-            derivedProperties={derived_properties}
           />
           <RawDataVisualiser nodeData={selectedNode.data} />
         </div>

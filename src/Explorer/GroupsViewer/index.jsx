@@ -1,115 +1,127 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
-import { fetchGroups, fetchFromQueryBuilder } from "../api"; // make sure fetchFromQueryBuilder is exported
+import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import formatTableData, { columnOrder } from "./formatTable";
 
-// the REST API groups end point is practically useless.
-// to get all nodes in a group;
-// we build a query that we pass to the querybuilder instead
-function makeGroupNodesQuery(groupLabel) {
-  return {
-    path: [
-      {
-        entity_type: "group.core",
-        orm_base: "group",
-        tag: "group",
-      },
-      {
-        entity_type: "", // match any node type
-        orm_base: "node",
-        tag: "node",
-        joining_keyword: "with_group",
-        joining_value: "group",
-      },
-    ],
-    filters: {
-      group: {
-        label: groupLabel,
-      },
-    },
-    project: {
-      node: ["id", "uuid", "node_type", "label", "ctime", "mtime"], // return only useful fields
-    },
-  };
+import { buildQuery } from "./queryHandler";
+
+import {
+  TypeCheckboxTree,
+  aiidaTypes,
+  getFlattenedNodeTypes,
+} from "./TypesCheckbox";
+
+function sortGroups(groups) {
+  return [...groups].sort((a, b) => {
+    const isNumA = /^\d/.test(a.label);
+    const isNumB = /^\d/.test(b.label);
+
+    if (isNumA && !isNumB) return 1; // a goes after b
+    if (!isNumA && isNumB) return -1; // a goes before b
+
+    // Both numeric-start or both text: sort alphabetically
+    return a.label.localeCompare(b.label, undefined, { numeric: true });
+  });
 }
 
-export function GroupButtons({ baseUrl, onSelectGroup }) {
+export default function GroupsViewer2({ baseUrl = "" }) {
   const [groups, setGroups] = useState([]);
+  const [selectedGroups, setSelectedGroups] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const limit = 50; // items per 'add more'
 
   useEffect(() => {
     fetchGroups(baseUrl).then(setGroups);
   }, [baseUrl]);
 
-  return (
-    <div className="flex flex-col gap-2 px-2">
-      {groups.map((group) => (
-        <button
-          key={group.label}
-          onClick={() => onSelectGroup(group)}
-          className="px-2 py-1 rounded-md border border-gray-300 bg-gray-100 text-md text-gray-800 
-                   hover:bg-gray-200 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          type="button"
-        >
-          {group.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export default function GroupsViewer({ baseUrl = "" }) {
-  const [tableData, setTableData] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(null);
-
-  // we cache the grouped nodes
-  // we dont want someone spamclicking to crash the API.
-  const [cache, setCache] = useState({});
-
-  const columns = [...columnOrder];
-
-  async function handleSelectGroup(group) {
-    setSelectedGroup(group);
-
-    // Check cache first
-    if (cache[group.label]) {
-      console.log("Serving nodes from cache for group:", group.label);
-      setTableData(formatTableData(cache[group.label]));
-      return;
-    }
-
+  const fetchNodes = async (offsetValue = 0) => {
     try {
-      const postMsg = makeGroupNodesQuery(group.label);
+      const nodeTypes = getFlattenedNodeTypes(selectedTypes, aiidaTypes);
+
+      const postMsg = buildQuery({
+        groups: selectedGroups,
+        nodeTypes,
+        limit,
+        offset: offsetValue,
+      });
+
       const result = await fetchFromQueryBuilder(baseUrl, postMsg);
       const nodes = result.node || [];
 
-      // Save to cache
-      setCache((prev) => ({ ...prev, [group.label]: nodes }));
+      setTableData((prev) =>
+        offsetValue === 0
+          ? formatTableData(nodes)
+          : [...prev, ...formatTableData(nodes)]
+      );
 
-      // Format for table
-      setTableData(formatTableData(nodes));
-
-      console.log("Fetched nodes for group:", group.label, nodes);
+      setOffset(offsetValue + nodes.length);
     } catch (err) {
-      console.error("Failed to fetch nodes for group", group, err);
+      console.error("Failed to fetch nodes:", err);
     }
-  }
+  };
 
   return (
-    <div className="flex gap-4 mt-2 ml-2 overflow-auto">
-      <div className="flex-shrink-0">
-        <h3 className="my-2 mx-2">AiiDA Groups within the Data:</h3>
-        <GroupButtons baseUrl={baseUrl} onSelectGroup={handleSelectGroup} />
+    <div className="flex gap-4 p-3 overflow-auto w-full items-start">
+      {/* Left panel */}
+      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-4 rounded">
+        <h4 className="font-medium mt-4 mb-2">Filter by Node Types</h4>
+        <TypeCheckboxTree
+          types={aiidaTypes}
+          selectedTypes={selectedTypes}
+          setSelectedTypes={setSelectedTypes}
+        />
+        <h4 className="font-medium my-2 mt-4">Filter by Defined Groups</h4>
+        {sortGroups(groups).map((g) => (
+          <label key={g.label} className="flex items-start gap-2 mb-1">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={selectedGroups.includes(g.label)}
+              onChange={(e) =>
+                setSelectedGroups((prev) =>
+                  e.target.checked
+                    ? [...prev, g.label]
+                    : prev.filter((x) => x !== g.label)
+                )
+              }
+            />
+            <span className="truncate block" title={g.label}>
+              {g.label}
+            </span>
+          </label>
+        ))}
+        <button
+          onClick={() => fetchNodes(0)}
+          className="px-3 py-1 my-2 ml-2 rounded bg-indigo-700 text-white hover:bg-indigo-800 transition"
+        >
+          Apply
+        </button>
       </div>
 
-      <div className="flex-1">
-        {tableData.length > 0 && (
-          <DataTable
-            title={`${tableData.length} nodes in group: ${selectedGroup?.label}`}
-            columns={columns}
-            data={tableData}
-            sortableCols={["Unique ID", "Type", "Created", "Modified"]}
-          />
-        )}
+      {/* Right table */}
+      <div className="flex-1 bg-white p-2 rounded">
+        <div className="flex gap-4">
+          <h4 className="text-xl font-semibold">
+            {tableData.length} nodes loaded
+          </h4>
+          {tableData.length > 0 && (
+            <button
+              onClick={() => fetchNodes(offset)}
+              className="px-3 py-1 mr-10 rounded bg-gray-700 text-white hover:bg-gray-800 transition"
+            >
+              Load next 50
+            </button>
+          )}
+        </div>
+
+        <DataTable
+          columns={columnOrder}
+          data={tableData || []}
+          sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
+          renderIfMissing={true}
+        />
       </div>
     </div>
   );
