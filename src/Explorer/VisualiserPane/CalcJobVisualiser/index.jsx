@@ -2,7 +2,9 @@ import DataTable from "../../../components/DataTable";
 import { DownloadIcon } from "../../../components/Icons";
 
 // the calcjob visualiser
-export default function CalcJobVisualiser({ files = {}, attributes = {} }) {
+export default function CalcJobVisualiser({ nodeData = {} }) {
+  const files = nodeData.files || {};
+
   // Default to empty arrays to avoid undefined errors
   const inputFiles = Array.isArray(files.input_files) ? files.input_files : [];
   const outputFiles = Array.isArray(files.output_files)
@@ -52,8 +54,8 @@ export default function CalcJobVisualiser({ files = {}, attributes = {} }) {
         value === null || value === undefined
           ? "—"
           : typeof value === "object"
-            ? JSON.stringify(value, null, 2)
-            : String(value),
+          ? JSON.stringify(value, null, 2)
+          : String(value),
     }));
   };
 
@@ -79,13 +81,6 @@ export default function CalcJobVisualiser({ files = {}, attributes = {} }) {
       {inputData.length === 0 && outputData.length === 0 && (
         <div>No files available</div>
       )}
-
-      <DataTable
-        key="attributes"
-        title="Attributes"
-        columns={["Key", "Value"]}
-        data={dictToRows(attributes)}
-      />
     </div>
   );
 }

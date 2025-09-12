@@ -1,50 +1,63 @@
-import React from "react";
+import React, { useState } from "react";
 import { JsonView } from "react-json-view-lite";
 import "react-json-view-lite/dist/index.css";
 
-export default function RawDataVisualiser({
-  label = {},
-  aiida = {},
-  download = {},
-  attributes = {},
-  derived_properties = {},
-  repo_list = {},
-  files = {},
-}) {
+import { ClipBoardIcon, ClipboardCopyIcon } from "../../../components/Icons";
+
+export default function RawDataVisualiser({ nodeData = {} }) {
   const dataSections = [
-    { title: "AIIDA Metadata", data: aiida },
-    { title: "Attributes", data: attributes },
-    { title: "Download", data: download },
-    { title: "Derived Properties", data: derived_properties },
-    { title: "Repository List", data: repo_list },
-    { title: "Files", data: files },
+    { title: "AIIDA Metadata", data: nodeData.aiida },
+    { title: "Attributes", data: nodeData.attributes },
+    { title: "Download", data: nodeData.download },
+    { title: "Derived Properties", data: nodeData.derived_properties },
+    { title: "Repository List", data: nodeData.repo_list },
+    { title: "Files", data: nodeData.files },
+    { title: "Extras", data: nodeData.extras },
   ];
 
-  const copyToClipboard = (data) => {
+  const [copiedIndex, setCopiedIndex] = useState(null);
+
+  const copyToClipboard = (data, index) => {
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    setCopiedIndex(index);
+
+    setTimeout(() => setCopiedIndex(null), 700);
   };
 
   return (
-    <div className="flex flex-col gap-4 pt-4">
+    <div className="flex flex-col gap-4 pt-2">
       {dataSections.map((section, index) => {
-        const safeData = section.data || {}; // fallback if null/undefined
+        const safeData = section.data || {};
+        if (Object.keys(safeData).length === 0) return null;
+
         return (
-          Object.keys(safeData).length > 0 && (
-            <div key={index} className="px-4">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold">{section.title}</h3>
-                <button
-                  onClick={() => copyToClipboard(safeData)}
-                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+          <div key={index} className="px-4">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-semibold">{section.title}</h3>
+
+              <button
+                className="relative flex items-center gap-1 hover:text-blue-500"
+                onClick={() => copyToClipboard(safeData, index)}
+              >
+                <ClipBoardIcon size={22} />
+
+                <div
+                  className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-green-400 text-sm transition-all duration-400 transform ${
+                    copiedIndex === index
+                      ? "opacity-100 translate-x-0"
+                      : "opacity-0 -translate-x-2"
+                  }`}
                 >
-                  Copy
-                </button>
-              </div>
-              <div className="max-h-96 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
-                <JsonView data={safeData} collapsed={1} />
-              </div>
+                  <ClipboardCopyIcon size={16} />
+                  <span>Copied</span>
+                </div>
+              </button>
             </div>
-          )
+
+            <div className="max-h-96 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
+              <JsonView data={safeData} collapsed={1} />
+            </div>
+          </div>
         );
       })}
     </div>

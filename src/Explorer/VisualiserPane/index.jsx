@@ -62,13 +62,7 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
           </div>
           <RawDataVisualiser
             key={`visualiser-${label}-${aiida.uuid}`}
-            label={label}
-            aiida={aiida}
-            download={download}
-            attributes={attributes}
-            derived_properties={derived_properties}
-            repo_list={repo_list}
-            files={files}
+            nodeData={selectedNode.data}
           />
         </div>
       );
@@ -76,67 +70,57 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
 
     case "KpointsData":
       return (
-        <KpointsDataVisualiser
-          key={`visualiser-${label}-${aiida.uuid}`}
-          download={download}
-          attributes={attributes}
-          derivedProperties={derived_properties}
-        />
+        <div>
+          <KpointsDataVisualiser
+            key={`visualiser-${label}-${aiida.uuid}`}
+            nodeData={selectedNode.data}
+            download={download}
+            attributes={attributes}
+            derivedProperties={derived_properties}
+          />
+          <RawDataVisualiser nodeData={selectedNode.data} />
+        </div>
       );
 
     case "UpfData":
       return (
-        <UpfDataVisualiser
-          key={`visualiser-${label}-${aiida.uuid}`}
-          baseUrl={baseUrl}
-          nodeId={selectedNode.data.aiida.uuid}
-          download={download}
-          attributes={attributes}
-        />
+        <div>
+          <UpfDataVisualiser
+            key={`visualiser-${label}-${aiida.uuid}`}
+            nodeData={selectedNode.data}
+            baseUrl={baseUrl}
+          />
+          <RawDataVisualiser nodeData={selectedNode.data} />
+        </div>
       );
 
     case "FolderData":
     case "RemoteData": {
-      const repoList = repo_list?.data?.repo_list || [];
       return (
-        <FolderDataVisualiser
-          key={`visualiser-${label}-${aiida.uuid}`}
-          repoList={repoList}
-        />
+        <div>
+          <FolderDataVisualiser
+            key={`visualiser-${label}-${aiida.uuid}`}
+            nodeData={selectedNode.data}
+          />
+          <RawDataVisualiser nodeData={selectedNode.data} />
+        </div>
       );
     }
 
     case "CalcJobNode": {
-      const repoList = repo_list?.data?.repo_list || [];
       return (
-        <CalcJobVisualiser
-          key={`visualiser-${label}-${aiida.uuid}`}
-          files={files}
-          attributes={attributes}
-        />
+        <div>
+          <CalcJobVisualiser
+            key={`visualiser-${label}-${aiida.uuid}`}
+            nodeData={selectedNode.data}
+          />
+          <RawDataVisualiser nodeData={selectedNode.data} />
+        </div>
       );
     }
 
-    // if the dtype is unknown we just render the dicts in the data as tables.
-    // default:
-    //   return (
-    //     <DictDataVisualiser
-    //       key={`visualiser-${label}-${aiida.uuid}`}
-    //       data={selectedNode.data}
-    //     />
-
+    // we use the RawDataVisualiser as a standalone if the type is not known.
     default:
-      return (
-        <RawDataVisualiser
-          key={`visualiser-${label}-${aiida.uuid}`}
-          label={label}
-          aiida={aiida}
-          download={download}
-          attributes={attributes}
-          derived_properties={derived_properties}
-          repo_list={repo_list}
-          files={files}
-        />
-      );
+      return <RawDataVisualiser nodeData={selectedNode.data} />;
   }
 }

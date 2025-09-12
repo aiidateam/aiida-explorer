@@ -3,11 +3,11 @@ import { DownloadIcon } from "../../../components/Icons";
 
 // This could be extended to use the BZ visualiser from this data (if possible);
 // If a nice parser for VASP/QE/etc exists we could in principle also allow multiple download types.
-export default function KpointsDataVisualiser({
-  download = {},
-  attributes = {},
-  derivedProperties = {},
-}) {
+export default function KpointsDataVisualiser({ nodeData = {} }) {
+  const download = nodeData.download || {};
+  const attributes = nodeData.attributes || {};
+  const derivedProperties = nodeData.derivedProperties || {};
+
   if (!attributes && !derivedProperties) {
     return <div>No attributes available</div>;
   }
@@ -53,7 +53,7 @@ export default function KpointsDataVisualiser({
       x: row[0],
       y: row[1],
       z: row[2],
-    }),
+    })
   );
 
   return (

@@ -6,14 +6,10 @@ import { DownloadIcon } from "../../../components/Icons";
 // however the format that "download" is in is a json object which is not the same as a upfFile.
 // We would like to solve this somehow but its unclear?
 // Technically this is also true for the StructureVisualiser.
-export default function UpfDataVisualiser({
-  baseUrl = "",
-  nodeId = "",
-  download = {},
-  attributes = {},
-  extras = {},
-  comments = {},
-}) {
+export default function UpfDataVisualiser({ nodeData = {}, baseUrl = "" }) {
+  const nodeId = nodeData.aiida.uuid;
+  const download = nodeData.download;
+  const attributes = nodeData.attributes;
   // helper: convert dict into table rows safely
   const dictToRows = (dict) => {
     if (!dict || typeof dict !== "object") return [];
@@ -23,8 +19,8 @@ export default function UpfDataVisualiser({
         value === null || value === undefined
           ? "—"
           : typeof value === "object"
-            ? JSON.stringify(value, null, 2)
-            : String(value),
+          ? JSON.stringify(value, null, 2)
+          : String(value),
     }));
   };
 
@@ -45,18 +41,6 @@ export default function UpfDataVisualiser({
         title="Attributes"
         columns={["Key", "Value"]}
         data={dictToRows(attributes)}
-      />
-      <DataTable
-        key="comments"
-        title="Comments"
-        columns={["Key", "Value"]}
-        data={dictToRows(comments)}
-      />
-      <DataTable
-        key="extras"
-        title="Extras"
-        columns={["Key", "Value"]}
-        data={dictToRows(extras)}
       />
     </div>
   );

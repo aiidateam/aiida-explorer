@@ -2,7 +2,9 @@ import DataTable from "../../../components/DataTable";
 
 // TODO - add view input files (maybe predownload some on the client if they are small)
 // This will match functionality in old explore.
-export default function FolderDataVisualiser({ repoList }) {
+export default function FolderDataVisualiser({ nodeData }) {
+  const repoList = nodeData.repo_list.data.repo_list;
+
   const fileData = (repoList || []).map((row) => ({
     Files: row.name,
   }));
