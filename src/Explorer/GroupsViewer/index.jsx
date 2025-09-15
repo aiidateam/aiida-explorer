@@ -24,6 +24,8 @@ function sortGroups(groups) {
   });
 }
 
+// Component for rendering a checkered box for all common aiida types...
+// TODO - add a flag that enables fetching of other types via the fulltypes endpoint
 export default function GroupsViewer2({ baseUrl = "" }) {
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
@@ -101,6 +103,7 @@ export default function GroupsViewer2({ baseUrl = "" }) {
       </div>
 
       {/* Right table */}
+      {/* TODO add a flag that controls the 'load next feature, it might be nice to control this externally.   */}
       <div className="flex-1 bg-white p-2 rounded">
         <div className="flex gap-4">
           <h4 className="text-xl font-semibold">

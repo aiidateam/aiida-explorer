@@ -1,12 +1,9 @@
-// Fetching of data and graph network building controlled here.
 import {
   layoutGraphDefault,
   layoutGraphFan,
   layoutGraphStaircase,
 } from "./FlowChart/graphController";
 
-// TODO move this to the APP scope to allow easy api changing.
-const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
 
 // --------------------------
 // standard api hits are here

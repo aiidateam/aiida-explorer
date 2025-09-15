@@ -1,18 +1,20 @@
-import StructureVisualizer from "mc-react-structure-visualizer";
-import { StructDownloadButton } from "mc-react-library";
 import KpointsDataVisualiser from "./KpointsDataVisualiser";
 import FolderDataVisualiser from "./FolderDataVisualiser";
-import DictDataVisualiser from "./DictDataVisualiser";
 import CalcJobVisualiser from "./CalcJobVisualiser";
 import UpfDataVisualiser from "./UpfDataVisualiser";
-
 import RawDataVisualiser from "./RawDataVisualiser";
-
-const BASE_URL = "https://aiida.materialscloud.org/mc2d/api/v4";
+import { StructureVisualiser } from "./StructureVisualiser";
 
 export default function VisualiserPane({ baseUrl, selectedNode }) {
   if (!selectedNode) {
-    return <div className="w-full h-full p-4">No node selected</div>;
+    return (
+      <div className="w-full h-full p-4">
+        <p>
+          Click a node to see top level details. Double click to traverse the
+          graph.
+        </p>
+      </div>
+    );
   }
 
   const {
@@ -29,44 +31,16 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
   // add features like cell/sites info (similar to mc3d).
   switch (label) {
     case "StructureData":
-    case "CifData": {
-      const cifText = download.cifText;
-      let dlFormats = [
-        { format: "cif", label: "CIF" },
-        { format: "xsf", label: "XSF" },
-        { format: "xyz", label: "XYZ" },
-      ];
-
-      if (label === "CifData") {
-        dlFormats = [{ format: "cif", label: "CIF" }];
-      }
-
+    case "CifData":
       return (
-        <div className="w-full h-full p-4 relative">
-          {/* Download button in top-right corner */}
-          <div className="absolute top-8 right-8 z-50">
-            <StructDownloadButton
-              key={`visualiser-${label}-${aiida.uuid}`}
-              aiida_rest_url={baseUrl}
-              uuid={aiida.uuid}
-              download_formats={dlFormats}
-            />
-          </div>
-          {/* Visualizer fills the container */}
-          <div className="w-full h-full">
-            <StructureVisualizer
-              key={`visualiser-${label}-${aiida.uuid}`}
-              cifText={cifText}
-              initSupercell={[2, 2, 2]}
-            />
-          </div>
-          <RawDataVisualiser
+        <div>
+          <StructureVisualiser
             key={`visualiser-${label}-${aiida.uuid}`}
             nodeData={selectedNode.data}
           />
+          <RawDataVisualiser nodeData={selectedNode.data} />
         </div>
       );
-    }
 
     case "KpointsData":
       return (

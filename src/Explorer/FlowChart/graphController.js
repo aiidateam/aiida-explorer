@@ -157,7 +157,7 @@ export function layoutGraphStaircase(
 
 /**
  * Fan-style layout: nodes radiate from center like spider legs.
- * need to add pagination to make this style really pop...
+ * need to add pagination to make this remotely usable.
  */
 export function layoutGraphFan(
   centerNode,

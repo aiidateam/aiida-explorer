@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import FlowChart from "./FlowChart";
-import SidePane from "./SidePane";
+import DebugPane from "./DebugPane";
 import GridViewer from "./GridViewer";
 import GroupsViewer from "./GroupsViewer";
 
-import DebugPane from "./DebugPane";
 import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
 import {
@@ -24,7 +23,11 @@ import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 //  this manages all states and data to the subcomponents.
 
 // TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
-export default function Explorer({ baseUrl = "", startingNode = "" }) {
+export default function Explorer({
+  baseUrl = "",
+  startingNode = "",
+  debugMode = false,
+}) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -38,8 +41,9 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
   const [extraNodeData, setExtraNodeData] = useState({});
 
   const [activeOverlay, setActiveOverlay] = useState(() => {
-    return rootNodeIdParam === "" ? "groups1" : null;
+    return rootNodeIdParam === "" ? "groupsview" : null;
   });
+
   // --------------------------
   // Load graph whenever rootNodeId changes
   // --------------------------
@@ -47,7 +51,6 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
     let mounted = true;
 
     async function loadGraph() {
-      const start = performance.now();
       const { nodes: fetchedNodes, edges: fetchedEdges } =
         await fetchGraphByNodeId(baseUrl, rootNodeId);
 
@@ -190,7 +193,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
   };
-
+  // TODO switch the overlay to use ReactDOM portals...
   return (
     <div className="flex flex-col h-screen relative">
       {/* Overlay toggle buttons */}
@@ -198,7 +201,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
         <div className="absolute top-4 left-4 z-50 flex gap-2">
           <button
             className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
-            onClick={() => setActiveOverlay("groups1")}
+            onClick={() => setActiveOverlay("groupsview")}
           >
             <GroupIcon
               size={24}
@@ -208,7 +211,7 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
           </button>
           <button
             className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
-            onClick={() => setActiveOverlay("fulltypes")}
+            onClick={() => setActiveOverlay("typesview")}
           >
             <GroupIcon
               size={24}
@@ -246,14 +249,14 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
             />
           </button>
 
-          {activeOverlay === "groups1" && <GroupsViewer baseUrl={baseUrl} />}
-          {activeOverlay === "fulltypes" && <GridViewer baseUrl={baseUrl} />}
+          {activeOverlay === "groupsview" && <GroupsViewer baseUrl={baseUrl} />}
+          {activeOverlay === "typesview" && <GridViewer baseUrl={baseUrl} />}
         </div>
       </div>
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 border-r border-gray-300 h-full min-w-0">
+        <div className="flex-1 w-1/2 border-r border-gray-300 h-full">
           <FlowChart
             nodes={nodes}
             edges={edges}
@@ -266,10 +269,12 @@ export default function Explorer({ baseUrl = "", startingNode = "" }) {
         </div>
 
         {/* Right-hand panel */}
-        <div className="w-[900px] flex flex-col h-full">
-          <div className="flex-none h-1/4 border-b border-gray-300 overflow-y-auto">
-            <SidePane selectedNode={selectedNode} />
-          </div>
+        <div className="w-1/2 flex flex-col h-full">
+          {debugMode && (
+            <div className="flex h-1/4 border-b border-gray-300 overflow-y-auto">
+              <DebugPane selectedNode={selectedNode} />
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto">
             <VisualiserPane baseUrl={baseUrl} selectedNode={selectedNode} />
           </div>
