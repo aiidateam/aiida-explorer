@@ -3,7 +3,7 @@ import FolderDataVisualiser from "./FolderDataVisualiser";
 import CalcJobVisualiser from "./CalcJobVisualiser";
 import UpfDataVisualiser from "./UpfDataVisualiser";
 import RawDataVisualiser from "./RawDataVisualiser";
-import { StructureVisualiser } from "./StructureVisualiser";
+import StructureVisualiser from "./StructureVisualiser";
 
 export default function VisualiserPane({ baseUrl, selectedNode }) {
   if (!selectedNode) {
@@ -33,12 +33,19 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     case "StructureData":
     case "CifData":
       return (
-        <div>
-          <StructureVisualiser
-            key={`visualiser-${label}-${aiida.uuid}`}
-            nodeData={selectedNode.data}
-          />
-          <RawDataVisualiser nodeData={selectedNode.data} />
+        <div className="flex flex-col h-screen overflow-y-auto">
+          {/* Top half: fixed to 50% of viewport height */}
+          <div className="h-[50vh] flex-shrink-0">
+            <StructureVisualiser
+              key={`visualiser-${label}-${aiida.uuid}`}
+              nodeData={selectedNode.data}
+            />
+          </div>
+
+          {/* Bottom part: scrollable content */}
+          <div className="flex-1">
+            <RawDataVisualiser nodeData={selectedNode.data} />
+          </div>
         </div>
       );
 
@@ -65,8 +72,7 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
         </div>
       );
 
-    case "FolderData":
-    case "RemoteData": {
+    case "FolderData": {
       return (
         <div>
           <FolderDataVisualiser

@@ -26,7 +26,7 @@ import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
-  debugMode = false,
+  debugMode = true,
 }) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
