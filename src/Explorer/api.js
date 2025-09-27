@@ -1,9 +1,7 @@
 import {
   layoutGraphDefault,
   layoutGraphFan,
-  layoutGraphStaircase,
 } from "./FlowChart/graphController";
-
 
 // --------------------------
 // standard api hits are here
@@ -33,7 +31,7 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
       );
 
       if (!res.ok) {
@@ -59,7 +57,7 @@ export async function fetchNodeRepoList(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`,
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
     );
     if (!res.ok) return null;
     return res.json();
@@ -91,7 +89,7 @@ export async function fetchRetrievedUUID(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`,
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`
     );
     if (!res.ok) return null;
 
@@ -116,8 +114,6 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
   const endpoints = ["input_files", "output_files"];
   const results = {};
 
-  console.log("1", retrievedNodeId);
-
   for (const ep of endpoints) {
     try {
       const url = `${baseUrl}/calcjobs/${encodeURIComponent(nodeId)}/${ep}`;
@@ -135,8 +131,8 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
       const files = Array.isArray(json.data?.[ep])
         ? json.data[ep]
         : Array.isArray(json.data)
-          ? json.data
-          : [];
+        ? json.data
+        : [];
 
       // Determine which node's repository to use
       console.log(nodeId);
@@ -148,7 +144,7 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
         .map((file) => ({
           ...file,
           downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
-            repoNodeId,
+            repoNodeId
           )}/repo/contents?filename=%22${encodeURIComponent(file.name)}%22`,
         }));
 
@@ -168,8 +164,8 @@ export async function fetchFileContents(baseUrl, nodeId, filename) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/repo/contents?filename=${filename}`,
+        nodeId
+      )}/repo/contents?filename=${filename}`
     );
 
     if (!res.ok) return null;
@@ -186,8 +182,8 @@ export async function fetchJson(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/download?download_format=json`,
+        nodeId
+      )}/download?download_format=json`
     );
 
     if (!res.ok) return null;
@@ -204,8 +200,8 @@ export async function fetchCif(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId,
-      )}/download?download_format=cif&download=false`,
+        nodeId
+      )}/download?download_format=cif&download=false`
     );
 
     if (!res.ok) return { cifText: null };
@@ -302,7 +298,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
       data: {
         label: rootNode.node_type.split(".").filter(Boolean).pop(),
         node_type: rootNode.node_type,
-        pos: "center",
+        pos: 0,
         aiida: rootNode,
       },
     },
@@ -311,7 +307,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
       data: {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
-        pos: "input",
+        pos: 1,
         link_label: l.link_label,
         aiida: l,
       },
@@ -321,7 +317,7 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
       data: {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
-        pos: "output",
+        pos: -1,
         link_label: l.link_label,
 
         aiida: l,
@@ -330,9 +326,9 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
   ];
 
   const { nodes, edges } = layoutGraphDefault(
-    allNodes.find((n) => n.data.pos === "center"),
-    allNodes.filter((n) => n.data.pos === "input"),
-    allNodes.filter((n) => n.data.pos === "output"),
+    allNodes.find((n) => n.data.pos === 0),
+    allNodes.filter((n) => n.data.pos === -1),
+    allNodes.filter((n) => n.data.pos === 1)
   );
 
   return { nodes, edges };

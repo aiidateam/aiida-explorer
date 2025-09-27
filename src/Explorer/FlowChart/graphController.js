@@ -38,7 +38,7 @@ export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const spacingX = options.spacingX || 300;
   const spacingY = options.spacingY || 80;
@@ -98,63 +98,6 @@ export function layoutGraphDefault(
   return { nodes, edges };
 }
 
-// ---------- Staircase Layout ----------
-export function layoutGraphStaircase(
-  centerNode,
-  inputNodes,
-  outputNodes,
-  options = {},
-) {
-  const spacingX = options.spacingX || 200;
-  const spacingY = options.spacingY || 80;
-  const centerX = options.centerX || window.innerWidth / 2;
-  const centerY = options.centerY || window.innerHeight / 2;
-
-  const nodes = [{ ...centerNode, position: { x: centerX, y: centerY } }];
-  const edges = [];
-
-  const sortedInputs = [...inputNodes].sort(sortNodesByType);
-  const sortedOutputs = [...outputNodes].sort(sortNodesByType);
-
-  // Inputs (staircase left)
-  sortedInputs.forEach((node, i) => {
-    nodes.push({
-      ...node,
-      position: { x: centerX - spacingX, y: centerY + i * spacingY },
-    });
-    edges.push({
-      id: `e-${node.id}-${centerNode.id}`,
-      source: node.id,
-      target: centerNode.id,
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      type: "smoothstep",
-      style: { stroke: "green", strokeWidth: 2 },
-      markerEnd: { type: "arrow", color: "green", width: 20, height: 15 },
-    });
-  });
-
-  // Outputs (staircase right)
-  sortedOutputs.forEach((node, i) => {
-    nodes.push({
-      ...node,
-      position: { x: centerX + spacingX, y: centerY + i * spacingY },
-    });
-    edges.push({
-      id: `e-${centerNode.id}-${node.id}`,
-      source: centerNode.id,
-      target: node.id,
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      type: "smoothstep",
-      style: { stroke: "orange", strokeWidth: 2 },
-      markerEnd: { type: "arrow", color: "orange", width: 20, height: 15 },
-    });
-  });
-
-  return { nodes, edges };
-}
-
 /**
  * Fan-style layout: nodes radiate from center like spider legs.
  * need to add pagination to make this remotely usable.
@@ -163,7 +106,7 @@ export function layoutGraphFan(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const radius = options.radius ?? 350;
   const maxAngle = options.maxAngle ?? Math.PI / 1.5; // 60 degrees spread
@@ -187,9 +130,7 @@ export function layoutGraphFan(
     const startAngle = -maxAngle / 2;
     const endAngle = maxAngle / 2;
     const angles = nodesArray.map((_, i) =>
-      total === 1
-        ? 0
-        : startAngle + (i / (total - 1)) * (endAngle - startAngle),
+      total === 1 ? 0 : startAngle + (i / (total - 1)) * (endAngle - startAngle)
     );
 
     nodesArray.forEach((node, i) => {

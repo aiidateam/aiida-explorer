@@ -3,8 +3,14 @@ import { Handle, Position, useViewport } from "reactflow";
 
 import { getNodeDisplay } from "./nodeUtils";
 
-// tailwind color helper.
-function getNodeColorClasses(type, selected = false, pos) {
+/**
+ * Returns Tailwind CSS classes for a node based on its type, selection, and position.
+ *
+ * @param {string} type - Node type string (e.g., "process.workflow", "data")
+ * @param {boolean} selected - Whether the node is currently selected
+ * @param {number} pos - Node position: -1 = left, 0 = center, 1 = right
+ */
+export function getNodeColorClasses(type, selected = false, pos = 0) {
   let bgClass = "bg-gray-200";
   let textClass = "text-black";
   let borderStyle = "border-transparent";
@@ -19,14 +25,15 @@ function getNodeColorClasses(type, selected = false, pos) {
 
   if (selected) {
     borderStyle = "border-black";
-  } else if (pos === "center") {
+  } else if (pos === 0) {
+    // center node gets a subtle border
     borderStyle = "border-[rgba(0,0,0,0.30)]";
   }
 
   return { bgClass, textClass, borderStyle };
 }
 
-// custom node component to rotate the edges.
+// custom node component.
 export default function HorizontalNode({ data, selected }) {
   const { zoom } = useViewport();
 
@@ -41,7 +48,7 @@ export default function HorizontalNode({ data, selected }) {
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos,
+    data.pos
   );
 
   // ----------
@@ -62,17 +69,19 @@ export default function HorizontalNode({ data, selected }) {
   );
 
   // Link label
-  const linkLabelHtml = data.aiida?.link_label && (
-    <div
-      className={`${
-        data.pos === "input" ? leftLinkStyle : rightLinkStyle
-      } ${linkFontSizeClass}`}
-    >
-      {data.aiida.link_label.length > 21
-        ? `${data.aiida.link_label.slice(0, 18)}...`
-        : data.aiida.link_label}
-    </div>
-  );
+  const linkLabelHtml =
+    data.aiida?.link_label && data.pos !== 0 ? (
+      <div
+        className={`${
+          data.pos === -1 ? leftLinkStyle : rightLinkStyle
+        } ${linkFontSizeClass}`}
+      >
+        {data.aiida.link_label.length > 21
+          ? `${data.aiida.link_label.slice(0, 18)}...`
+          : data.aiida.link_label}
+      </div>
+    ) : null;
+
   return (
     // main node
     <div className={`${baseNodeStyle} ${bgClass} ${textClass} ${borderStyle}`}>

@@ -38,14 +38,21 @@ export default function GroupsViewer2({ baseUrl = "" }) {
     fetchGroups(baseUrl).then(setGroups);
   }, [baseUrl]);
 
-  const fetchNodes = async (offsetValue = 0) => {
+  // Auto-fetch some data on initial load
+  useEffect(() => {
+    if (groups.length > 0 && tableData.length === 0) {
+      fetchNodes(0, 500); // grab first 500 nodes.
+    }
+  }, [groups, tableData.length]);
+
+  const fetchNodes = async (offsetValue = 0, customLimit = limit) => {
     try {
       const nodeTypes = getFlattenedNodeTypes(selectedTypes, aiidaTypes);
 
       const postMsg = buildQuery({
         groups: selectedGroups,
         nodeTypes,
-        limit,
+        limit: customLimit,
         offset: offsetValue,
       });
 

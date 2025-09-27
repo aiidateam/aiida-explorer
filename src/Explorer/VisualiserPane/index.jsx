@@ -33,19 +33,15 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     case "StructureData":
     case "CifData":
       return (
-        <div className="flex flex-col h-screen overflow-y-auto">
+        <div className="">
           {/* Top half: fixed to 50% of viewport height */}
-          <div className="h-[50vh] flex-shrink-0">
-            <StructureVisualiser
-              key={`visualiser-${label}-${aiida.uuid}`}
-              nodeData={selectedNode.data}
-            />
-          </div>
+          <StructureVisualiser
+            key={`visualiser-${label}-${aiida.uuid}`}
+            nodeData={selectedNode.data}
+          />
 
           {/* Bottom part: scrollable content */}
-          <div className="flex-1">
-            <RawDataVisualiser nodeData={selectedNode.data} />
-          </div>
+          <RawDataVisualiser nodeData={selectedNode.data} />
         </div>
       );
 
