@@ -21,8 +21,10 @@ const nodeTypePriority = [
   "Code",
 ];
 
-// TODO - test where this is scoped w.r.t the client? this may be worse performance if its called repeated
+// This is invoked once on module load and somehow smartly kept in memory
+// so its a better alternative than calculating each load.
 const priorityMap = nodeTypePriority.reduce((acc, label, idx) => {
+  console.log("priorityMap being computed"); //
   acc[label] = idx;
   return acc;
 }, {});
@@ -38,10 +40,10 @@ export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
-  const spacingX = options.spacingX || 300;
-  const spacingY = options.spacingY || 80;
+  const spacingX = options.spacingX || 310;
+  const spacingY = options.spacingY || 90;
 
   const centerX = options.centerX || window.innerWidth / 2;
   const centerY = options.centerY || window.innerHeight / 2;
@@ -106,7 +108,7 @@ export function layoutGraphFan(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
   const radius = options.radius ?? 350;
   const maxAngle = options.maxAngle ?? Math.PI / 1.5; // 60 degrees spread
@@ -130,7 +132,9 @@ export function layoutGraphFan(
     const startAngle = -maxAngle / 2;
     const endAngle = maxAngle / 2;
     const angles = nodesArray.map((_, i) =>
-      total === 1 ? 0 : startAngle + (i / (total - 1)) * (endAngle - startAngle)
+      total === 1
+        ? 0
+        : startAngle + (i / (total - 1)) * (endAngle - startAngle),
     );
 
     nodesArray.forEach((node, i) => {

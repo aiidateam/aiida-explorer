@@ -17,15 +17,7 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     );
   }
 
-  const {
-    label,
-    aiida,
-    download,
-    attributes,
-    derived_properties,
-    repo_list,
-    files,
-  } = selectedNode.data;
+  const { label, aiida } = selectedNode.data;
 
   // TODO move the structure visualiser into its own seperate compoennt
   // add features like cell/sites info (similar to mc3d).

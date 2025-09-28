@@ -7,15 +7,8 @@ import GroupsViewer from "./GroupsViewer";
 
 import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
-import {
-  fetchGraphByNodeId,
-  fetchNodeContents,
-  fetchCif,
-  fetchJson,
-  fetchNodeRepoList,
-  fetchFiles,
-  fetchRetrievedUUID,
-} from "./api";
+
+import { fetchGraphByNodeId, smartFetchData, fetchLinkCounts } from "./api";
 
 import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 
@@ -65,11 +58,10 @@ export default function Explorer({
       setNodes(nodesWithExtras);
       setEdges(fetchedEdges);
 
-      // Keep selection if still present
-      // unsure if this is needed - seems defumct
+      // To update the central node with a highlight.
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id
+          (n) => n.id === selectedNode.id,
         );
         setSelectedNode(stillExists || null);
       }
@@ -86,68 +78,15 @@ export default function Explorer({
   // Cache + merge helper
   // --------------------------
   const ensureNodeData = async (node) => {
-    let updatedData = { ...node.data };
+    const enrichedNode = await smartFetchData(baseUrl, node, extraNodeData);
 
-    // Fetch extras if missing
-    if (!extraNodeData[node.id]) {
-      const extraData = await fetchNodeContents(baseUrl, node.id);
-      setExtraNodeData((prev) => ({ ...prev, [node.id]: extraData }));
-      updatedData = { ...updatedData, ...extraData };
-    } else {
-      updatedData = { ...updatedData, ...extraNodeData[node.id] };
-    }
+    // Update state cache if new info was added
+    setExtraNodeData((prev) => ({
+      ...prev,
+      [node.id]: { ...(prev[node.id] || {}), ...enrichedNode.data },
+    }));
 
-    // Fetch download if missing
-    if (!updatedData.download) {
-      let download;
-      if (node.data.label === "StructureData") {
-        download = await fetchCif(baseUrl, node.id);
-      } else if (node.data.label === "CifData") {
-        download = await fetchCif(baseUrl, node.id);
-      } else if (node.data.label === "BandsData") {
-        download = await fetchJson(baseUrl, node.id);
-      } else {
-        download = await fetchJson(baseUrl, node.id);
-      }
-      updatedData = { ...updatedData, download };
-
-      // also cache download in extraNodeData
-      setExtraNodeData((prev) => ({
-        ...prev,
-        [node.id]: { ...(prev[node.id] || {}), download },
-      }));
-    }
-
-    // Fetch repo list if missing
-    if (!updatedData.repo_list) {
-      let repo_list = {};
-      if (node.data.label === "FolderData") {
-        repo_list = await fetchNodeRepoList(baseUrl, node.id);
-      }
-
-      if (node.data.label === "RemoteData") {
-        repo_list = await fetchNodeRepoList(baseUrl, node.id);
-      }
-      updatedData = { ...updatedData, repo_list };
-    }
-
-    if (!updatedData.files) {
-      let files = {};
-      if (node.data.label === "CalcJobNode") {
-        // calcjob nodes need to know where their retrieved node is...
-        // so we messily generate it here and append it to the data structure
-        if (!updatedData.retrievedUUID) {
-          const retrID = await fetchRetrievedUUID(baseUrl, node.id);
-          updatedData = { ...updatedData, retrievedUUID: retrID };
-        }
-
-        // we now use this appended UUID to render get the file downlpoad paths properly.
-        files = await fetchFiles(baseUrl, node.id, updatedData.retrievedUUID);
-      }
-      updatedData = { ...updatedData, files };
-    }
-
-    return { ...node, data: updatedData };
+    return enrichedNode;
   };
 
   // --------------------------
@@ -158,12 +97,13 @@ export default function Explorer({
     setSelectedNode(enrichedNode);
 
     // Update the graph nodes so HorizontalNode re-renders
+    // unclear this is needed either.
     setNodes((prevNodes) =>
       prevNodes.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n
-      )
+          : n,
+      ),
     );
   };
 
@@ -193,6 +133,7 @@ export default function Explorer({
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
   };
+
   // TODO switch the overlay to use ReactDOM portals...
   return (
     <div className="flex flex-col h-screen relative">
@@ -222,7 +163,31 @@ export default function Explorer({
         </div>
       )}
 
+      {/* Temp Children count button - need to test perforamcne of this... */}
+      <button
+        className="absolute top-4 right-2/3 z-50 px-3 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-colors"
+        onClick={async () => {
+          if (!nodes || nodes.length === 0) return;
+
+          // Use fetchNextLevel to get counts for all nodes
+          const updatedNodes = await fetchLinkCounts(baseUrl, nodes);
+          setNodes(updatedNodes); // trigger re-render
+
+          // Log counts for all nodes
+          updatedNodes.forEach((n) => {
+            console.log(
+              `${n.data.label} - Parent count: ${
+                n.parentCount || 0
+              }, Child count: ${n.childCount || 0}`,
+            );
+          });
+        }}
+      >
+        Get Counts
+      </button>
+
       {/* Overlay */}
+
       <div
         className={`fixed inset-0 z-40 flex items-center justify-center bg-black/30
       transition-all duration-500 ease-in-out
@@ -256,6 +221,7 @@ export default function Explorer({
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
+        {/* left hand panel */}
         <div className="flex-1 w-1/2 border-r border-gray-300 h-full">
           <FlowChart
             nodes={nodes}

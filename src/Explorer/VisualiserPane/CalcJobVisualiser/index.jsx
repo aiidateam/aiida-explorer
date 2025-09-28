@@ -102,7 +102,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
         )}
       </div>
 
-      {/* Modal via portal */}
+      {/* Modal via portal - since we want to break fully out of the parent... */}
       {isOpen &&
         ReactDOM.createPortal(
           <div
@@ -130,7 +130,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
               </pre>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

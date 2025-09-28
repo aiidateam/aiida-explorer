@@ -9,6 +9,7 @@ import { getNodeDisplay } from "./nodeUtils";
  * @param {string} type - Node type string (e.g., "process.workflow", "data")
  * @param {boolean} selected - Whether the node is currently selected
  * @param {number} pos - Node position: -1 = left, 0 = center, 1 = right
+ * TODO: there is a bug with caching and positions - this is making duplicate labels appear - we should handle this clevely somehow...
  */
 export function getNodeColorClasses(type, selected = false, pos = 0) {
   let bgClass = "bg-gray-200";
@@ -39,24 +40,35 @@ export default function HorizontalNode({ data, selected }) {
 
   const baseNodeStyle = `min-w-[120px] text-center p-1.5 rounded border-3`;
 
-  const baseLinkStyle = `absolute -translate-y-1/4 nodrag nopan pointer-events-none whitespace-nowrap opacity-80
+  const baseLinkStyle = `absolute -translate-y-1/4 pointer-events-none whitespace-nowrap opacity-80
       bg-slate-200 border border-gray-300 rounded-md px-1 py-0.5 text-gray-700 `;
 
   const leftLinkStyle = `${baseLinkStyle} left-full ml-1 text-left`;
   const rightLinkStyle = `${baseLinkStyle} right-full mr-1 text-right`;
 
+  // counts styling
+  const countSize =
+    zoom > 1.2
+      ? "w-7 text-xs -translate-y-[165%]"
+      : "w-10 text-sm -translate-y-[150%]";
+  const baseCountStyle = `text-center absolute  pointer-events-none opacity-80
+  bg-blue-400 border border-blue-800 rounded-md text-black  ${countSize}`;
+
+  const leftCountStyle = `${baseCountStyle} -left-3`;
+  const rightCountStyle = `${baseCountStyle} -right-3`;
+
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos
+    data.pos,
   );
 
   // ----------
   // Determine fontsize based on zoom
   // ----------
   const fontSizeClass = zoom > 1.2 ? "text-[12px]" : "text-[16px]";
-  const linkFontSizeClass = zoom > 1.2 ? "text-[9px]" : "text-[11px]";
-
+  const linkFontSizeClass =
+    zoom > 1.2 ? "text-[9px] px-1 py-0.5" : "text-[12px] px-2 py-1";
   // Main label content
   const textHtml = (
     <div className={`${fontSizeClass} text-gray-900`}>
@@ -73,7 +85,7 @@ export default function HorizontalNode({ data, selected }) {
     data.aiida?.link_label && data.pos !== 0 ? (
       <div
         className={`${
-          data.pos === -1 ? leftLinkStyle : rightLinkStyle
+          data.pos === 1 ? leftLinkStyle : rightLinkStyle
         } ${linkFontSizeClass}`}
       >
         {data.aiida.link_label.length > 21
@@ -88,8 +100,11 @@ export default function HorizontalNode({ data, selected }) {
       {/* text strings. */}
       {linkLabelHtml}
 
-      {textHtml}
+      {/* {linkCountLabel} */}
+      <div className={leftCountStyle}>{data.parentCount ?? "N/A"}</div>
+      <div className={rightCountStyle}>{data.childCount ?? "N/A"}</div>
 
+      {textHtml}
       {/* node handles */}
       <Handle
         type="target"

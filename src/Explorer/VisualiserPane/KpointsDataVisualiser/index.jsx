@@ -55,7 +55,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
       x: row[0],
       y: row[1],
       z: row[2],
-    })
+    }),
   );
 
   return (

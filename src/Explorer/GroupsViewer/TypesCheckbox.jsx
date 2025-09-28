@@ -97,7 +97,7 @@ export function TypeCheckboxTree({
       setSelectedTypes((prev) =>
         prev.includes(label)
           ? prev.filter((t) => t !== label)
-          : [...prev, label]
+          : [...prev, label],
       );
       return;
     }

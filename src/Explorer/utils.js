@@ -11,6 +11,6 @@ export function omitGraphKeys(obj) {
   return Object.fromEntries(
     Object.entries(obj)
       .filter(([key]) => !keysToRemove.includes(key))
-      .map(([key, value]) => [key, omitGraphKeys(value)])
+      .map(([key, value]) => [key, omitGraphKeys(value)]),
   );
 }

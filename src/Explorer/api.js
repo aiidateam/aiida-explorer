@@ -31,7 +31,7 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
       );
 
       if (!res.ok) {
@@ -57,7 +57,7 @@ export async function fetchNodeRepoList(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`,
     );
     if (!res.ok) return null;
     return res.json();
@@ -89,7 +89,7 @@ export async function fetchRetrievedUUID(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`,
     );
     if (!res.ok) return null;
 
@@ -131,8 +131,8 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
       const files = Array.isArray(json.data?.[ep])
         ? json.data[ep]
         : Array.isArray(json.data)
-        ? json.data
-        : [];
+          ? json.data
+          : [];
 
       // Determine which node's repository to use
       console.log(nodeId);
@@ -144,7 +144,7 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
         .map((file) => ({
           ...file,
           downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
-            repoNodeId
+            repoNodeId,
           )}/repo/contents?filename=%22${encodeURIComponent(file.name)}%22`,
         }));
 
@@ -164,8 +164,8 @@ export async function fetchFileContents(baseUrl, nodeId, filename) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/repo/contents?filename=${filename}`
+        nodeId,
+      )}/repo/contents?filename=${filename}`,
     );
 
     if (!res.ok) return null;
@@ -182,8 +182,8 @@ export async function fetchJson(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=json`
+        nodeId,
+      )}/download?download_format=json`,
     );
 
     if (!res.ok) return null;
@@ -200,8 +200,8 @@ export async function fetchCif(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=cif&download=false`
+        nodeId,
+      )}/download?download_format=cif&download=false`,
     );
 
     if (!res.ok) return { cifText: null };
@@ -279,6 +279,111 @@ export async function fetchLinks(baseUrl, nodeId) {
   }
 }
 
+// get all links to a node (currently unpaginated)
+export async function fetchLinkCounts(baseUrl, nodes = []) {
+  if (!nodes.length) return nodes;
+
+  try {
+    const updatedNodes = await Promise.all(
+      nodes.map(async (node) => {
+        const { incoming, outgoing } = await fetchLinks(baseUrl, node.id);
+
+        const parentCount = (incoming?.data?.incoming || []).length;
+        const childCount = (outgoing?.data?.outgoing || []).length;
+
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            parentCount,
+            childCount,
+          },
+        };
+      }),
+    );
+
+    return updatedNodes;
+  } catch (err) {
+    console.error("Error fetching next level nodes:", err);
+    return nodes;
+  }
+}
+
+// wrapper function that determines what to fetch based on nodetype skipping if already fetched.
+// TODO - go to /api/v4/nodes/download_formats
+// + inspect the types of downloads rather than hardcoding?
+// + could do this on baseUrl initialisation in main app?
+export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
+  // if the id is in the cache we dont try to refetch.
+  const cached = cachedExtras[node.id];
+  if (cached) {
+    console.log(`${node.id} data is already cached`);
+    return { ...node, data: { ...node.data, ...cached } };
+  }
+
+  // otherwise we start with a copy of node.data
+
+  let updatedData = { ...node.data };
+
+  // Fetch extras - these can be controlled by the user of aiida so we have to fetch them no matter what.
+  // const endpoints = ["attributes", "comments", "extras", "derived_properties"];
+  if (!cachedExtras[node.id]) {
+    const extraData = await fetchNodeContents(baseUrl, node.id);
+    updatedData = { ...updatedData, ...extraData };
+  }
+
+  // most dataTypes dont have any download method (including a json) so we skip them
+  switch (node.data.label) {
+    case "StructureData":
+    case "CifData":
+      updatedData.download = await fetchCif(baseUrl, node.id);
+      break;
+
+    case "BandsData":
+    case "ArrayData":
+    case "UpfData": // json only here for printing reasons. (handle filedownload in the visauliserpane)
+      updatedData.download = await fetchJson(baseUrl, node.id);
+      break;
+
+    default:
+      // Most data types don’t have downloads at all → skip
+      break;
+  }
+
+  // Fetch repo list if missing
+  switch (node.data.label) {
+    case "FolderData":
+    case "RemoteData":
+      updatedData.repo_list = await fetchNodeRepoList(baseUrl, node.id);
+      break;
+
+    default:
+      break;
+  }
+
+  // Fetch files if missing
+  switch (node.data.label) {
+    case "CalcJobNode":
+      if (!updatedData.retrievedUUID) {
+        const retrID = await fetchRetrievedUUID(baseUrl, node.id);
+        updatedData = { ...updatedData, retrievedUUID: retrID };
+      }
+      const files = await fetchFiles(
+        baseUrl,
+        node.id,
+        updatedData.retrievedUUID,
+      );
+      updatedData = { ...updatedData, files };
+      break;
+
+    default:
+      // Most data types don't have files → skip
+      break;
+  }
+
+  return { ...node, data: updatedData };
+}
+
 /**
  * Fetch a node and all its immediate input nodes, returning
  * nodes and edges suitable for React Flow.
@@ -327,8 +432,8 @@ export async function fetchGraphByNodeId(baseUrl, nodeId) {
 
   const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === 0),
+    allNodes.filter((n) => n.data.pos === 1),
     allNodes.filter((n) => n.data.pos === -1),
-    allNodes.filter((n) => n.data.pos === 1)
   );
 
   return { nodes, edges };

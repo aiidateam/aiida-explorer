@@ -43,6 +43,12 @@ Ensure the desired **AiiDA REST API** endpoint is configured in `App.jsx` and go
 
 ## Development
 
+IMPORTANT TODOS:
+
+- TODO: figure out if there is a nice way to handle Upfdata Getcounts + getDownload ... these are currently the only laggy parts of the code. I think actually most of the overhead is hilariously tring to format it into the "Download" Raw view - it might be worth just not having 'download' be hit at all for upf data
+
+- TODO: there is a bug with caching and positions - this is making duplicate labels appear - we should handle this clevely somehow...
+
 ### Notes and warnings;
 
 The ReactFlow builtin nodes are a little difficult to style/rotate etc; we have built a custom "HorizontalNode" component that controls default colors, label positions etc. This is a little inconvenient since control of shape is quite hard.

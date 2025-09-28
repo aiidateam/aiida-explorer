@@ -62,7 +62,7 @@ export default function GroupsViewer2({ baseUrl = "" }) {
       setTableData((prev) =>
         offsetValue === 0
           ? formatTableData(nodes)
-          : [...prev, ...formatTableData(nodes)]
+          : [...prev, ...formatTableData(nodes)],
       );
 
       setOffset(offsetValue + nodes.length);
@@ -92,7 +92,7 @@ export default function GroupsViewer2({ baseUrl = "" }) {
                 setSelectedGroups((prev) =>
                   e.target.checked
                     ? [...prev, g.label]
-                    : prev.filter((x) => x !== g.label)
+                    : prev.filter((x) => x !== g.label),
                 )
               }
             />

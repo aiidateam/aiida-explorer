@@ -11,7 +11,7 @@ function getVol(nodeData, round = 4) {
   ];
   const cell = nodeData.attributes.cell;
   const volume = Math.abs(
-    cell[0].reduce((sum, val, i) => sum + val * cross(cell[1], cell[2])[i], 0)
+    cell[0].reduce((sum, val, i) => sum + val * cross(cell[1], cell[2])[i], 0),
   );
   return parseFloat(volume.toFixed(round));
 }
@@ -49,8 +49,8 @@ export default function StructureVisualiser({ nodeData, baseUrl }) {
   const volume = hasDerived
     ? nodeData.derived_properties.dimensionality?.value
     : lattice
-    ? getVol(nodeData)
-    : null;
+      ? getVol(nodeData)
+      : null;
 
   const numSites = nodeData.attributes?.sites?.length || 0;
 
