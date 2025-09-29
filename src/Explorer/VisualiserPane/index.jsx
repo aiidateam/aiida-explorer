@@ -1,11 +1,63 @@
+import { useState, useEffect } from "react";
 import KpointsDataVisualiser from "./KpointsDataVisualiser";
 import FolderDataVisualiser from "./FolderDataVisualiser";
 import CalcJobVisualiser from "./CalcJobVisualiser";
 import UpfDataVisualiser from "./UpfDataVisualiser";
 import RawDataVisualiser from "./RawDataVisualiser";
 import StructureVisualiser from "./StructureVisualiser";
+import FormattedMetaData from "./FormattedMetaData";
 
-export default function VisualiserPane({ baseUrl, selectedNode }) {
+export default function VisualiserPane({ baseUrl, selectedNode, userData }) {
+  // Always declare hooks first
+  const [activeTab, setActiveTab] = useState("rich");
+
+  // Determine if rich visualiser exists
+  const richVisualiser = (() => {
+    if (!selectedNode) return null;
+    const { label, aiida } = selectedNode.data;
+    switch (label) {
+      case "StructureData":
+      case "CifData":
+        return (
+          <StructureVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
+        );
+      case "KpointsData":
+        return (
+          <KpointsDataVisualiser
+            key={aiida?.uuid}
+            nodeData={selectedNode.data}
+          />
+        );
+      case "UpfData":
+        return (
+          <UpfDataVisualiser
+            key={aiida?.uuid}
+            nodeData={selectedNode.data}
+            baseUrl={baseUrl}
+          />
+        );
+      case "FolderData":
+        return (
+          <FolderDataVisualiser
+            key={aiida?.uuid}
+            nodeData={selectedNode.data}
+          />
+        );
+      case "CalcJobNode":
+        return (
+          <CalcJobVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
+        );
+      default:
+        return null;
+    }
+  })();
+
+  useEffect(() => {
+    if (!richVisualiser) {
+      setActiveTab("raw");
+    }
+  }, [richVisualiser]);
+
   if (!selectedNode) {
     return (
       <div className="w-full h-full p-4">
@@ -17,75 +69,49 @@ export default function VisualiserPane({ baseUrl, selectedNode }) {
     );
   }
 
-  const { label, aiida } = selectedNode.data;
+  const richTabDisabled = !richVisualiser;
 
-  // TODO move the structure visualiser into its own seperate compoennt
-  // add features like cell/sites info (similar to mc3d).
-  switch (label) {
-    case "StructureData":
-    case "CifData":
-      return (
-        <div className="">
-          {/* Top half: fixed to 50% of viewport height */}
-          <StructureVisualiser
-            key={`visualiser-${label}-${aiida.uuid}`}
-            nodeData={selectedNode.data}
-          />
+  return (
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      {/* Metadata */}
+      <div className="p-4 border-b bg-gray-50">
+        <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
+      </div>
 
-          {/* Bottom part: scrollable content */}
+      {/* Tabs */}
+      <div className="flex border-b bg-gray-100">
+        <button
+          disabled={richTabDisabled}
+          className={`px-4 py-2 ${
+            activeTab === "rich"
+              ? "border-b-2 border-blue-500 font-semibold"
+              : richTabDisabled
+              ? "text-gray-400 cursor-not-allowed"
+              : ""
+          }`}
+          onClick={() => !richTabDisabled && setActiveTab("rich")}
+        >
+          Rich View
+        </button>
+        <button
+          className={`px-4 py-2 ${
+            activeTab === "raw"
+              ? "border-b-2 border-blue-500 font-semibold"
+              : ""
+          }`}
+          onClick={() => setActiveTab("raw")}
+        >
+          Raw View
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-auto p-4">
+        {activeTab === "rich" && richVisualiser}
+        {activeTab === "raw" && (
           <RawDataVisualiser nodeData={selectedNode.data} />
-        </div>
-      );
-
-    case "KpointsData":
-      return (
-        <div>
-          <KpointsDataVisualiser
-            key={`visualiser-${label}-${aiida.uuid}`}
-            nodeData={selectedNode.data}
-          />
-          <RawDataVisualiser nodeData={selectedNode.data} />
-        </div>
-      );
-
-    case "UpfData":
-      return (
-        <div>
-          <UpfDataVisualiser
-            key={`visualiser-${label}-${aiida.uuid}`}
-            nodeData={selectedNode.data}
-            baseUrl={baseUrl}
-          />
-          <RawDataVisualiser nodeData={selectedNode.data} />
-        </div>
-      );
-
-    case "FolderData": {
-      return (
-        <div>
-          <FolderDataVisualiser
-            key={`visualiser-${label}-${aiida.uuid}`}
-            nodeData={selectedNode.data}
-          />
-          <RawDataVisualiser nodeData={selectedNode.data} />
-        </div>
-      );
-    }
-
-    case "CalcJobNode": {
-      return (
-        <div>
-          <CalcJobVisualiser
-            key={`visualiser-${label}-${aiida.uuid}`}
-            nodeData={selectedNode.data}
-          />
-          <RawDataVisualiser nodeData={selectedNode.data} />
-        </div>
-      );
-    }
-
-    // we use the RawDataVisualiser as a standalone if the type is not known.
-    default:
-      return <RawDataVisualiser nodeData={selectedNode.data} />;
-  }
+        )}
+      </div>
+    </div>
+  );
 }

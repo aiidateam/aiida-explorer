@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { JsonView } from "react-json-view-lite";
 import "react-json-view-lite/dist/index.css";
 
-import { ClipBoardIcon, ClipboardCopyIcon } from "../../../components/Icons";
+import { ClipBoardIcon, ClipboardCopyIcon } from "../../components/Icons";
 
 export default function RawDataVisualiser({ nodeData = {} }) {
   const dataSections = [

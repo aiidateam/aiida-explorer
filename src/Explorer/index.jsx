@@ -8,7 +8,12 @@ import GroupsViewer from "./GroupsViewer";
 import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
 
-import { fetchGraphByNodeId, smartFetchData, fetchLinkCounts } from "./api";
+import {
+  fetchGraphByNodeId,
+  smartFetchData,
+  fetchLinkCounts,
+  fetchUsers,
+} from "./api";
 
 import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 
@@ -19,8 +24,24 @@ import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
-  debugMode = true,
+  debugMode = false,
 }) {
+  const [users, setUsers] = useState(null);
+
+  // Fetch users once at mount
+  useEffect(() => {
+    let mounted = true;
+    fetchUsers(baseUrl).then((fetchedUsers) => {
+      if (mounted) {
+        setUsers(fetchedUsers);
+        if (debugMode) console.log("users", fetchedUsers);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [baseUrl]);
+
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -64,7 +85,7 @@ export default function Explorer({
       // To update the central node with a highlight.
       if (selectedNode) {
         const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id,
+          (n) => n.id === selectedNode.id
         );
         setSelectedNode(stillExists || null);
       }
@@ -174,7 +195,7 @@ export default function Explorer({
             console.log(
               `${n.data.label} - Parent count: ${
                 n.parentCount || 0
-              }, Child count: ${n.childCount || 0}`,
+              }, Child count: ${n.childCount || 0}`
             );
           });
         }}
@@ -238,7 +259,11 @@ export default function Explorer({
             </div>
           )}
           <div className="flex-1 overflow-y-auto">
-            <VisualiserPane baseUrl={baseUrl} selectedNode={selectedNode} />
+            <VisualiserPane
+              baseUrl={baseUrl}
+              selectedNode={selectedNode}
+              userData={users}
+            />
           </div>
         </div>
       </div>

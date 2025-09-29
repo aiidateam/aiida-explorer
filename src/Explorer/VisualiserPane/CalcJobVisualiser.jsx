@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ReactDOM from "react-dom";
-import DataTable from "../../../components/DataTable";
-import { DownloadIcon, ViewIcon } from "../../../components/Icons";
+import DataTable from "../../components/DataTable";
+import { DownloadIcon, ViewIcon } from "../../components/Icons";
 
 export default function CalcJobVisualiser({ nodeData = {} }) {
   const files = nodeData.files || {};
@@ -83,7 +83,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
       <div className="w-full h-full p-4 space-y-6 overflow-y-auto">
         {inputData.length > 0 && (
           <DataTable
-            title="Input Files"
+            title="Input Files (in this node)"
             columns={inputCols}
             data={inputData}
             sortableCols={["Files"]}
@@ -91,7 +91,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
         )}
         {outputData.length > 0 && (
           <DataTable
-            title="Output Files"
+            title="Output Files (retrieved)"
             columns={outputCols}
             data={outputData}
             sortableCols={["Files"]}
@@ -130,7 +130,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
               </pre>
             </div>
           </div>,
-          document.body,
+          document.body
         )}
     </>
   );

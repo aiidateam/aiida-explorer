@@ -28,7 +28,9 @@ export const aiidaTypes = [
       { label: "StructureData", type: "data.core.structure.%" },
       { label: "RemoteData", type: "data.core.remote.%" },
       { label: "FolderData", type: "data.core.folder.%" },
+      { label: "SinglefileData", type: "data.core.singlefile.%" },
       { label: "UpfData", type: "data.core.upf.%" },
+      { label: "Code", type: "data.core.code.%" },
     ],
   },
   {
@@ -97,7 +99,7 @@ export function TypeCheckboxTree({
       setSelectedTypes((prev) =>
         prev.includes(label)
           ? prev.filter((t) => t !== label)
-          : [...prev, label],
+          : [...prev, label]
       );
       return;
     }

@@ -51,7 +51,9 @@ IMPORTANT TODOS:
 
 - TODO: currently overlays dont always have the same "X close" styling / header stying. We should unify these.
 
-- TODO: it might be nice to have basically every color, styling etc as a
+- TODO: it might be nice to have basically every color, styling etc.
+
+- TODO: refactor raw views to have 'download_format'
 
 ### Notes and warnings;
 

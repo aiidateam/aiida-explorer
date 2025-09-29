@@ -1,7 +1,9 @@
-import DataTable from "../../../components/DataTable";
+import DataTable from "../../components/DataTable";
 
 // TODO - add view input files (maybe predownload some on the client if they are small)
 // This will match functionality in old explore.
+// TODO add filesize as backend point -
+// Make a note that files sholuld be called something else.
 export default function FolderDataVisualiser({ nodeData }) {
   const repoList = nodeData?.repo_list?.data?.repo_list ?? [];
 

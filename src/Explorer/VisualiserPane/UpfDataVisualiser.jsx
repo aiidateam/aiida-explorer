@@ -1,6 +1,6 @@
-import DataTable from "../../../components/DataTable";
+import DataTable from "../../components/DataTable";
 
-import { DownloadIcon } from "../../../components/Icons";
+import { DownloadIcon } from "../../components/Icons";
 
 // To maintain isolation visualisers should only be aware of their own data and not require a baseUrl and nodeId.
 // however the format that "download" is in is a json object which is not the same as a upfFile.
@@ -19,8 +19,8 @@ export default function UpfDataVisualiser({ nodeData = {}, baseUrl = "" }) {
         value === null || value === undefined
           ? "—"
           : typeof value === "object"
-            ? JSON.stringify(value, null, 2)
-            : String(value),
+          ? JSON.stringify(value, null, 2)
+          : String(value),
     }));
   };
 

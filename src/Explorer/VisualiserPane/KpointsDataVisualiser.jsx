@@ -1,7 +1,7 @@
-import DataTable from "../../../components/DataTable";
-import { DownloadIcon } from "../../../components/Icons";
+import DataTable from "../../components/DataTable";
+import { DownloadIcon } from "../../components/Icons";
 
-import { omitGraphKeys } from "../../utils";
+import { omitGraphKeys } from "../utils";
 
 // This could be extended to use the BZ visualiser from this data (if possible);
 // If a nice parser for VASP/QE/etc exists we could in principle also allow multiple download types.
@@ -55,7 +55,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
       x: row[0],
       y: row[1],
       z: row[2],
-    }),
+    })
   );
 
   return (
