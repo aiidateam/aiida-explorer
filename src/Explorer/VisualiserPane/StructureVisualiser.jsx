@@ -11,7 +11,7 @@ function getVol(nodeData, round = 4) {
   ];
   const cell = nodeData.attributes.cell;
   const volume = Math.abs(
-    cell[0].reduce((sum, val, i) => sum + val * cross(cell[1], cell[2])[i], 0),
+    cell[0].reduce((sum, val, i) => sum + val * cross(cell[1], cell[2])[i], 0)
   );
   return parseFloat(volume.toFixed(round));
 }
@@ -49,15 +49,15 @@ export default function StructureVisualiser({ nodeData, baseUrl }) {
   const volume = hasDerived
     ? nodeData.derived_properties.dimensionality?.value
     : lattice
-      ? getVol(nodeData)
-      : null;
+    ? getVol(nodeData)
+    : null;
 
   const numSites = nodeData.attributes?.sites?.length || 0;
 
   return (
-    <>
+    <div className="p-4">
       {hasDerived && (
-        <div className="pt-4 px-4 grid grid-cols-2 gap-4">
+        <div className="p grid grid-cols-2 gap-4">
           <div className="bg-gray-100 px-2 py-2 rounded shadow-sm">
             <p>
               <strong>Cell Volume:</strong> {volume?.toFixed(4)} Å³
@@ -89,7 +89,7 @@ export default function StructureVisualiser({ nodeData, baseUrl }) {
         </div>
       )}
 
-      <div className="w-full h-[500px] p-4 relative">
+      <div className="w-full h-[500px] pt-4 relative">
         <div className="absolute top-8 right-8 z-50">
           <StructDownloadButton
             aiida_rest_url={baseUrl}
@@ -101,6 +101,6 @@ export default function StructureVisualiser({ nodeData, baseUrl }) {
           <StructureVisualizer cifText={cifStr} initSupercell={[2, 2, 2]} />
         </div>
       </div>
-    </>
+    </div>
   );
 }

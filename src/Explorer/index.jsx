@@ -167,16 +167,6 @@ export default function Explorer({
             />
             <span className="transition-colors">Query database</span>
           </button>
-          <button
-            className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
-            onClick={() => setActiveOverlay("typesview")}
-          >
-            <GroupIcon
-              size={24}
-              className="text-blue-600 group-hover:text-blue-800 transition-colors"
-            />
-            <span className="transition-colors">FullTypes View</span>
-          </button>
         </div>
       )}
 

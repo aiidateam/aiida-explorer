@@ -6,13 +6,13 @@ import { ClipBoardIcon, ClipboardCopyIcon } from "../../components/Icons";
 
 export default function RawDataVisualiser({ nodeData = {} }) {
   const dataSections = [
-    { title: "AIIDA Metadata", data: nodeData.aiida },
     { title: "Attributes", data: nodeData.attributes },
     { title: "Download", data: nodeData.download },
     { title: "Derived Properties", data: nodeData.derived_properties },
     { title: "Repository List", data: nodeData.repo_list },
     { title: "Files", data: nodeData.files },
     { title: "Extras", data: nodeData.extras },
+    { title: "Full AIIDA Metadata", data: nodeData.aiida, collapseLevel: 0 },
   ];
 
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -25,13 +25,13 @@ export default function RawDataVisualiser({ nodeData = {} }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 pt-2">
+    <div className="flex flex-col gap-4 p-4">
       {dataSections.map((section, index) => {
         const safeData = section.data || {};
         if (Object.keys(safeData).length === 0) return null;
 
         return (
-          <div key={index} className="px-4">
+          <div key={index}>
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-lg font-semibold">{section.title}</h3>
 
@@ -55,7 +55,12 @@ export default function RawDataVisualiser({ nodeData = {} }) {
             </div>
 
             <div className="max-h-96 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
-              <JsonView data={safeData} collapsed={1} />
+              <JsonView
+                data={safeData}
+                shouldExpandNode={(level) =>
+                  level < (section.collapseLevel ?? 1)
+                }
+              />
             </div>
           </div>
         );

@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function FormattedMetaData({ nodeData, userData }) {
   const users = userData?.users || [];
   const aiida = nodeData?.aiida;
@@ -16,8 +14,9 @@ export default function FormattedMetaData({ nodeData, userData }) {
     : null;
 
   return (
-    <div className="p-4 border rounded-lg shadow-sm bg-white">
-      <h2 className="text-lg font-semibold mb-2">Node Metadata</h2>
+    <div className="">
+      <h2 className="text-lg font-semibold pb-2">{nodeData.label || ""}</h2>
+
       <div className="space-y-1 text-sm">
         {aiida.uuid && (
           <div>

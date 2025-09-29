@@ -13,7 +13,7 @@ import { getNodeDisplay } from "./nodeUtils";
  * TODO - could incode prior node (via breadcrumb indexing) and make it
  * appear slightly different (this would also fuck with edge logic.)
  */
-export function getNodeColorClasses(type, selected = false, pos = 0) {
+export function getNodeColorClasses(type, selected = false) {
   let bgClass = "bg-gray-200";
   let textClass = "text-black";
   let borderStyle = "transition-all";
@@ -43,7 +43,7 @@ export function getNodeColorClasses(type, selected = false, pos = 0) {
 export default function HorizontalNode({ data, selected }) {
   const { zoom } = useViewport();
 
-  const baseNodeStyle = `min-w-[120px] text-center p-1.5 rounded border-3`;
+  const baseNodeStyle = `min-w-[120px] text-center p-1.5 px-3 rounded border-3`;
 
   const baseLinkStyle = `absolute -translate-y-1/4 pointer-events-none whitespace-nowrap opacity-80
       bg-slate-200 border border-gray-300 rounded-md px-1 py-0.5 text-gray-700 `;
@@ -52,20 +52,17 @@ export default function HorizontalNode({ data, selected }) {
   const rightLinkStyle = `${baseLinkStyle} right-full mr-1 text-right`;
 
   // counts styling
-  const countSize =
-    zoom > 1.2
-      ? "w-7 text-xs -translate-y-[165%]"
-      : "w-10 text-sm -translate-y-[150%]";
-  const baseCountStyle = `text-center absolute  pointer-events-none opacity-80
-  bg-blue-400 border border-blue-800 rounded-md text-black  ${countSize}`;
+  const countSize = zoom > 1.2 ? "text-[10px]" : " text-[7px]";
 
-  const leftCountStyle = `${baseCountStyle} -left-3`;
-  const rightCountStyle = `${baseCountStyle} -right-3`;
+  const baseCountStyle = `absolute top-1/2 -translate-y-1/2 px-1 py-0.5 text-white font-bold ${countSize} pointer-events-none`;
+
+  const leftCountStyle = `${baseCountStyle} left-0 bg-pink-400 bg-opacity-60 rounded-r-md`;
+  const rightCountStyle = `${baseCountStyle} right-0 bg-pink-400 bg-opacity-60 rounded-l-md `;
 
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos,
+    data.pos
   );
 
   // ----------
@@ -106,8 +103,8 @@ export default function HorizontalNode({ data, selected }) {
       {linkLabelHtml}
 
       {/* {linkCountLabel} */}
-      <div className={leftCountStyle}>{data.parentCount ?? "N/A"}</div>
-      <div className={rightCountStyle}>{data.childCount ?? "N/A"}</div>
+      <div className={leftCountStyle}>{data.parentCount ?? ""}</div>
+      <div className={rightCountStyle}>{data.childCount ?? ""}</div>
 
       {textHtml}
       {/* node handles */}

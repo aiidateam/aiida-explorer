@@ -73,8 +73,8 @@ export default function VisualiserPane({ baseUrl, selectedNode, userData }) {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      {/* Metadata */}
-      <div className="p-4 border-b bg-gray-50">
+      {/* Shortened Metadata */}
+      <div className="p-4 border-b bg-slate-50">
         <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
       </div>
 
@@ -106,7 +106,7 @@ export default function VisualiserPane({ baseUrl, selectedNode, userData }) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto">
         {activeTab === "rich" && richVisualiser}
         {activeTab === "raw" && (
           <RawDataVisualiser nodeData={selectedNode.data} />

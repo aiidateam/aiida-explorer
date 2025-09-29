@@ -40,7 +40,7 @@ export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const spacingX = options.spacingX || 310;
   const spacingY = options.spacingY || 90;
@@ -73,8 +73,8 @@ export function layoutGraphDefault(
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
       type: "smoothstep",
-      style: { stroke: "green", strokeWidth: 2 },
-      markerEnd: { type: "arrow", color: "green", width: 20, height: 15 },
+      style: { stroke: "grey", strokeWidth: 2 },
+      markerEnd: { type: "arrow", color: "grey", width: 20, height: 15 },
     });
   });
 
@@ -92,8 +92,8 @@ export function layoutGraphDefault(
       sourcePosition: Position.Right,
       target: node.id,
       type: "smoothstep",
-      style: { stroke: "orange", strokeWidth: 2 },
-      markerEnd: { type: "arrow", color: "orange", width: 20, height: 15 },
+      style: { stroke: "grey", strokeWidth: 2 },
+      markerEnd: { type: "arrow", color: "grey", width: 20, height: 15 },
     });
   });
 
@@ -108,7 +108,7 @@ export function layoutGraphFan(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
   const radius = options.radius ?? 350;
   const maxAngle = options.maxAngle ?? Math.PI / 1.5; // 60 degrees spread
@@ -132,9 +132,7 @@ export function layoutGraphFan(
     const startAngle = -maxAngle / 2;
     const endAngle = maxAngle / 2;
     const angles = nodesArray.map((_, i) =>
-      total === 1
-        ? 0
-        : startAngle + (i / (total - 1)) * (endAngle - startAngle),
+      total === 1 ? 0 : startAngle + (i / (total - 1)) * (endAngle - startAngle)
     );
 
     nodesArray.forEach((node, i) => {
