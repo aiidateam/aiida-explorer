@@ -280,12 +280,21 @@ export async function fetchLinks(baseUrl, nodeId) {
 }
 
 // get all links to a node (currently unpaginated)
+// TODO - check if there is a nice query builder version of this.
 export async function fetchLinkCounts(baseUrl, nodes = []) {
   if (!nodes.length) return nodes;
 
   try {
     const updatedNodes = await Promise.all(
       nodes.map(async (node) => {
+        // Skip fetch if parent/child counts already exist
+        if (
+          typeof node?.data?.parentCount === "number" &&
+          typeof node?.data?.childCount === "number"
+        ) {
+          return node;
+        }
+
         const { incoming, outgoing } = await fetchLinks(baseUrl, node.id);
 
         const parentCount = (incoming?.data?.incoming || []).length;
@@ -318,19 +327,17 @@ export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
   const cached = cachedExtras[node.id];
   if (cached) {
     console.log(`${node.id} data is already cached`);
+    console.log("node", node);
     return { ...node, data: { ...node.data, ...cached } };
   }
 
   // otherwise we start with a copy of node.data
-
   let updatedData = { ...node.data };
 
   // Fetch extras - these can be controlled by the user of aiida so we have to fetch them no matter what.
   // const endpoints = ["attributes", "comments", "extras", "derived_properties"];
-  if (!cachedExtras[node.id]) {
-    const extraData = await fetchNodeContents(baseUrl, node.id);
-    updatedData = { ...updatedData, ...extraData };
-  }
+  const extraData = await fetchNodeContents(baseUrl, node.id);
+  updatedData = { ...updatedData, ...extraData };
 
   // most dataTypes dont have any download method (including a json) so we skip them
   switch (node.data.label) {

@@ -9,26 +9,31 @@ import { getNodeDisplay } from "./nodeUtils";
  * @param {string} type - Node type string (e.g., "process.workflow", "data")
  * @param {boolean} selected - Whether the node is currently selected
  * @param {number} pos - Node position: -1 = left, 0 = center, 1 = right
- * TODO: there is a bug with caching and positions - this is making duplicate labels appear - we should handle this clevely somehow...
+ *
+ * TODO - could incode prior node (via breadcrumb indexing) and make it
+ * appear slightly different (this would also fuck with edge logic.)
  */
 export function getNodeColorClasses(type, selected = false, pos = 0) {
   let bgClass = "bg-gray-200";
   let textClass = "text-black";
-  let borderStyle = "border-transparent";
+  let borderStyle = "transition-all";
 
   if (type?.startsWith("process.workflow")) {
     bgClass = "bg-orange-300";
+    borderStyle = "border-orange-400 shadow-md";
   } else if (type?.startsWith("process")) {
     bgClass = "bg-red-300";
+    borderStyle = "border-red-400 shadow-md";
   } else if (type?.startsWith("data")) {
     bgClass = "bg-green-300";
+    borderStyle = "border-green-400 shadow-md";
   }
 
   if (selected) {
-    borderStyle = "border-black";
-  } else if (pos === 0) {
-    // center node gets a subtle border
-    borderStyle = "border-[rgba(0,0,0,0.30)]";
+    borderStyle =
+      "border-2 border-blue-600 shadow-md rounded-md transition duration-700";
+    bgClass = "bg-blue-100 glow-4";
+    textClass = "text-black font-semibold";
   }
 
   return { bgClass, textClass, borderStyle };
@@ -71,7 +76,7 @@ export default function HorizontalNode({ data, selected }) {
     zoom > 1.2 ? "text-[9px] px-1 py-0.5" : "text-[12px] px-2 py-1";
   // Main label content
   const textHtml = (
-    <div className={`${fontSizeClass} text-gray-900`}>
+    <div className={`${fontSizeClass}`}>
       {data.label}
       {zoom > 1.2 && <br />}
       {zoom > 1.2 && (
@@ -109,12 +114,16 @@ export default function HorizontalNode({ data, selected }) {
       <Handle
         type="target"
         position={Position.Left}
-        style={{ pointerEvents: "none" }}
+        style={{ pointerEvents: "none", opacity: 0, marginLeft: "3px" }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        style={{ pointerEvents: "none" }}
+        style={{
+          pointerEvents: "none",
+          opacity: 0,
+          marginRight: "4px",
+        }}
       />
     </div>
   );

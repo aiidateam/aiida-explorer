@@ -49,6 +49,10 @@ IMPORTANT TODOS:
 
 - TODO: there is a bug with caching and positions - this is making duplicate labels appear - we should handle this clevely somehow...
 
+- TODO: currently overlays dont always have the same "X close" styling / header stying. We should unify these.
+
+- TODO: it might be nice to have basically every color, styling etc as a
+
 ### Notes and warnings;
 
 The ReactFlow builtin nodes are a little difficult to style/rotate etc; we have built a custom "HorizontalNode" component that controls default colors, label positions etc. This is a little inconvenient since control of shape is quite hard.

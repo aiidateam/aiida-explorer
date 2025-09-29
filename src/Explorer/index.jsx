@@ -49,11 +49,14 @@ export default function Explorer({
 
       if (!mounted) return;
 
-      // Merge in cached extra data
-      const nodesWithExtras = fetchedNodes.map((n) => ({
-        ...n,
-        data: { ...n.data, ...(extraNodeData[n.id] || {}) },
-      }));
+      // Merge in cached extra data - excluding .pos
+      const nodesWithExtras = fetchedNodes.map((n) => {
+        const { pos, ...cachedData } = extraNodeData[n.id] || {};
+        return {
+          ...n,
+          data: { ...n.data, ...cachedData },
+        };
+      });
 
       setNodes(nodesWithExtras);
       setEdges(fetchedEdges);
@@ -75,7 +78,7 @@ export default function Explorer({
   }, [rootNodeId]);
 
   // --------------------------
-  // Cache + merge helper
+  // Cache + merge helper TODO - fix misfiring pos bug here...?
   // --------------------------
   const ensureNodeData = async (node) => {
     const enrichedNode = await smartFetchData(baseUrl, node, extraNodeData);
@@ -97,14 +100,7 @@ export default function Explorer({
     setSelectedNode(enrichedNode);
 
     // Update the graph nodes so HorizontalNode re-renders
-    // unclear this is needed either.
-    setNodes((prevNodes) =>
-      prevNodes.map((n) =>
-        n.id === node.id
-          ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n,
-      ),
-    );
+    // unclear this is needed.
   };
 
   // --------------------------

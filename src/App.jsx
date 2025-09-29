@@ -2,7 +2,7 @@ import React from "react";
 import Explorer from "./Explorer";
 
 // needed to make mc-react-library components not shit the bed.
-// should be moved into the Explorer component
+// TODO - should be moved into the Explorer component
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
@@ -16,7 +16,7 @@ function App() {
   const twodtopo = "https://aiida.materialscloud.org/2dtopo/api/v4";
   const twodtopo_node = "0021c3ee-6f98-47cf-ab1c-b267ff8203b6";
 
-  return <Explorer baseUrl={MC2D} />;
+  return <Explorer baseUrl={MC3D} />;
 }
 
 export default App;
