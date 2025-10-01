@@ -25,19 +25,20 @@ export default function FlowChart({
   selectedNode,
   onNodeSelect,
   onNodeDoubleSelect,
+  onInit,
 }) {
   const handleNodeClick = useCallback(
     (event, node) => {
       if (onNodeSelect) onNodeSelect(node);
     },
-    [onNodeSelect],
+    [onNodeSelect]
   );
 
   const handleNodeDoubleClick = useCallback(
     (event, node) => {
       if (onNodeDoubleSelect) onNodeDoubleSelect(node);
     },
-    [onNodeDoubleSelect],
+    [onNodeDoubleSelect]
   );
 
   // map nodes and mark the selected one
@@ -65,6 +66,7 @@ export default function FlowChart({
         fitView
         nodesDraggable={true}
         nodesConnectable={false}
+        onInit={onInit}
       >
         <Controls />
         <Background variant="dots" gap={12} size={1} />

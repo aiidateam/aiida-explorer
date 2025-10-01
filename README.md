@@ -47,13 +47,15 @@ IMPORTANT TODOS:
 
 - TODO: figure out if there is a nice way to handle Upfdata Getcounts + getDownload ... these are currently the only laggy parts of the code. I think actually most of the overhead is hilariously tring to format it into the "Download" Raw view - it might be worth just not having 'download' be hit at all for upf data
 
-- TODO: there is a bug with caching and positions - this is making duplicate labels appear - we should handle this clevely somehow...
+- TODO: there is a bug with caching and positions - this is making duplicate labels appear - we should handle this clevely somehow - although attempts at fixing this are not too easy lol.
 
 - TODO: currently overlays dont always have the same "X close" styling / header stying. We should unify these.
 
 - TODO: it might be nice to have basically every color, styling etc.
 
 - TODO: refactor raw views to have 'download_format'
+
+- TODO: pathing through browser buttons doesnt seem to work at all - this is difficult to fix.
 
 ### Notes and warnings;
 

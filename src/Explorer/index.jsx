@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import FlowChart from "./FlowChart";
 import DebugPane from "./DebugPane";
 import GridViewer from "./GridViewer";
 import GroupsViewer from "./GroupsViewer";
+
+import HelpViewer from "./HelpViewer";
 
 import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
@@ -16,7 +18,7 @@ import {
   fetchDownloadFormats,
 } from "./api";
 
-import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
+import { GroupIcon, XIcon, LinksIcon, QuestionIcon } from "../components/Icons";
 
 // full component handler for  aiidaexplorer.
 //  this manages all states and data to the subcomponents.
@@ -25,8 +27,10 @@ import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
-  debugMode = true,
+  debugMode = false,
 }) {
+  const reactFlowInstanceRef = useRef(null);
+
   const [users, setUsers] = useState(null);
 
   const [downloadFormats, setDownloadFormats] = useState(null);
@@ -87,7 +91,6 @@ export default function Explorer({
 
       if (!mounted) return;
 
-      // Merge in cached extra data - excluding .pos
       const nodesWithExtras = fetchedNodes.map((n) => {
         const { pos, ...cachedData } = extraNodeData[n.id] || {};
         return {
@@ -98,14 +101,28 @@ export default function Explorer({
 
       setNodes(nodesWithExtras);
       setEdges(fetchedEdges);
+      // After setting nodes
+      setNodes(nodesWithExtras);
 
-      // To update the central node with a highlight.
-      if (selectedNode) {
-        const stillExists = nodesWithExtras.find(
-          (n) => n.id === selectedNode.id
-        );
-        setSelectedNode(stillExists || null);
-      }
+      // Animate next hop - this currently lags on large nodes. :(
+      // TODO fix this either through pagination or something else.
+      // I have a feeling the frontend sort is the culprit.
+      requestAnimationFrame(() => {
+        const instance = reactFlowInstanceRef.current;
+        if (!instance) return;
+
+        instance.fitView({ padding: 1.5 });
+
+        const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+        if (centralNode?.position) {
+          setTimeout(() => {
+            instance.setCenter(centralNode.position.x, centralNode.position.y, {
+              zoom: 1.0,
+              duration: 1000,
+            });
+          }, 150); // small timeout to let fitView settle
+        }
+      });
     }
 
     loadGraph();
@@ -178,47 +195,7 @@ export default function Explorer({
   // TODO switch the overlay to use ReactDOM portals...
   return (
     <div className="flex flex-col h-screen relative">
-      {/* Overlay toggle buttons */}
-      {!activeOverlay && (
-        <div className="absolute top-4 left-4 z-50 flex gap-2">
-          <button
-            className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
-            onClick={() => setActiveOverlay("groupsview")}
-          >
-            <GroupIcon
-              size={24}
-              className="text-blue-600 group-hover:text-blue-800 transition-colors"
-            />
-            <span className="transition-colors">Query database</span>
-          </button>
-        </div>
-      )}
-
-      {/* Temp Children count button - need to test perforamcne of this... */}
-      <button
-        className="absolute top-4 right-2/3 z-50 px-3 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition-colors"
-        onClick={async () => {
-          if (!nodes || nodes.length === 0) return;
-
-          // Use fetchNextLevel to get counts for all nodes
-          const updatedNodes = await fetchLinkCounts(baseUrl, nodes);
-          setNodes(updatedNodes); // trigger re-render
-
-          // Log counts for all nodes
-          updatedNodes.forEach((n) => {
-            console.log(
-              `${n.data.label} - Parent count: ${
-                n.parentCount || 0
-              }, Child count: ${n.childCount || 0}`
-            );
-          });
-        }}
-      >
-        Get Counts
-      </button>
-
       {/* Overlay */}
-
       <div
         className={`fixed inset-0 z-40 flex items-center justify-center bg-black/30
       transition-all duration-500 ease-in-out
@@ -247,14 +224,61 @@ export default function Explorer({
 
           {activeOverlay === "groupsview" && <GroupsViewer baseUrl={baseUrl} />}
           {activeOverlay === "typesview" && <GridViewer baseUrl={baseUrl} />}
+          {activeOverlay === "helpview" && <HelpViewer />}
         </div>
       </div>
-
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* left hand panel */}
-        <div className="flex-1 w-1/2 border-r border-gray-300 h-full">
+        <div className="flex-1 w-1/2 border-r border-gray-300 h-full relative flex flex-col">
+          {/* Top buttons inside FlowChart container */}
+          {!activeOverlay && (
+            <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-auto">
+              {/* Left buttons */}
+              <div className="flex gap-2">
+                <button
+                  className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
+                  onClick={() => setActiveOverlay("groupsview")}
+                >
+                  <GroupIcon
+                    size={24}
+                    className="text-blue-600 group-hover:text-blue-800 transition-colors"
+                  />
+                  <span className="transition-colors">Query database</span>
+                </button>
+
+                <button
+                  className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
+                  onClick={async () => {
+                    if (!nodes || nodes.length === 0) return;
+                    const updatedNodes = await fetchLinkCounts(baseUrl, nodes);
+                    setNodes(updatedNodes);
+                  }}
+                >
+                  <LinksIcon
+                    size={18}
+                    className="text-blue-600 group-hover:text-blue-800 transition-colors"
+                  />
+                  <span className="transition-colors">Get Counts</span>
+                </button>
+              </div>
+
+              {/* Right button */}
+              <button
+                className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
+                onClick={() => setActiveOverlay("helpview")}
+              >
+                <QuestionIcon
+                  size={18}
+                  className="text-blue-600 group-hover:text-blue-800 transition-colors"
+                />
+                <span className="transition-colors">Help</span>
+              </button>
+            </div>
+          )}
+
           <FlowChart
+            className="flex-1"
             nodes={nodes}
             edges={edges}
             setNodes={setNodes}
@@ -262,6 +286,9 @@ export default function Explorer({
             selectedNode={selectedNode}
             onNodeSelect={handleNodeSelect}
             onNodeDoubleSelect={handleDoubleClick}
+            onInit={(instance) => {
+              reactFlowInstanceRef.current = instance;
+            }}
           />
         </div>
 
@@ -281,7 +308,6 @@ export default function Explorer({
           </div>
         </div>
       </div>
-
       {/* Breadcrumbs */}
       <div className="flex-none h-12 border-t border-gray-300">
         <Breadcrumbs

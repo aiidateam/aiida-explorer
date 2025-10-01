@@ -2,48 +2,71 @@
 // basic aiida node data is gathered as a neccessity so we can render uuids without additional fetches
 
 // TODO - implement all of these in a nice way.
-// TODO - fix why these arent auto added to the data..?
+// Refactoring into some sort of object and object method is likely much cleaner -...-
+// TODO - think about fetching these instantly.
 export function getNodeDisplay(node) {
   const shortUUID = `${node.aiida.uuid.split("-")[0]}`;
-  const fallback = "\u00A0";
+  // const fallback = "\u00A0";  // pregap for this?
+  const fallback = ""; // expand on click
 
-  // -----
-  // Common Python DataTypes
-  // -----
+  // Sorted by alpha since it seemed easier
   switch (node.label) {
-    case "Int":
-    case "Float":
-      return node.attributes?.value !== undefined
-        ? `Value: ${node.attributes.value}`
-        : fallback;
-
-    // trying to render a string is probably unwise.
-    case "Str":
+    case "AbstractCode":
       return fallback;
+    case "ArrayData":
+      return fallback;
+    case "BandsData":
+      const bands = node.attributes?.["array|bands"];
+      return bands?.[1] !== undefined ? `Num. bands: ${bands[1]}` : fallback;
 
     case "Bool":
       return node.attributes?.value !== undefined
         ? `Value: ${node.attributes.value}`
         : fallback;
 
+    case "CalcJobNode":
+      const proc_type = node?.aiida?.process_type?.split(":")[1];
+      return proc_type ? proc_type : fallback;
+
+    case "Code":
+      const input_plugin = node?.attributes?.input_plugin;
+
+      return input_plugin ? input_plugin : fallback;
+
+    case "Dict":
+      return node?.attributes
+        ? `Num. keys: ${Object.keys(node.attributes).length}`
+        : fallback;
+
+    case "EnumData":
+      return fallback;
+
+    case "Float":
+    case "Int":
+      return node.attributes?.value !== undefined
+        ? `Value: ${node.attributes.value}`
+        : fallback;
+
+    case "JsonableData":
+      return fallback;
+
     case "List":
       return node.attributes?.value !== undefined
         ? `Length: ${node.attributes.list.length}`
         : fallback;
 
-    // -----
-    // These are AiiDA but easy to describe with a short string.
-    // -----
+    // trying to render a string is probably unwise.
+    case "Str":
+      return fallback;
+
     case "KpointsData":
       if (node.attributes?.mesh) {
         const [x, y, z] = node.attributes.mesh;
         return `Grid: ${x} × ${y} × ${z}`;
       }
-
       if (node.attributes?.labels && node.attributes?.label_numbers) {
         return `Path: ${node.attributes.labels.join(" → ")}`;
       }
-
       return fallback;
 
     case "StructureData": {
@@ -60,23 +83,19 @@ export function getNodeDisplay(node) {
           8: "₈",
           9: "₉",
         };
-
         const converted = formula.replace(
           /\d/g,
           (digit) => subscriptMap[digit] || digit
         );
-
         // Cull if too long
         if (converted.length > maxLength) {
           return converted.slice(0, maxLength - 3) + "...";
         }
         return converted;
       }
-
       if (node.extras?.formula_hill) {
         return `${prettyFormula(node.extras.formula_hill)}`;
       }
-
       if (node.derived_properties?.formula) {
         return `${prettyFormula(node.derived_properties?.formula)}`;
       }
@@ -85,7 +104,7 @@ export function getNodeDisplay(node) {
     }
 
     // unclear what we should render for UpfData on click??
-    // for now we render the Pseudo type and element
+    // for now we render the pseudo file name.
     case "UpfData": {
       const element = node.download?.pseudo_potential?.header?.element;
       const psType = node.download?.pseudo_potential?.header?.pseudo_type;
@@ -97,23 +116,6 @@ export function getNodeDisplay(node) {
       return fallback;
     }
 
-    case "BandsData":
-      const bands = node.attributes?.["array|bands"];
-      return bands?.[1] !== undefined ? `No. Bands: ${bands[1]}` : fallback;
-
-    // AbstractData types cant easily be rendered as a short string.
-    case "Dict":
-      return fallback;
-
-    case "EnumData":
-      return fallback;
-
-    case "JsonableData":
-      return fallback;
-
-    case "ArrayData":
-      return fallback;
-
     case "XyData":
       return fallback;
 
@@ -124,12 +126,6 @@ export function getNodeDisplay(node) {
       return fallback;
 
     case "RemoteData":
-      return fallback;
-
-    case "AbstractCode":
-      return fallback;
-
-    case "Code":
       return fallback;
 
     case "InstalledCode":

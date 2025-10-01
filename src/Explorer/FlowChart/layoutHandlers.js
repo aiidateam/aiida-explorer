@@ -14,8 +14,8 @@ export function getLayoutDefaults(options) {
 function layoutDefaults(options) {
   return {
     spacingX: options.spacingX || 310,
-    spacingY: options.spacingY || 90,
-    groupGapY: options.groupGapY || 150,
+    spacingY: options.spacingY || 80,
+    groupGapY: options.groupGapY || 100,
     centerX: options.centerX || window.innerWidth / 2,
     centerY: options.centerY || window.innerHeight / 2,
     edgeStyle: { stroke: "grey", strokeWidth: 2 },
@@ -47,9 +47,6 @@ export function arrangeDataCenterNode(
   const nodes = [];
   const edges = [];
 
-  // Center
-  nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
-
   // never more than one calc job - so no need to sort.
   const inputCalcs = inputNodes.filter((n) =>
     n.data?.node_type.includes("calculation")
@@ -75,6 +72,27 @@ export function arrangeDataCenterNode(
     .sort(
       (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime)
     );
+
+  // Calculate Y extents of all nodes (excluding center for now)
+  const leftNodesY = [
+    ...inputCalcs.map((_, i) => i),
+    ...inputWorkflows.map((_, i) => i),
+  ];
+  const rightNodesY = [
+    ...outputCalcs.map((_, i) => i),
+    ...outputWorkflows.map((_, i) => i),
+  ];
+
+  // Compute visual Y midpoint
+  const numLeft = inputCalcs.length + inputWorkflows.length;
+  const numRight = outputCalcs.length + outputWorkflows.length;
+  const totalNodes = Math.max(numLeft, numRight, 1); // avoid zero
+
+  // Shift the data node up so it’s centered relative to all nodes
+  const dataNodeY = centerY - (((totalNodes - 1) / 2) * spacingY) / 2; // adjust factor as needed
+
+  // Place center node
+  nodes.push({ ...centerNode, position: { x: centerX, y: dataNodeY } });
 
   // --- INPUTS ---
   const calcStartYIn = centerY - ((inputCalcs.length - 1) / 2) * spacingY;
@@ -191,7 +209,6 @@ export function arrangeCalculationCenterNode(
     .sort((a, b) => a.data.label.localeCompare(b.data.label));
 
   // new on top.
-
   const outputWorkflows = outputNodes
     .filter((n) => n.data?.node_type.includes("workflow"))
     .sort(
