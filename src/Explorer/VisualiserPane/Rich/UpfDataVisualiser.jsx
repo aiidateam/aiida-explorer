@@ -1,6 +1,6 @@
-import DataTable from "../../components/DataTable";
+import DataTable from "../../../components/DataTable";
 
-import { DownloadIcon } from "../../components/Icons";
+import { DownloadIcon } from "../../../components/Icons";
 
 // To maintain isolation visualisers should only be aware of their own data and not require a baseUrl and nodeId.
 // however the format that "download" is in is a json object which is not the same as a upfFile.

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import KpointsDataVisualiser from "./KpointsDataVisualiser";
-import FolderDataVisualiser from "./FolderDataVisualiser";
-import CalcJobVisualiser from "./CalcJobVisualiser";
-import UpfDataVisualiser from "./UpfDataVisualiser";
+import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
+import FolderDataVisualiser from "./Rich/FolderDataVisualiser";
+import CalcJobVisualiser from "./Rich/CalcJobVisualiser";
+import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
 import RawDataVisualiser from "./RawDataVisualiser";
-import StructureVisualiser from "./StructureVisualiser";
+import StructureVisualiser from "./Rich/StructureVisualiser";
 import FormattedMetaData from "./FormattedMetaData";
 
 export default function VisualiserPane({ baseUrl, selectedNode, userData }) {

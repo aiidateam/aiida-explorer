@@ -250,6 +250,27 @@ export async function fetchCif(baseUrl, nodeId) {
   }
 }
 
+export async function fetchSourceFile(baseUrl, nodeId) {
+  if (!nodeId) return { sourceFile: null };
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/nodes/${encodeURIComponent(
+        nodeId
+      )}/repo/contents?filename=source_file`
+    );
+
+    if (!res.ok) return { sourceFile: null };
+
+    const fileText = await res.text();
+
+    return { sourceFile: fileText };
+  } catch (err) {
+    console.error("Error fetching node:", err);
+    return { sourceFile: null };
+  }
+}
+
 export async function fetchGroups(baseUrl) {
   try {
     const res = await fetch(`${baseUrl}/groups`);
@@ -312,6 +333,29 @@ export async function fetchLinks(baseUrl, nodeId) {
   }
 }
 
+export async function fetchLinksFirstPage(baseUrl, nodeId) {
+  if (!nodeId) return { incoming: [], outgoing: [] };
+
+  try {
+    const [incomingRes, outgoingRes] = await Promise.all([
+      fetch(
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/incoming/page/1`
+      ),
+      fetch(
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/page/1`
+      ),
+    ]);
+
+    const incoming = incomingRes.ok ? await incomingRes.json() : [];
+    const outgoing = outgoingRes.ok ? await outgoingRes.json() : [];
+
+    return { incoming, outgoing };
+  } catch (err) {
+    console.error("Error fetching links:", err);
+    return { incoming: [], outgoing: [] };
+  }
+}
+
 // get all links to a node (currently unpaginated)
 // TODO - check if there is a nice query builder version of this.
 export async function fetchLinkCounts(baseUrl, nodes = []) {
@@ -329,6 +373,46 @@ export async function fetchLinkCounts(baseUrl, nodes = []) {
         }
 
         const { incoming, outgoing } = await fetchLinks(baseUrl, node.id);
+
+        const parentCount = (incoming?.data?.incoming || []).length;
+        const childCount = (outgoing?.data?.outgoing || []).length;
+
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            parentCount,
+            childCount,
+          },
+        };
+      })
+    );
+
+    return updatedNodes;
+  } catch (err) {
+    console.error("Error fetching next level nodes:", err);
+    return nodes;
+  }
+}
+
+export async function fetchLinkCountsFirstPage(baseUrl, nodes = []) {
+  if (!nodes.length) return nodes;
+
+  try {
+    const updatedNodes = await Promise.all(
+      nodes.map(async (node) => {
+        // Skip fetch if parent/child counts already exist
+        if (
+          typeof node?.data?.parentCount === "number" &&
+          typeof node?.data?.childCount === "number"
+        ) {
+          return node;
+        }
+
+        const { incoming, outgoing } = await fetchLinksFirstPage(
+          baseUrl,
+          node.id
+        );
 
         const parentCount = (incoming?.data?.incoming || []).length;
         const childCount = (outgoing?.data?.outgoing || []).length;
@@ -373,9 +457,12 @@ export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
     BandsData: fetchJson,
     ArrayData: fetchJson,
     UpfData: fetchJson,
+    CalcFunctionNode: fetchSourceFile,
   };
 
   const repoFetchers = {
+    CalcFunctionNode: fetchNodeRepoList,
+
     FolderData: fetchNodeRepoList,
     RemoteData: fetchNodeRepoList,
     BandsData: fetchNodeRepoList,
@@ -429,12 +516,23 @@ export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
  * Fetch a node and all its immediate input nodes, returning
  * nodes and edges suitable for React Flow.
  */
-export async function fetchGraphByNodeId(baseUrl, nodeId) {
+export async function fetchGraphByNodeId(
+  baseUrl,
+  nodeId,
+  singlePageMode = true
+) {
   const rootNodeRaw = await fetchNodeById(baseUrl, nodeId);
   const rootNode = rootNodeRaw.data.nodes[0];
   if (!rootNode) return { nodes: [], edges: [] };
 
-  const { incoming, outgoing } = await fetchLinks(baseUrl, nodeId);
+  let incoming;
+  let outgoing;
+  if (singlePageMode) {
+    ({ incoming, outgoing } = await fetchLinksFirstPage(baseUrl, nodeId));
+  } else {
+    ({ incoming, outgoing } = await fetchLinks(baseUrl, nodeId));
+  }
+
   const linksIn = incoming?.data?.incoming || [];
   const linksOut = outgoing?.data?.outgoing || [];
 

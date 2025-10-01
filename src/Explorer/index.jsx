@@ -16,23 +16,31 @@ import {
   fetchLinkCounts,
   fetchUsers,
   fetchDownloadFormats,
+  fetchLinkCountsFirstPage,
 } from "./api";
 
-import { GroupIcon, XIcon, LinksIcon, QuestionIcon } from "../components/Icons";
+import {
+  GroupIcon,
+  XIcon,
+  LinksIcon,
+  QuestionIcon,
+  FastIcon,
+  SlowIcon,
+} from "../components/Icons";
 
 // full component handler for  aiidaexplorer.
 //  this manages all states and data to the subcomponents.
 
 // TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
+// TODO add loading and timings of steps...
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
-  debugMode = false,
+  debugMode = true,
 }) {
   const reactFlowInstanceRef = useRef(null);
-
+  const [singlePageMode, setSinglePageMode] = useState(false);
   const [users, setUsers] = useState(null);
-
   const [downloadFormats, setDownloadFormats] = useState(null);
 
   // Fetch users once at mount
@@ -87,7 +95,7 @@ export default function Explorer({
 
     async function loadGraph() {
       const { nodes: fetchedNodes, edges: fetchedEdges } =
-        await fetchGraphByNodeId(baseUrl, rootNodeId);
+        await fetchGraphByNodeId(baseUrl, rootNodeId, singlePageMode);
 
       if (!mounted) return;
 
@@ -116,10 +124,14 @@ export default function Explorer({
         const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
         if (centralNode?.position) {
           setTimeout(() => {
-            instance.setCenter(centralNode.position.x, centralNode.position.y, {
-              zoom: 1.0,
-              duration: 1000,
-            });
+            instance.setCenter(
+              centralNode.position.x + 50,
+              centralNode.position.y,
+              {
+                zoom: 1.22, //slightly above threshold.
+                duration: 1000,
+              }
+            );
           }, 150); // small timeout to let fitView settle
         }
       });
@@ -237,7 +249,7 @@ export default function Explorer({
               {/* Left buttons */}
               <div className="flex gap-2">
                 <button
-                  className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
+                  className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-md flex items-center gap-1 hover:text-blue-800"
                   onClick={() => setActiveOverlay("groupsview")}
                 >
                   <GroupIcon
@@ -248,24 +260,62 @@ export default function Explorer({
                 </button>
 
                 <button
-                  className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
+                  className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-md flex items-center gap-1 hover:text-blue-800"
                   onClick={async () => {
                     if (!nodes || nodes.length === 0) return;
-                    const updatedNodes = await fetchLinkCounts(baseUrl, nodes);
-                    setNodes(updatedNodes);
+                    if (singlePageMode === true) {
+                      const updatedNodes = await fetchLinkCountsFirstPage(
+                        baseUrl,
+                        nodes
+                      );
+                      setNodes(updatedNodes);
+                    } else {
+                      const updatedNodes = await fetchLinkCounts(
+                        baseUrl,
+                        nodes
+                      );
+                      setNodes(updatedNodes);
+                    }
                   }}
                 >
                   <LinksIcon
                     size={18}
                     className="text-blue-600 group-hover:text-blue-800 transition-colors"
                   />
-                  <span className="transition-colors">Get Counts</span>
+                  <span className="transition-colors">Get link counts</span>
                 </button>
+                {/* Single Page Mode Toggle */}
+                {/* <button
+                  className={`group px-3 py-2 rounded-md shadow-md text-md flex items-center gap-1 transition-all duration-1000 transform ${
+                    singlePageMode
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                  onClick={() => setSinglePageMode(!singlePageMode)}
+                >
+                  <span className="relative w-6 h-6">
+                    {/* Fast icon */}
+                {/* <FastIcon
+                      size={22}
+                      className={`absolute top-0 left-0 transition-opacity duration-1000 ${
+                        singlePageMode ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                    {/* Slow icon */}
+                {/* <SlowIcon
+                      size={22}
+                      className={`absolute top-0 left-0 transition-opacity duration-1000 ${
+                        singlePageMode ? "opacity-0" : "opacity-100"
+                      }`}
+                    />
+                  </span>
+                  <span>{singlePageMode ? "Fast" : "Full"}</span>
+                </button>  */}
               </div>
 
               {/* Right button */}
               <button
-                className="group px-3 py-2 rounded-md bg-opacity-70 bg-white shadow-md text-blue-600 text-lg flex items-center gap-1 hover:text-blue-800"
+                className="group px-3 py-2 rounded-md bg-white shadow-md text-blue-600 text-md flex items-center gap-1 hover:text-blue-800"
                 onClick={() => setActiveOverlay("helpview")}
               >
                 <QuestionIcon

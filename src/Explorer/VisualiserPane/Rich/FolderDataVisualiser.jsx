@@ -1,4 +1,4 @@
-import DataTable from "../../components/DataTable";
+import DataTable from "../../../components/DataTable";
 
 // TODO - add view input files (maybe predownload some on the client if they are small)
 // This will match functionality in old explore.

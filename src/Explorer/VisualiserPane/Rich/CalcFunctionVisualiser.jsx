@@ -1,9 +1,9 @@
 import { useState } from "react";
 import ReactDOM from "react-dom";
-import DataTable from "../../components/DataTable";
-import { DownloadIcon, ViewIcon } from "../../components/Icons";
+import DataTable from "../../../components/DataTable";
+import { DownloadIcon, ViewIcon } from "../../../components/Icons";
 
-export default function CalcJobVisualiser({ nodeData = {} }) {
+export default function CalcFunctionVisualiser({ nodeData = {} }) {
   const files = nodeData.files || {};
   const inputFiles = Array.isArray(files.input_files) ? files.input_files : [];
   const outputFiles = Array.isArray(files.output_files)

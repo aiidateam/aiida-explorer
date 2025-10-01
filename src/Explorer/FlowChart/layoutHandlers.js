@@ -1,20 +1,9 @@
 import { Position } from "reactflow";
 
-export function getLayoutDefaults(options) {
-  return {
-    spacingX: options.spacingX || 310,
-    spacingY: options.spacingY || 90,
-    groupGapY: options.groupGapY || 150,
-    centerX: options.centerX || window.innerWidth / 2,
-    centerY: options.centerY || window.innerHeight / 2,
-    edgeStyle: { stroke: "grey", strokeWidth: 2 },
-  };
-}
-
 function layoutDefaults(options) {
   return {
-    spacingX: options.spacingX || 310,
-    spacingY: options.spacingY || 80,
+    spacingX: options.spacingX || 280,
+    spacingY: options.spacingY || 70,
     groupGapY: options.groupGapY || 100,
     centerX: options.centerX || window.innerWidth / 2,
     centerY: options.centerY || window.innerHeight / 2,
