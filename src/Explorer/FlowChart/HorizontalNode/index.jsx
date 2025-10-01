@@ -45,19 +45,36 @@ export default function HorizontalNode({ data, selected }) {
 
   const baseNodeStyle = `min-w-[120px] text-center p-1.5 px-3 rounded border-3`;
 
-  const baseLinkStyle = `absolute -translate-y-1/4 pointer-events-none whitespace-nowrap opacity-80
-      bg-slate-200 border border-gray-300 rounded-md px-1 py-0.5 text-gray-700 `;
+  const baseLinkStyle = `absolute -translate-y-1/4
+   whitespace-nowrap opacity-90
+   bg-slate-200 border border-gray-300
+   rounded-md px-1 py-0.5 text-gray-700 `;
 
   const leftLinkStyle = `${baseLinkStyle} left-full ml-1 text-left`;
   const rightLinkStyle = `${baseLinkStyle} right-full mr-1 text-right`;
 
   // counts styling
-  const countSize = zoom > 1.2 ? "text-[10px]" : " text-[7px]";
+  // ----------
+  const showCounts = zoom > 1.2; // only show counts when zoomed in
+  const countSize = showCounts ? "text-[8px]" : "text-[10px]";
 
-  const baseCountStyle = `absolute top-1/2 -translate-y-1/2 px-1 py-0.5 text-white font-bold ${countSize} pointer-events-none`;
+  const baseCountStyle = `
+  absolute
+  top-1/3
+  bottom-1/3
+  flex
+  items-center
+  ${countSize}
+  text-slate-600
+  font-light
+  ${showCounts ? "" : "hidden"}
+`;
 
-  const leftCountStyle = `${baseCountStyle} left-0 bg-pink-400 bg-opacity-60 rounded-r-md`;
-  const rightCountStyle = `${baseCountStyle} right-0 bg-pink-400 bg-opacity-60 rounded-l-md `;
+  const leftCountStyle = `${baseCountStyle} left-0 ml-0.5 pr-1 pl-0.5
+   bg-gray-400 bg-opacity-40 rounded-r-md`;
+
+  const rightCountStyle = `${baseCountStyle} right-0 mr-0.5 pl-1 pr-0.5
+   bg-gray-400 bg-opacity-40 rounded-l-md`;
 
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
@@ -65,19 +82,26 @@ export default function HorizontalNode({ data, selected }) {
     data.pos
   );
 
+  const uuid = data.aiida.uuid.split("-")[0];
+  const extraData = getNodeDisplay(data);
+
   // ----------
   // Determine fontsize based on zoom
   // ----------
-  const fontSizeClass = zoom > 1.2 ? "text-[12px]" : "text-[16px]";
+  const fontSizeClass = zoom > 1.2 ? "text-[12px]" : "text-[14px]";
   const linkFontSizeClass =
-    zoom > 1.2 ? "text-[9px] px-1 py-0.5" : "text-[12px] px-2 py-1";
+    zoom > 1.2 ? "text-[9px] px-2 py-1" : "text-[12px] px-2 py-1";
   // Main label content
   const textHtml = (
     <div className={`${fontSizeClass}`}>
       {data.label}
       {zoom > 1.2 && <br />}
       {zoom > 1.2 && (
-        <span className="text-[9px] opacity-80 ">{getNodeDisplay(data)}</span>
+        <div>
+          <div className="text-[8px] opacity-80">{`uuid: ${uuid}`}</div>
+
+          <div className="text-[8px] opacity-80 ">{`${extraData}`}</div>
+        </div>
       )}
     </div>
   );
@@ -107,11 +131,15 @@ export default function HorizontalNode({ data, selected }) {
       <div className={rightCountStyle}>{data.childCount ?? ""}</div>
 
       {textHtml}
-      {/* node handles */}
+      {/* node handles - margin modified to make arrows line up nicely.*/}
       <Handle
         type="target"
         position={Position.Left}
-        style={{ pointerEvents: "none", opacity: 0, marginLeft: "3px" }}
+        style={{
+          pointerEvents: "none",
+          opacity: 0,
+          marginLeft: "4px",
+        }}
       />
       <Handle
         type="source"

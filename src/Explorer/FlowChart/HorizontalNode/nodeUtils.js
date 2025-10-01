@@ -2,8 +2,10 @@
 // basic aiida node data is gathered as a neccessity so we can render uuids without additional fetches
 
 // TODO - implement all of these in a nice way.
+// TODO - fix why these arent auto added to the data..?
 export function getNodeDisplay(node) {
-  const fallback = `uuid: ${node.aiida.uuid.split("-")[0]}`;
+  const shortUUID = `${node.aiida.uuid.split("-")[0]}`;
+  const fallback = "\u00A0";
 
   // -----
   // Common Python DataTypes
@@ -44,25 +46,55 @@ export function getNodeDisplay(node) {
 
       return fallback;
 
-    case "StructureData":
+    case "StructureData": {
+      function prettyFormula(formula, maxLength = 22) {
+        const subscriptMap = {
+          0: "₀",
+          1: "₁",
+          2: "₂",
+          3: "₃",
+          4: "₄",
+          5: "₅",
+          6: "₆",
+          7: "₇",
+          8: "₈",
+          9: "₉",
+        };
+
+        const converted = formula.replace(
+          /\d/g,
+          (digit) => subscriptMap[digit] || digit
+        );
+
+        // Cull if too long
+        if (converted.length > maxLength) {
+          return converted.slice(0, maxLength - 3) + "...";
+        }
+        return converted;
+      }
+
       if (node.extras?.formula_hill) {
-        return node.extras?.formula_hill;
+        return `${prettyFormula(node.extras.formula_hill)}`;
       }
 
       if (node.derived_properties?.formula) {
-        return node.derived_properties?.formula;
+        return `${prettyFormula(node.derived_properties?.formula)}`;
       }
-      return node.extras?.formula_hill !== undefined
-        ? node.extras.formula_hill
-        : fallback;
+
+      return fallback;
+    }
 
     // unclear what we should render for UpfData on click??
-    // for now we render the psuedo type and element
+    // for now we render the Pseudo type and element
     case "UpfData": {
       const element = node.download?.pseudo_potential?.header?.element;
       const psType = node.download?.pseudo_potential?.header?.pseudo_type;
+      const psFile = node.download?.pseudo_potential?.header?.original_upf_file;
 
-      return psType && element ? `Pseudo: ${psType} - ${element}` : fallback;
+      if (element && psType) {
+        return `${psFile}`;
+      }
+      return fallback;
     }
 
     case "BandsData":

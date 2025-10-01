@@ -16,7 +16,7 @@ function App() {
   const twodtopo = "https://aiida.materialscloud.org/2dtopo/api/v4";
   const twodtopo_node = "0021c3ee-6f98-47cf-ab1c-b267ff8203b6";
 
-  return <Explorer baseUrl={MC2D} />;
+  return <Explorer baseUrl={MC3D} />;
 }
 
 export default App;

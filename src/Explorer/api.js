@@ -1,7 +1,4 @@
-import {
-  layoutGraphDefault,
-  layoutGraphFan,
-} from "./FlowChart/graphController";
+import { layoutGraphDefault } from "./FlowChart/graphController";
 
 // --------------------------
 // Toplevel api hits (run and done)
@@ -13,7 +10,6 @@ export async function fetchUsers(baseUrl) {
     if (!res.ok) return null;
 
     const resp = await res.json();
-    console.log(resp);
     const data = resp.data;
     console.log("users", data);
 
@@ -24,7 +20,21 @@ export async function fetchUsers(baseUrl) {
   }
 }
 
-export async function fetchFileDownloadTypes(baseUrl) {}
+export async function fetchDownloadFormats(baseUrl) {
+  try {
+    const res = await fetch(`${baseUrl}/nodes/download_formats/`);
+    if (!res.ok) return null;
+
+    const resp = await res.json();
+    const data = resp.data;
+    console.log("download_formats", data);
+
+    return data;
+  } catch (err) {
+    console.error("Error fetching node:", err);
+    return null;
+  }
+}
 
 // --------------------------
 // standard api hits are here
@@ -346,7 +356,7 @@ export async function fetchLinkCounts(baseUrl, nodes = []) {
 // + inspect the types of downloads rather than hardcoding?
 // + could do this on baseUrl initialisation in main app?
 export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
-  // if the id is in the cache we dont try to refetch.
+  // Check cache first
   const cached = cachedExtras[node.id];
   if (cached) {
     console.log(`${node.id} data is already cached`);
@@ -354,64 +364,63 @@ export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
     return { ...node, data: { ...node.data, ...cached } };
   }
 
-  // otherwise we start with a copy of node.data
   let updatedData = { ...node.data };
 
-  // Fetch extras - these can be controlled by the user of aiida so we have to fetch them no matter what.
-  // endpoints = ["attributes", "comments", "extras", "derived_properties"];
+  // Lookup tables for downloads and repo lists
+  const downloadFetchers = {
+    StructureData: fetchCif,
+    CifData: fetchCif,
+    BandsData: fetchJson,
+    ArrayData: fetchJson,
+    UpfData: fetchJson,
+  };
+
+  const repoFetchers = {
+    FolderData: fetchNodeRepoList,
+    RemoteData: fetchNodeRepoList,
+    BandsData: fetchNodeRepoList,
+    ArrayData: fetchNodeRepoList,
+  };
+
+  // Fetch extras (always required)
   const extraData = await fetchNodeContents(baseUrl, node.id);
   updatedData = { ...updatedData, ...extraData };
 
-  // most dataTypes dont have any download method (including a json) so we skip them
-  switch (node.data.label) {
-    case "StructureData":
-    case "CifData":
-      updatedData.download = await fetchCif(baseUrl, node.id);
-      break;
+  // Prepare download and repo promises
+  const downloadPromise = downloadFetchers[node.data.label]
+    ? downloadFetchers[node.data.label](baseUrl, node.id)
+    : null;
 
-    case "BandsData":
-    case "ArrayData":
-    case "UpfData": // json only here for printing reasons. (handle filedownload in the visauliserpane)
-      updatedData.download = await fetchJson(baseUrl, node.id);
-      break;
+  const repoPromise = repoFetchers[node.data.label]
+    ? repoFetchers[node.data.label](baseUrl, node.id)
+    : null;
 
-    default:
-      // Most data types don’t have downloads at all → skip
-      break;
-  }
-
-  // Fetch repo list if missing
-  switch (node.data.label) {
-    case "FolderData":
-    case "RemoteData":
-    case "BandsData":
-    case "ArrayData":
-      updatedData.repo_list = await fetchNodeRepoList(baseUrl, node.id);
-      break;
-
-    default:
-      break;
-  }
-
-  // Fetch files if missing
-  switch (node.data.label) {
-    case "CalcJobNode":
-      if (!updatedData.retrievedUUID) {
-        const retrID = await fetchRetrievedUUID(baseUrl, node.id);
-        updatedData = { ...updatedData, retrievedUUID: retrID };
+  // Special case for CalcJobNode files
+  let filesPromise = null;
+  if (node.data.label === "CalcJobNode") {
+    filesPromise = (async () => {
+      let retrID = updatedData.retrievedUUID;
+      if (!retrID) {
+        retrID = await fetchRetrievedUUID(baseUrl, node.id);
       }
-      const files = await fetchFiles(
-        baseUrl,
-        node.id,
-        updatedData.retrievedUUID
-      );
-      updatedData = { ...updatedData, files };
-      break;
-
-    default:
-      // Most data types don't have files → skip
-      break;
+      const files = await fetchFiles(baseUrl, node.id, retrID);
+      return { retrievedUUID: retrID, files };
+    })();
   }
+
+  // Run all promises in parallel
+  const [download, repoResult, filesResult] = await Promise.all([
+    downloadPromise,
+    repoPromise,
+    filesPromise,
+  ]);
+
+  if (download) updatedData.download = download;
+  if (repoResult) updatedData.repo_list = repoResult;
+  if (filesResult) updatedData = { ...updatedData, ...filesResult };
+
+  console.log(`Fetched data for node ${node.id}`);
+  console.log(updatedData);
 
   return { ...node, data: updatedData };
 }

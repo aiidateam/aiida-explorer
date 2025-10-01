@@ -13,6 +13,7 @@ import {
   smartFetchData,
   fetchLinkCounts,
   fetchUsers,
+  fetchDownloadFormats,
 } from "./api";
 
 import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
@@ -24,9 +25,11 @@ import { GroupIcon, GroupIcon2, XIcon } from "../components/Icons";
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
-  debugMode = false,
+  debugMode = true,
 }) {
   const [users, setUsers] = useState(null);
+
+  const [downloadFormats, setDownloadFormats] = useState(null);
 
   // Fetch users once at mount
   useEffect(() => {
@@ -35,6 +38,20 @@ export default function Explorer({
       if (mounted) {
         setUsers(fetchedUsers);
         if (debugMode) console.log("users", fetchedUsers);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [baseUrl]);
+
+  // Fetch download formats once at mount
+  useEffect(() => {
+    let mounted = true;
+    fetchDownloadFormats(baseUrl).then((fetchedFormats) => {
+      if (mounted) {
+        setDownloadFormats(fetchedFormats);
+        if (debugMode) console.log("downloadFormats", fetchedFormats);
       }
     });
     return () => {
@@ -121,7 +138,14 @@ export default function Explorer({
     setSelectedNode(enrichedNode);
 
     // Update the graph nodes so HorizontalNode re-renders
-    // unclear this is needed.
+    // Needed for dynamic sublabels.
+    setNodes((prevNodes) =>
+      prevNodes.map((n) =>
+        n.id === node.id
+          ? { ...n, data: { ...n.data, ...enrichedNode.data } }
+          : n
+      )
+    );
   };
 
   // --------------------------
