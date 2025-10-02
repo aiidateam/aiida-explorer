@@ -27,7 +27,6 @@ export async function fetchDownloadFormats(baseUrl) {
 
     const resp = await res.json();
     const data = resp.data;
-    console.log("download_formats", data);
 
     return data;
   } catch (err) {
@@ -86,17 +85,28 @@ export async function fetchNodeContents(baseUrl, nodeId) {
 
 // fetch node repo list
 export async function fetchNodeRepoList(baseUrl, nodeId) {
-  if (!nodeId) return null;
+  if (!nodeId) return [];
 
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
     );
-    if (!res.ok) return null;
-    return res.json();
+    if (!res.ok) return [];
+
+    const repoFiles = await res.json(); // original array of { name, ... }
+
+    // Transform each file into { name, downloadUrl }
+    const filesWithUrls = repoFiles.data.repo_list.map((file) => ({
+      name: file.name,
+      downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
+        nodeId
+      )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
+    }));
+
+    return filesWithUrls;
   } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
+    console.error("Error fetching node repo list:", err);
+    return [];
   }
 }
 
@@ -127,7 +137,6 @@ export async function fetchRetrievedUUID(baseUrl, nodeId) {
     if (!res.ok) return null;
 
     const data = await res.json();
-    console.log("d", data);
     const nodes = data?.data?.outgoing || [];
 
     const retrievedNode = nodes.find((n) => n.link_label === "retrieved");
@@ -178,7 +187,7 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
           ...file,
           downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
             repoNodeId
-          )}/repo/contents?filename=%22${encodeURIComponent(file.name)}%22`,
+          )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
         }));
 
       results[ep] = processedFiles;
@@ -198,7 +207,7 @@ export async function fetchFileContents(baseUrl, nodeId, filename) {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
         nodeId
-      )}/repo/contents?filename=${filename}`
+      )}/repo/contents?filename="${filename}"`
     );
 
     if (!res.ok) return null;
@@ -439,18 +448,22 @@ export async function fetchLinkCountsFirstPage(baseUrl, nodes = []) {
 // TODO - go to /api/v4/nodes/download_formats
 // + inspect the types of downloads rather than hardcoding?
 // + could do this on baseUrl initialisation in main app?
-export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
+export async function smartFetchData(
+  baseUrl,
+  node,
+  cachedExtras = {},
+  downloadFormats = null
+) {
   // Check cache first
   const cached = cachedExtras[node.id];
   if (cached) {
     console.log(`${node.id} data is already cached`);
-    console.log("node", node);
     return { ...node, data: { ...node.data, ...cached } };
   }
 
   let updatedData = { ...node.data };
 
-  // Lookup tables for downloads and repo lists
+  // Lookup table for downloads
   const downloadFetchers = {
     StructureData: fetchCif,
     CifData: fetchCif,
@@ -460,27 +473,19 @@ export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
     CalcFunctionNode: fetchSourceFile,
   };
 
-  const repoFetchers = {
-    CalcFunctionNode: fetchNodeRepoList,
-
-    FolderData: fetchNodeRepoList,
-    RemoteData: fetchNodeRepoList,
-    BandsData: fetchNodeRepoList,
-    ArrayData: fetchNodeRepoList,
-  };
+  // Always fetch repo_list for all node types
+  const fetchRepoList = async () => fetchNodeRepoList(baseUrl, node.id);
 
   // Fetch extras (always required)
   const extraData = await fetchNodeContents(baseUrl, node.id);
   updatedData = { ...updatedData, ...extraData };
 
-  // Prepare download and repo promises
+  // Prepare promises
   const downloadPromise = downloadFetchers[node.data.label]
     ? downloadFetchers[node.data.label](baseUrl, node.id)
     : null;
 
-  const repoPromise = repoFetchers[node.data.label]
-    ? repoFetchers[node.data.label](baseUrl, node.id)
-    : null;
+  const repoPromise = fetchRepoList(); // always fetch
 
   // Special case for CalcJobNode files
   let filesPromise = null;
@@ -505,6 +510,20 @@ export async function smartFetchData(baseUrl, node, cachedExtras = {}) {
   if (download) updatedData.download = download;
   if (repoResult) updatedData.repo_list = repoResult;
   if (filesResult) updatedData = { ...updatedData, ...filesResult };
+
+  // Add downloadByFormat if downloadFormats provided
+  if (downloadFormats && node.data.node_type) {
+    const typeKey = node.data.node_type.endsWith("|")
+      ? node.data.node_type
+      : `${node.data.node_type}|`;
+    const formats = downloadFormats[typeKey] || [];
+    updatedData.downloadByFormat = formats.reduce((acc, fmt) => {
+      acc[fmt] = `${baseUrl}/nodes/${encodeURIComponent(
+        node.id
+      )}/download?download_format=${encodeURIComponent(fmt)}`;
+      return acc;
+    }, {});
+  }
 
   console.log(`Fetched data for node ${node.id}`);
   console.log(updatedData);
@@ -544,6 +563,8 @@ export async function fetchGraphByNodeId(
         node_type: rootNode.node_type,
         pos: 0,
         aiida: rootNode,
+        parentCount: linksIn.length,
+        childCount: linksOut.length,
       },
     },
     ...linksIn.map((l) => ({

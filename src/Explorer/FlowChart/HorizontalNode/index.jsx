@@ -124,12 +124,15 @@ export default function HorizontalNode({ data, selected }) {
     // main node
     <div className={`${baseNodeStyle} ${bgClass} ${textClass} ${borderStyle}`}>
       {/* text strings. */}
-      {linkLabelHtml}
+      {data.pos !== 0 && linkLabelHtml}
 
       {/* {linkCountLabel} */}
-      <div className={leftCountStyle}>{data.parentCount ?? ""}</div>
-      <div className={rightCountStyle}>{data.childCount ?? ""}</div>
-
+      <div className={leftCountStyle}>
+        {data.parentCount > 99 ? "99+" : data.parentCount ?? ""}
+      </div>
+      <div className={rightCountStyle}>
+        {data.childCount > 99 ? "99+" : data.childCount ?? ""}
+      </div>
       {textHtml}
       {/* node handles - margin modified to make arrows line up nicely.*/}
       <Handle

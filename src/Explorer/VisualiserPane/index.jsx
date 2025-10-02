@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
-import FolderDataVisualiser from "./Rich/FolderDataVisualiser";
-import CalcJobVisualiser from "./Rich/CalcJobVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
 import RawDataVisualiser from "./RawDataVisualiser";
 import StructureVisualiser from "./Rich/StructureVisualiser";
 import FormattedMetaData from "./FormattedMetaData";
 
-export default function VisualiserPane({ baseUrl, selectedNode, userData }) {
-  // Always declare hooks first
+export default function VisualiserPane({
+  baseUrl,
+  selectedNode,
+  userData, // fetched for user if
+  downloadFormats, // fetched for download formats.
+}) {
   const [activeTab, setActiveTab] = useState("rich");
 
   // Determine if rich visualiser exists
@@ -36,17 +38,7 @@ export default function VisualiserPane({ baseUrl, selectedNode, userData }) {
             baseUrl={baseUrl}
           />
         );
-      case "FolderData":
-        return (
-          <FolderDataVisualiser
-            key={aiida?.uuid}
-            nodeData={selectedNode.data}
-          />
-        );
-      case "CalcJobNode":
-        return (
-          <CalcJobVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
-        );
+
       default:
         return null;
     }
@@ -109,7 +101,10 @@ export default function VisualiserPane({ baseUrl, selectedNode, userData }) {
       <div className="flex-1 overflow-auto">
         {activeTab === "rich" && richVisualiser}
         {activeTab === "raw" && (
-          <RawDataVisualiser nodeData={selectedNode.data} />
+          <RawDataVisualiser
+            nodeData={selectedNode.data}
+            downloadFormats={downloadFormats}
+          />
         )}
       </div>
     </div>

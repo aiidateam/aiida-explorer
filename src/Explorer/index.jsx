@@ -148,7 +148,12 @@ export default function Explorer({
   // Cache + merge helper TODO - fix misfiring pos bug here...?
   // --------------------------
   const ensureNodeData = async (node) => {
-    const enrichedNode = await smartFetchData(baseUrl, node, extraNodeData);
+    const enrichedNode = await smartFetchData(
+      baseUrl,
+      node,
+      extraNodeData,
+      downloadFormats
+    );
 
     // Update state cache if new info was added
     setExtraNodeData((prev) => ({
@@ -354,6 +359,7 @@ export default function Explorer({
               baseUrl={baseUrl}
               selectedNode={selectedNode}
               userData={users}
+              downloadFormats={downloadFormats}
             />
           </div>
         </div>
