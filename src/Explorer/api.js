@@ -469,7 +469,6 @@ export async function smartFetchData(
     CifData: fetchCif,
     BandsData: fetchJson,
     ArrayData: fetchJson,
-    UpfData: fetchJson,
     CalcFunctionNode: fetchSourceFile,
   };
 

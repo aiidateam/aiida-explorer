@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
-import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
 import RawDataVisualiser from "./RawDataVisualiser";
-import StructureVisualiser from "./Rich/StructureVisualiser";
+import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import FormattedMetaData from "./FormattedMetaData";
+import BandsDataVisualiser from "./Rich/BandsDataVisualiser";
+import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
 
 export default function VisualiserPane({
   baseUrl,
@@ -21,22 +22,27 @@ export default function VisualiserPane({
       case "StructureData":
       case "CifData":
         return (
-          <StructureVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
-        );
-      case "KpointsData":
-        return (
-          <KpointsDataVisualiser
+          <StructureDataVisualiser
             key={aiida?.uuid}
             nodeData={selectedNode.data}
           />
         );
+      // case "KpointsData":
+      //   return (
+      //     <KpointsDataVisualiser
+      //       key={aiida?.uuid}
+      //       nodeData={selectedNode.data}
+      //     />
+      //   );
+
+      case "BandsData":
+        return (
+          <BandsDataVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
+        );
+
       case "UpfData":
         return (
-          <UpfDataVisualiser
-            key={aiida?.uuid}
-            nodeData={selectedNode.data}
-            baseUrl={baseUrl}
-          />
+          <UpfDataVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
         );
 
       default:
@@ -66,7 +72,7 @@ export default function VisualiserPane({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Shortened Metadata */}
-      <div className="p-4 border-b bg-slate-50">
+      <div className="px-4 py-3 md:py-4 border-b bg-slate-50">
         <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
       </div>
 

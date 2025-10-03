@@ -4,7 +4,9 @@ import { DownloadIcon } from "../../../components/Icons";
 import { omitGraphKeys } from "../../utils";
 
 // This could be extended to use the BZ visualiser from this data (if possible);
-// If a nice parser for VASP/QE/etc exists we could in principle also allow multiple download types.
+// TODO - build a KPOINT converter that spits out VASP/QE formats
+// TODO - See if this data is explicitily able to produce aiida BZ from the brillouin zone
+// TODO - move this from WIP...
 export default function KpointsDataVisualiser({ nodeData = {} }) {
   const download = nodeData.download || {};
   const attributes = nodeData.attributes || {};

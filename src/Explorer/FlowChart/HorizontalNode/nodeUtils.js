@@ -24,9 +24,15 @@ export function getNodeDisplay(node) {
         ? `Value: ${node.attributes.value}`
         : fallback;
 
-    case "CalcJobNode":
+    case "CalcFunctionNode": {
+      const proc_type = node?.aiida?.process_type?.split(".").at(-1);
+      return proc_type ? proc_type : fallback;
+    }
+
+    case "CalcJobNode": {
       const proc_type = node?.aiida?.process_type?.split(":")[1];
       return proc_type ? proc_type : fallback;
+    }
 
     case "Code":
       const input_plugin = node?.attributes?.input_plugin;
@@ -106,13 +112,12 @@ export function getNodeDisplay(node) {
     // unclear what we should render for UpfData on click??
     // for now we render the pseudo file name.
     case "UpfData": {
-      const element = node.download?.pseudo_potential?.header?.element;
-      const psType = node.download?.pseudo_potential?.header?.pseudo_type;
-      const psFile = node.download?.pseudo_potential?.header?.original_upf_file;
+      const psFile = node.attributes?.filename;
 
-      if (element && psType) {
+      if (psFile) {
         return `${psFile}`;
       }
+
       return fallback;
     }
 
@@ -122,8 +127,14 @@ export function getNodeDisplay(node) {
     case "SinglefileData":
       return fallback;
 
-    case "FolderData":
+    case "FolderData": {
+      const filecount = node?.repo_list?.length || 0;
+
+      if (filecount) {
+        return `Num. Files: ${filecount}`;
+      }
       return fallback;
+    }
 
     case "RemoteData":
       return fallback;
@@ -136,6 +147,11 @@ export function getNodeDisplay(node) {
 
     case "ContainerizedCode":
       return fallback;
+
+    case "WorkChainNode": {
+      const proc_type = node?.aiida?.process_type?.split(":")[1];
+      return proc_type ? proc_type : fallback;
+    }
 
     default:
       return fallback;

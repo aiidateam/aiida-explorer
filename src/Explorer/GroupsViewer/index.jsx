@@ -27,7 +27,7 @@ function sortGroups(groups) {
 // Component for rendering a checkered box for all common aiida types...
 // TODO - add a flag that enables fetching of other types via the fulltypes endpoint
 // TODO - discussion regarding a schema for dynamic fetching/rendering etc.
-export default function GroupsViewer2({ baseUrl = "" }) {
+export default function GroupsViewer({ baseUrl = "" }) {
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -63,7 +63,7 @@ export default function GroupsViewer2({ baseUrl = "" }) {
       setTableData((prev) =>
         offsetValue === 0
           ? formatTableData(nodes)
-          : [...prev, ...formatTableData(nodes)],
+          : [...prev, ...formatTableData(nodes)]
       );
 
       setOffset(offsetValue + nodes.length);
@@ -93,7 +93,7 @@ export default function GroupsViewer2({ baseUrl = "" }) {
                 setSelectedGroups((prev) =>
                   e.target.checked
                     ? [...prev, g.label]
-                    : prev.filter((x) => x !== g.label),
+                    : prev.filter((x) => x !== g.label)
                 )
               }
             />

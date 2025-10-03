@@ -1,6 +1,9 @@
+import { useState } from "react";
+
 export default function FormattedMetaData({ nodeData, userData }) {
   const users = userData?.users || [];
   const aiida = nodeData?.aiida;
+  const [isOpen, setIsOpen] = useState(false);
 
   if (!aiida) {
     return (
@@ -8,48 +11,58 @@ export default function FormattedMetaData({ nodeData, userData }) {
     );
   }
 
-  // Resolve owner from user_id
   const owner = Array.isArray(users)
     ? users.find((u) => u.id === aiida.user_id)
     : null;
 
   return (
     <div className="">
-      <h2 className="text-lg font-semibold pb-2">{nodeData.label || ""}</h2>
+      {/* Label with arrow on small screens */}
+      <div
+        className="flex gap-2 items-center cursor-pointer sm:cursor-default"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <h2 className="text-md md:text-lg font-semibold">
+          {nodeData.label || ""}
+        </h2>
+        <span className="md:hidden transition-transform duration-200">
+          {isOpen ? "▲" : "▼"}
+        </span>
+      </div>
 
-      <div className="space-y-1 text-sm">
-        {aiida.uuid && (
-          <div>
-            <span className="font-medium">UUID:</span> {aiida.uuid}
-          </div>
-        )}
-        {aiida.ctime && (
-          <div>
-            <span className="font-medium">Created:</span> {aiida.ctime}
-          </div>
-        )}
-
-        {aiida.mtime && (
-          <div>
-            <span className="font-medium">Modified:</span> {aiida.mtime}
-          </div>
-        )}
-
-        {aiida.node_type && (
-          <div>
-            <span className="font-medium">Node Type:</span> {aiida.node_type}
-          </div>
-        )}
-
-        {owner && (
-          <div>
-            <span className="font-medium">Owner:</span> {owner.first_name}{" "}
-            {owner.last_name || ""}
-            {owner.institution && (
-              <span className="text-gray-500"> ({owner.institution})</span>
-            )}
-          </div>
-        )}
+      {/* Metadata content */}
+      <div className={`${isOpen ? "block" : "hidden"} mt-1 md:block md:mt-2`}>
+        <div className="space-y-1 px-1 text-xs md:text-sm">
+          {aiida.uuid && (
+            <div>
+              <span className="font-medium">UUID:</span> {aiida.uuid}
+            </div>
+          )}
+          {aiida.ctime && (
+            <div>
+              <span className="font-medium">Created:</span> {aiida.ctime}
+            </div>
+          )}
+          {aiida.mtime && (
+            <div>
+              <span className="font-medium">Modified:</span> {aiida.mtime}
+            </div>
+          )}
+          {aiida.node_type && (
+            <div>
+              <span className="font-medium">Node Type:</span> {aiida.node_type}
+            </div>
+          )}
+          {owner && (
+            <div>
+              <span className="font-medium">Owner:</span> {owner.first_name}{" "}
+              {owner.last_name || ""}
+              {owner.institution && (
+                <span className="text-gray-500"> ({owner.institution})</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -81,7 +81,7 @@ export function arrangeDataCenterNode(
   const dataNodeY = centerY - (((totalNodes - 1) / 2) * spacingY) / 2; // adjust factor as needed
 
   // Place center node
-  nodes.push({ ...centerNode, position: { x: centerX, y: dataNodeY } });
+  nodes.push({ ...centerNode, position: { x: centerX, y: dataNodeY + 20 } });
 
   // --- INPUTS ---
   const calcStartYIn = centerY - ((inputCalcs.length - 1) / 2) * spacingY;

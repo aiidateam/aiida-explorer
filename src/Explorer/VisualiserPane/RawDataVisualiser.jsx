@@ -121,7 +121,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
   );
 
   return (
-    <div className="flex flex-col px-3 py-2 gap-4">
+    <div className="flex flex-col px-3 py-2 gap-2 md:gap-4">
       {fileTables}
 
       {dataSections.map((section, index) => {
@@ -131,7 +131,9 @@ export default function RawDataVisualiser({ nodeData = {} }) {
         return (
           <div key={index} className="py-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold">{section.title}</h3>
+              <h3 className="text-md md:text-lg ml-2 font-semibold">
+                {section.title}
+              </h3>
               <button
                 className="relative flex items-center gap-1 hover:text-blue-500"
                 onClick={() => copyToClipboard(safeData, index)}
@@ -150,7 +152,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
               </button>
             </div>
 
-            <div className="max-h-96 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
+            <div className="max-h-32 md:max-h-96 overflow-auto border border-gray-200 rounded p-2 bg-gray-50">
               <JsonView
                 data={safeData}
                 shouldExpandNode={(level) =>

@@ -2,7 +2,6 @@ import React from "react";
 
 import {
   GroupIcon,
-  XIcon,
   LinksIcon,
   QuestionIcon,
   GraphIcon,

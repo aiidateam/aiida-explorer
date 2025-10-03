@@ -59,9 +59,9 @@ export default function DataTable({
 
   return (
     <div className="p-2" style={{ maxWidth }}>
-      <h2 className="text-xl font-semibold mb-2">{title}</h2>
+      <h2 className="text-md md:text-lg font-semibold mb-2">{title}</h2>
 
-      <div className="overflow-x-auto shadow bg-white">
+      <div className="overflow-x-auto shadow-md md:shadow bg-white">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-gray-100 text-gray-700">
             <tr>
@@ -72,7 +72,7 @@ export default function DataTable({
                 return (
                   <th
                     key={col}
-                    className={`px-4 py-2 font-medium ${
+                    className={`px-3 md:px-4 py-0.5 md:py-1 font-medium ${
                       sortable ? "cursor-pointer select-none" : ""
                     }`}
                     onClick={() =>
@@ -109,7 +109,10 @@ export default function DataTable({
                 className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
               >
                 {columns.map((col) => (
-                  <td key={col} className="px-4 py-2 text-gray-800">
+                  <td
+                    key={col}
+                    className="px-3 md:px-4 py-0.5 md:py-2 text-gray-800"
+                  >
                     {row[col]}
                   </td>
                 ))}
