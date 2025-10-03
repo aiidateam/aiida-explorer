@@ -4,6 +4,8 @@ import FlowChart from "./FlowChart";
 import DebugPane from "./DebugPane";
 import GroupsViewer from "./GroupsViewer";
 
+import Spinner from "../components/Spinner";
+
 import HelpViewer from "./HelpViewer";
 
 import VisualiserPane from "./VisualiserPane";
@@ -79,6 +81,8 @@ export default function Explorer({
   debugMode = true,
 }) {
   const reactFlowInstanceRef = useRef(null);
+
+  const [loading, setLoading] = useState(false);
   const [singlePageMode, setSinglePageMode] = useState(false);
   const [users, setUsers] = useState(null);
   const [downloadFormats, setDownloadFormats] = useState(null);
@@ -228,15 +232,21 @@ export default function Explorer({
   // Double click (refocus)
   // --------------------------
   const handleDoubleClick = async (node) => {
-    if (breadcrumbs[breadcrumbs.length - 1]?.id !== node.id) {
-      setBreadcrumbs((prev) => [...prev, node].slice(-MAX_BREADCRUMBS));
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (breadcrumbs[breadcrumbs.length - 1]?.id !== node.id) {
+        setBreadcrumbs((prev) => [...prev, node].slice(-MAX_BREADCRUMBS));
+      }
+
+      setRootNodeId(node.id);
+      setSearchParams({ rootNode: node.id }, { replace: true });
+
+      const enrichedNode = await ensureNodeData(node);
+      setSelectedNode(enrichedNode);
+    } finally {
+      setLoading(false);
     }
-
-    setRootNodeId(node.id);
-    setSearchParams({ rootNode: node.id }, { replace: true });
-
-    const enrichedNode = await ensureNodeData(node);
-    setSelectedNode(enrichedNode);
   };
 
   // --------------------------
@@ -284,6 +294,12 @@ export default function Explorer({
           defaultSize={50} // initial % width
           minSize={10} // min % width
         >
+          {/* Loading spinner */}
+          {loading && (
+            <div className="absolute bottom-2 right-2 z-50">
+              <Spinner />
+            </div>
+          )}
           {!activeOverlay && (
             <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-auto">
               <div className="flex gap-2">
@@ -300,11 +316,16 @@ export default function Explorer({
                 <button
                   className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
                   onClick={async () => {
-                    if (!nodes || nodes.length === 0) return;
-                    const updatedNodes = singlePageMode
-                      ? await fetchLinkCountsFirstPage(baseUrl, nodes)
-                      : await fetchLinkCounts(baseUrl, nodes);
-                    setNodes(updatedNodes);
+                    if (loading || !nodes || nodes.length === 0) return; // block if loading or no nodes
+                    setLoading(true);
+                    try {
+                      const updatedNodes = singlePageMode
+                        ? await fetchLinkCountsFirstPage(baseUrl, nodes)
+                        : await fetchLinkCounts(baseUrl, nodes);
+                      setNodes(updatedNodes);
+                    } finally {
+                      setLoading(false);
+                    }
                   }}
                 >
                   <LinksIcon className="text-blue-600 group-hover:text-blue-800 transition-colors" />
