@@ -75,71 +75,78 @@ function useMediaQuery(query) {
 
 // TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
 // TODO add loading and timings of steps...
+
+// TODO handle searchparams and navigation in a proper way. for now this seems way too hacked.
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
   debugMode = true,
 }) {
   const reactFlowInstanceRef = useRef(null);
+  const isMdUp = useMediaQuery("(min-width: 768px)");
 
   const [loading, setLoading] = useState(false);
   const [singlePageMode, setSinglePageMode] = useState(false);
   const [users, setUsers] = useState(null);
   const [downloadFormats, setDownloadFormats] = useState(null);
-
-  const isMdUp = useMediaQuery("(min-width: 768px)"); // Tailwind md breakpoint
-
-  // Fetch users once at mount
-  useEffect(() => {
-    let mounted = true;
-    fetchUsers(baseUrl).then((fetchedUsers) => {
-      if (mounted) {
-        setUsers(fetchedUsers);
-        if (debugMode) console.log("users", fetchedUsers);
-      }
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [baseUrl]);
-
-  // Fetch download formats once at mount
-  useEffect(() => {
-    let mounted = true;
-    fetchDownloadFormats(baseUrl).then((fetchedFormats) => {
-      if (mounted) {
-        setDownloadFormats(fetchedFormats);
-        if (debugMode) console.log("downloadFormats", fetchedFormats);
-      }
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [baseUrl]);
-
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
-  const MAX_BREADCRUMBS = 10;
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  const rootNodeIdParam = searchParams.get("rootNode") || startingNode;
-  const [rootNodeId, setRootNodeId] = useState(rootNodeIdParam);
-
   const [selectedNode, setSelectedNode] = useState(null);
   const [extraNodeData, setExtraNodeData] = useState({});
 
-  const [activeOverlay, setActiveOverlay] = useState(() => {
-    return rootNodeIdParam === "" ? "groupsview" : null;
-  });
+  const MAX_BREADCRUMBS = 10;
 
-  // --------------------------
-  // Load graph whenever rootNodeId changes
-  // --------------------------
+  // --- URL handling ---
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rootNodeId = searchParams.get("rootNode") || startingNode;
+
+  const [activeOverlay, setActiveOverlay] = useState("groupsview");
+
+  const initialRender = useRef(true);
+
   useEffect(() => {
+    if (initialRender.current && !rootNodeId) {
+      initialRender.current = false; // skip first render
+      setActiveOverlay("groupsview");
+
+      return;
+    } else if (rootNodeId) {
+      setActiveOverlay(null);
+    } else {
+      setActiveOverlay("groupsview");
+    }
+  }, [rootNodeId]);
+
+  // --- Fetch users once ---
+  useEffect(() => {
+    let mounted = true;
+    fetchUsers(baseUrl).then((data) => {
+      if (mounted) setUsers(data);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [baseUrl]);
+
+  // --- Fetch download formats once ---
+  useEffect(() => {
+    let mounted = true;
+    fetchDownloadFormats(baseUrl).then((data) => {
+      if (mounted) setDownloadFormats(data);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [baseUrl]);
+
+  // --- Load graph whenever rootNodeId changes ---
+  useEffect(() => {
+    if (!rootNodeId) return;
     let mounted = true;
 
     async function loadGraph() {
+      setLoading(true);
       const { nodes: fetchedNodes, edges: fetchedEdges } =
         await fetchGraphByNodeId(baseUrl, rootNodeId, singlePageMode);
 
@@ -155,16 +162,12 @@ export default function Explorer({
 
       setNodes(nodesWithExtras);
       setEdges(fetchedEdges);
-      // After setting nodes
-      setNodes(nodesWithExtras);
+      setLoading(false);
 
-      // Animate next hop - this currently lags on large nodes. :(
-      // TODO fix this either through pagination or something else.
-      // I have a feeling the frontend sort is the culprit.
+      // Animate central node
       requestAnimationFrame(() => {
         const instance = reactFlowInstanceRef.current;
         if (!instance) return;
-
         instance.fitView({ padding: 1.5 });
 
         const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
@@ -173,26 +176,20 @@ export default function Explorer({
             instance.setCenter(
               centralNode.position.x + 50,
               centralNode.position.y,
-              {
-                zoom: 1.22, //slightly above threshold.
-                duration: 1000,
-              }
+              { zoom: 1.22, duration: 1000 }
             );
-          }, 150); // small timeout to let fitView settle
+          }, 150);
         }
       });
     }
 
     loadGraph();
-
     return () => {
       mounted = false;
     };
-  }, [rootNodeId]);
+  }, [rootNodeId, baseUrl, singlePageMode]);
 
-  // --------------------------
-  // Cache + merge helper TODO - fix misfiring pos bug here...?
-  // --------------------------
+  // --- Cache + merge ---
   const ensureNodeData = async (node) => {
     const enrichedNode = await smartFetchData(
       baseUrl,
@@ -200,27 +197,19 @@ export default function Explorer({
       extraNodeData,
       downloadFormats
     );
-
-    // Update state cache if new info was added
     setExtraNodeData((prev) => ({
       ...prev,
       [node.id]: { ...(prev[node.id] || {}), ...enrichedNode.data },
     }));
-
     return enrichedNode;
   };
 
-  // --------------------------
-  // Single click
-  // --------------------------
+  // --- Single click ---
   const handleNodeSelect = async (node) => {
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
-
-    // Update the graph nodes so HorizontalNode re-renders
-    // Needed for dynamic sublabels.
-    setNodes((prevNodes) =>
-      prevNodes.map((n) =>
+    setNodes((prev) =>
+      prev.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
           : n
@@ -228,9 +217,7 @@ export default function Explorer({
     );
   };
 
-  // --------------------------
-  // Double click (refocus)
-  // --------------------------
+  // --- Double click ---
   const handleDoubleClick = async (node) => {
     if (loading) return;
     setLoading(true);
@@ -239,7 +226,7 @@ export default function Explorer({
         setBreadcrumbs((prev) => [...prev, node].slice(-MAX_BREADCRUMBS));
       }
 
-      setRootNodeId(node.id);
+      // Update URL param, triggers reload automatically
       setSearchParams({ rootNode: node.id }, { replace: true });
 
       const enrichedNode = await ensureNodeData(node);
@@ -249,12 +236,9 @@ export default function Explorer({
     }
   };
 
-  // --------------------------
-  // Breadcrumb click
-  // --------------------------
+  // --- Breadcrumb click ---
   const handleBreadcrumbClick = async (node, idx) => {
     setBreadcrumbs((prev) => prev.slice(0, idx + 1));
-    setRootNodeId(node.id);
     setSearchParams({ rootNode: node.id }, { replace: true });
 
     const enrichedNode = await ensureNodeData(node);

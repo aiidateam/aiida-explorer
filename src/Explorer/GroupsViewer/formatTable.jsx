@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useNavigate, useLocation } from "react-router-dom";
+
 // column label mappings
 const columnLabels = {
   uuid: "Unique ID",
@@ -37,27 +39,29 @@ function formatValue(label, value) {
   }
 }
 
-// preprocess the raw API data into table-ready format
-export default function formatTableData(nodes) {
+export default function formatTableData(nodes, navigate, location) {
   return nodes.map((row) => {
     const newRow = {};
+
     columnOrder.forEach((label) => {
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label,
+        (k) => columnLabels[k] === label
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key]);
       }
     });
 
-    // Add extra goto column
     newRow[""] = (
-      <a
-        href={`?rootNode=${row.uuid}`}
+      <button
+        onClick={() => {
+          const hashPath = location.hash.split("?")[0];
+          navigate(`${hashPath}?rootNode=${row.uuid}`);
+        }}
         className="px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
       >
         View
-      </a>
+      </button>
     );
 
     return newRow;

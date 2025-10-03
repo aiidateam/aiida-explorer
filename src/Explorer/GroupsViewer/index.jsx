@@ -3,6 +3,8 @@ import DataTable from "../../components/DataTable";
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import formatTableData, { columnOrder } from "./formatTable";
 
+import { useNavigate, useLocation } from "react-router-dom";
+
 import { buildQuery } from "./queryHandler";
 
 import {
@@ -28,6 +30,9 @@ function sortGroups(groups) {
 // TODO - add a flag that enables fetching of other types via the fulltypes endpoint
 // TODO - discussion regarding a schema for dynamic fetching/rendering etc.
 export default function GroupsViewer({ baseUrl = "" }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -60,10 +65,10 @@ export default function GroupsViewer({ baseUrl = "" }) {
       const result = await fetchFromQueryBuilder(baseUrl, postMsg);
       const nodes = result.node || [];
 
+      const formattedNodes = formatTableData(nodes, navigate, location);
+
       setTableData((prev) =>
-        offsetValue === 0
-          ? formatTableData(nodes)
-          : [...prev, ...formatTableData(nodes)]
+        offsetValue === 0 ? formattedNodes : [...prev, ...formattedNodes]
       );
 
       setOffset(offsetValue + nodes.length);
