@@ -9,6 +9,8 @@ import HelpViewer from "./HelpViewer";
 import VisualiserPane from "./VisualiserPane";
 import Breadcrumbs from "./Breadcrumbs";
 
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+
 import {
   fetchGraphByNodeId,
   smartFetchData,
@@ -53,6 +55,19 @@ function Overlay({ children, active, onClose, title }) {
   );
 }
 
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(
+    () => window.matchMedia(query).matches
+  );
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const listener = () => setMatches(media.matches);
+    media.addListener(listener);
+    return () => media.removeListener(listener);
+  }, [query]);
+  return matches;
+}
+
 // full component handler for  aiidaexplorer.
 //  this manages all states and data to the subcomponents.
 
@@ -67,6 +82,8 @@ export default function Explorer({
   const [singlePageMode, setSinglePageMode] = useState(false);
   const [users, setUsers] = useState(null);
   const [downloadFormats, setDownloadFormats] = useState(null);
+
+  const isMdUp = useMediaQuery("(min-width: 768px)"); // Tailwind md breakpoint
 
   // Fetch users once at mount
   useEffect(() => {
@@ -216,7 +233,7 @@ export default function Explorer({
     }
 
     setRootNodeId(node.id);
-    setSearchParams({ rootNode: node.id });
+    setSearchParams({ rootNode: node.id }, { replace: true });
 
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
@@ -228,7 +245,7 @@ export default function Explorer({
   const handleBreadcrumbClick = async (node, idx) => {
     setBreadcrumbs((prev) => prev.slice(0, idx + 1));
     setRootNodeId(node.id);
-    setSearchParams({ rootNode: node.id });
+    setSearchParams({ rootNode: node.id }, { replace: true });
 
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
@@ -257,52 +274,31 @@ export default function Explorer({
         {activeOverlay === "helpview" && <HelpViewer />}
       </Overlay>
 
-      {/* Main content */}
-      <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
-        {/* Left-hand pane (FlowChart) */}
-        <div className="flex-1 w-full md:w-1/2 border-b md:border-b-0 md:border-r border-gray-300 flex flex-col min-h-0 relative">
+      <PanelGroup
+        direction={isMdUp ? "horizontal" : "vertical"}
+        className="flex-1 min-h-0 overflow-hidden"
+      >
+        {/* Left-hand pane */}
+        <Panel
+          className=" border-gray-300 flex flex-col min-h-0 relative"
+          defaultSize={50} // initial % width
+          minSize={10} // min % width
+        >
           {!activeOverlay && (
             <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-auto">
               <div className="flex gap-2">
                 <button
-                  className="
-                    group
-                    px-2 md:px-4
-                    py-1
-                    rounded-md
-                    bg-white
-                    shadow-md
-                    text-blue-600
-                    text-sm sm:text-lg
-                    flex items-center gap-1
-                    hover:text-blue-800
-                    transition-colors
-                  "
+                  className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
                   onClick={() => setActiveOverlay("groupsview")}
                 >
-                  <GroupIcon
-                    size={24}
-                    className="text-blue-600 group-hover:text-blue-800 transition-colors w-4 h-4 md:w-5 md:h-5"
-                  />
+                  <GroupIcon className="text-blue-600 group-hover:text-blue-800 transition-colors w-4 h-4 md:w-5 md:h-5" />
                   <span className="hidden md:inline transition-colors">
                     Query database
                   </span>
                 </button>
 
                 <button
-                  className="
-                  group
-                  px-2 md:px-4
-                  py-1 
-                  rounded-md
-                  bg-white
-                  shadow-md
-                  text-blue-600
-                  text-sm sm:text-lg
-                  flex items-center gap-1
-                  hover:text-blue-800
-                  transition-colors
-                "
+                  className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
                   onClick={async () => {
                     if (!nodes || nodes.length === 0) return;
                     const updatedNodes = singlePageMode
@@ -311,29 +307,15 @@ export default function Explorer({
                     setNodes(updatedNodes);
                   }}
                 >
-                  <LinksIcon
-                    size={18}
-                    className="text-blue-600 group-hover:text-blue-800 transition-colors"
-                  />
+                  <LinksIcon className="text-blue-600 group-hover:text-blue-800 transition-colors" />
                   <span className="hidden md:inline transition-colors">
                     Get link counts
                   </span>
                 </button>
               </div>
+
               <button
-                className="
-                  group
-                  px-2 md:px-4
-                  py-1
-                  rounded-md
-                  bg-white
-                  shadow-md
-                  text-blue-600
-                  text-sm sm:text-lg
-                  flex items-center gap-1
-                  hover:text-blue-800
-                  transition-colors
-                "
+                className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
                 onClick={() => setActiveOverlay("helpview")}
               >
                 <QuestionIcon className="text-blue-600 group-hover:text-blue-800 transition-colors w-4 h-4 md:w-5 md:h-5" />
@@ -357,10 +339,24 @@ export default function Explorer({
               }}
             />
           </div>
-        </div>
+        </Panel>
+
+        {/* Resize handle */}
+        <PanelResizeHandle
+          className={`group flex items-center justify-center border br-gray-500 bl-gray-500 ${
+            isMdUp ? "w-2 cursor-col-resize" : "h-2 cursor-row-resize"
+          }`}
+        >
+          {/* Thumb indicator */}
+          <div
+            className={`bg-gray-400 rounded group-hover:scale-150 ${
+              isMdUp ? "w-0.5 h-6" : "w-6 h-0.5"
+            }`}
+          />
+        </PanelResizeHandle>
 
         {/* Right-hand pane */}
-        <div className="flex-1 w-full md:w-1/2 flex flex-col min-h-0">
+        <Panel className="flex-1 flex flex-col min-h-0">
           {debugMode && (
             <div className="hidden md:flex h-1/4 border-b border-gray-300 overflow-y-auto">
               <DebugPane selectedNode={selectedNode} />
@@ -374,8 +370,8 @@ export default function Explorer({
               downloadFormats={downloadFormats}
             />
           </div>
-        </div>
-      </div>
+        </Panel>
+      </PanelGroup>
 
       {/* Breadcrumbs */}
       <div className="flex-none h-12 border-t border-gray-300 overflow-x-auto">

@@ -467,7 +467,7 @@ export async function smartFetchData(
   const downloadFetchers = {
     StructureData: fetchCif,
     CifData: fetchCif,
-    BandsData: fetchJson,
+    // BandsData: fetchJson,
     ArrayData: fetchJson,
     CalcFunctionNode: fetchSourceFile,
   };

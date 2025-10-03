@@ -3,6 +3,7 @@ import Explorer from "./Explorer";
 
 // needed to make mc-react-library components not shit the bed.
 // TODO - should be moved into the Explorer component
+// TODO Figure out if this why commenting this out breaks the node gfx
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
