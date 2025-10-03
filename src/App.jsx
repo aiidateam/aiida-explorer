@@ -1,5 +1,14 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Explorer from "./Explorer";
+import yaml from "js-yaml";
+
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useParams,
+  useLocation,
+} from "react-router-dom";
 
 // needed to make mc-react-library components not shit the bed.
 // TODO - should be moved into the Explorer component
@@ -7,17 +16,65 @@ import Explorer from "./Explorer";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-function App() {
-  const MC2D = "https://aiida.materialscloud.org/mc2d/api/v4";
-  const MC2D_node = "030bf271-2c94-4d93-8314-7f82f271bd44";
+// URL to the YAML file on GitHub
+const YAML_URL =
+  "https://raw.githubusercontent.com/materialscloud-org/mc-frontend/main/src/data/explore.yml";
 
-  const MC3D = "https://aiida.materialscloud.org/mc3d-pbe-v1/api/v4";
-  const MC3D_node = "03b0d538-dbb6-4b9d-8ce5-da8173155104";
+const prepend_URL = "https://aiida.materialscloud.org/";
 
-  const twodtopo = "https://aiida.materialscloud.org/2dtopo/api/v4";
-  const twodtopo_node = "0021c3ee-6f98-47cf-ab1c-b267ff8203b6";
+function ExplorerLoader({ backendMapping }) {
+  const { prettyBackend } = useParams();
+  const location = useLocation();
+  const [backendUrl, setBackendUrl] = useState("");
 
-  return <Explorer baseUrl={MC3D} />;
+  useEffect(() => {
+    const url = backendMapping[prettyBackend];
+    if (url) setBackendUrl(`${prepend_URL}/${url}`);
+  }, [prettyBackend, backendMapping]);
+
+  if (!backendUrl) return <div>Unknown backend "{prettyBackend}"</div>;
+
+  return (
+    <Explorer
+      baseUrl={backendUrl}
+      startingNode={new URLSearchParams(location.search).get("rootNode") || ""}
+    />
+  );
 }
 
-export default App;
+export default function App() {
+  const [backendMapping, setBackendMapping] = useState(null);
+
+  useEffect(() => {
+    fetch(YAML_URL)
+      .then((res) => res.text())
+      .then((text) => {
+        const data = yaml.load(text);
+        const mapping = {};
+        data.profiles.forEach((p) => {
+          mapping[p.profile] = p.rest_url;
+        });
+        setBackendMapping(mapping);
+      })
+      .catch(console.error);
+  }, []);
+
+  if (!backendMapping) return <div>Loading backend mapping...</div>;
+
+  return (
+    <Routes>
+      <Route
+        path="/:prettyBackend/*"
+        element={<ExplorerLoader backendMapping={backendMapping} />}
+      />
+      <Route
+        path="*"
+        element={
+          <div>
+            Choose a valid backend in the URL, e.g., /mc3d-pbe-v1?rootNode=...
+          </div>
+        }
+      />
+    </Routes>
+  );
+}

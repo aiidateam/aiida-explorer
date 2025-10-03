@@ -17,6 +17,7 @@
     "bands-visualiser": "^0.0.1",
     "brillouinzone-visualizer": "^0.4.0",
     "gh-pages": "^6.3.0",
+    "js-yaml": "^4.1.0",
     "mc-react-library": "^0.5.0",
     "mc-react-structure-visualizer": "^0.7.3",
     "plotly.js": "^3.1.1",
