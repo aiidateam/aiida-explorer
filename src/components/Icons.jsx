@@ -47,6 +47,7 @@ export function GroupIcon2({ size = 14, className = "" }) {
 }
 
 // download icon that supports url or json data
+// this is often wrapped in an <a> for fine control of css
 export function DownloadIcon({
   data = null,
   downloadUrl = null,
@@ -86,7 +87,7 @@ export function DownloadIcon({
       type="button"
       onClick={handleDownload}
       title="Download"
-      className="p-1 hover:text-blue-600"
+      className="p-1"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

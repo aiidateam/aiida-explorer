@@ -2,19 +2,17 @@ import React, { useState, useEffect } from "react";
 import Explorer from "./Explorer";
 import yaml from "js-yaml";
 
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useParams,
-  useLocation,
-} from "react-router-dom";
+import "./index.css";
+
+import { Routes, Route, useParams, useLocation } from "react-router-dom";
+import MaterialsCloudHeader from "mc-react-header";
 
 // needed to make mc-react-library components not shit the bed.
 // TODO - should be moved into the Explorer component
 // TODO Figure out if this why commenting this out breaks the node gfx
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+
+// import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap-icons/font/bootstrap-icons.css";
 
 // URL to the YAML file on GitHub
 const YAML_URL =
@@ -35,10 +33,26 @@ function ExplorerLoader({ backendMapping }) {
   if (!backendUrl) return <div>Unknown backend "{prettyBackend}"</div>;
 
   return (
-    <Explorer
-      baseUrl={backendUrl}
-      startingNode={new URLSearchParams(location.search).get("rootNode") || ""}
-    />
+    <MaterialsCloudHeader
+      activeSection="discover"
+      breadcrumbsPath={[
+        { name: "Explore", link: "https://www.materialscloud.org/explore" },
+        { name: prettyBackend, link: null },
+      ]}
+    >
+      {/* full height wrapper */}
+      <div className="flex flex-col mx-4 border-2">
+        {/* Explorer fills available space */}
+        <div className="flex-1">
+          <Explorer
+            baseUrl={backendUrl}
+            startingNode={
+              new URLSearchParams(location.search).get("rootNode") || ""
+            }
+          />
+        </div>
+      </div>
+    </MaterialsCloudHeader>
   );
 }
 

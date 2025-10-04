@@ -1,4 +1,5 @@
-import { StructDownloadButton } from "mc-react-library";
+import { StructDownloadButton } from "../../../components/StructDownloadButton";
+
 import StructureVisualizer from "mc-react-structure-visualizer";
 import { use, useEffect, useState } from "react";
 
@@ -34,6 +35,8 @@ function formatLattice(nodeData) {
 // This will simplify this ugly logic...export default function StructureVisualiser({ nodeData, baseUrl }) {
 export default function StructureDataVisualiser({ nodeData, baseUrl }) {
   const aiidaCifPath = nodeData.downloadByFormat?.cif;
+
+  console.log(baseUrl);
 
   const [cifText, setCifText] = useState(null);
   const [loading, setLoading] = useState(true);

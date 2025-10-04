@@ -43,7 +43,7 @@ export default function UpfDataVisualiser({ nodeData }) {
   if (loading)
     return (
       <div className="w-full min-h-[450px] flex items-center justify-center">
-        <Spinner size={40} message="Loading UPF data…" />
+        <Spinner />
       </div>
     );
 

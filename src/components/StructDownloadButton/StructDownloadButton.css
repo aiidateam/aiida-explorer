@@ -1,0 +1,50 @@
+.download-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.download-button {
+  background: #2563eb;
+  color: #fff;
+  font-size: 12px; /* matches Bootstrap btn-sm */
+  padding: 4px 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.2; /* keeps button height compact */
+}
+.download-button:hover {
+  background: #1e40af;
+}
+.download-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+.download-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 2px; /* small breathing room */
+  min-width: max-content;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 2px 0;
+  z-index: 50;
+  font-size: 12px;
+}
+
+.download-menu li a {
+  display: block;
+  padding: 4px 10px;
+  color: #111;
+  text-decoration: none;
+  white-space: nowrap; /* prevents awkward wrapping for longer labels */
+}
+.download-menu li a:hover {
+  background: #f5f5f5;
+}

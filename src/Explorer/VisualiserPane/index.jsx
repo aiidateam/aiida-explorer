@@ -25,6 +25,7 @@ export default function VisualiserPane({
           <StructureDataVisualiser
             key={aiida?.uuid}
             nodeData={selectedNode.data}
+            baseUrl={baseUrl}
           />
         );
       // case "KpointsData":

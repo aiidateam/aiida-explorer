@@ -26,19 +26,18 @@ import { GroupIcon, LinksIcon, QuestionIcon } from "../components/Icons";
 
 import { createPortal } from "react-dom";
 
-function Overlay({ children, active, onClose, title }) {
-  if (!active) return null;
+function Overlay({ children, active, onClose, title, container }) {
+  if (!active || !container) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-      onClick={onClose} // click outside closes
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/30"
+      onClick={onClose}
     >
       <div
         className="bg-white w-full mx-4 h-5/6 rounded-xl overflow-auto transform transition-all duration-300 ease-in-out"
-        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with optional title + X button */}
         <div className="flex justify-between items-center border-b px-3 py-1">
           {title && <h2 className="text-lg font-semibold">{title}</h2>}
           <button
@@ -48,12 +47,10 @@ function Overlay({ children, active, onClose, title }) {
             ✕
           </button>
         </div>
-
-        {/* Modal content */}
         <div className="p-3">{children}</div>
       </div>
     </div>,
-    document.body
+    container
   );
 }
 
@@ -82,6 +79,7 @@ export default function Explorer({
   startingNode = "",
   debugMode = true,
 }) {
+  const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
   const isMdUp = useMediaQuery("(min-width: 768px)");
 
@@ -247,7 +245,7 @@ export default function Explorer({
 
   // TODO switch the overlay to use ReactDOM portals...
   return (
-    <div className="flex flex-col h-screen relative">
+    <div ref={overlayContainerRef} className="flex flex-col h-[80vh] relative ">
       {/* Overlay */}
 
       <Overlay
@@ -262,6 +260,7 @@ export default function Explorer({
             ? "Help"
             : ""
         }
+        container={overlayContainerRef.current}
       >
         {activeOverlay === "groupsview" && <GroupsViewer baseUrl={baseUrl} />}
         {activeOverlay === "typesview" && <GridViewer baseUrl={baseUrl} />}

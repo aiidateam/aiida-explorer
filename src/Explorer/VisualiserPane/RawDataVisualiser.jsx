@@ -21,26 +21,31 @@ function FileTable({ title, dataArray = [], onView }) {
       <a
         href={file.downloadUrl || "#"}
         download={file.name || undefined}
-        target="_blank"
         rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 transition-colors"
+        className="text-blue-600 hover:text-blue-800 transition-colors duration-75"
       >
-        <DownloadIcon size={18} />
+        <DownloadIcon
+          size={18}
+          className="hover:scale-105 transition-all duration-75"
+        />
       </a>
     ),
     View: (
       <button
         type="button"
         onClick={() => onView?.(file.name, file.downloadUrl)}
-        className="text-green-600 hover:text-green-800 transition-colors"
+        className="text-green-600 hover:text-green-800 transition-colors duration-75"
       >
-        <ViewIcon size={18} />
+        <ViewIcon
+          size={18}
+          className="hover:scale-105 transition-all duration-75"
+        />
       </button>
     ),
   }));
 
   return (
-    <div className="">
+    <div>
       <DataTable
         title={title}
         columns={columns}
