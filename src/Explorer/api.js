@@ -54,6 +54,7 @@ export async function fetchNodeById(baseUrl, nodeId) {
 }
 
 // get the content of a node.
+// TODO - unify this and fetchFiles into a single method.
 export async function fetchNodeContents(baseUrl, nodeId) {
   if (!nodeId) return null;
 
@@ -95,13 +96,17 @@ export async function fetchNodeRepoList(baseUrl, nodeId) {
 
     const repoFiles = await res.json(); // original array of { name, ... }
 
+    console.log("repo", repoFiles.data.repo_list);
+
     // Transform each file into { name, downloadUrl }
-    const filesWithUrls = repoFiles.data.repo_list.map((file) => ({
-      name: file.name,
-      downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
-    }));
+    const filesWithUrls = repoFiles.data.repo_list
+      .filter((f) => f.type === "FILE")
+      .map((file) => ({
+        name: file.name,
+        downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
+          nodeId
+        )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
+      }));
 
     return filesWithUrls;
   } catch (err) {

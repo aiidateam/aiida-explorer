@@ -77,7 +77,7 @@ function useMediaQuery(query) {
 export default function Explorer({
   baseUrl = "",
   startingNode = "",
-  debugMode = true,
+  debugMode = false,
 }) {
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);

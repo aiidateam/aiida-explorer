@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Explorer from "./Explorer";
+
+import NotFoundPage from "./NotFoundPage";
+import HomePage from "./HomePage";
+
 import yaml from "js-yaml";
 
 import "./index.css";
@@ -7,12 +11,8 @@ import "./index.css";
 import { Routes, Route, useParams, useLocation } from "react-router-dom";
 import MaterialsCloudHeader from "mc-react-header";
 
-// needed to make mc-react-library components not shit the bed.
 // TODO - should be moved into the Explorer component
 // TODO Figure out if this why commenting this out breaks the node gfx
-
-// import "bootstrap/dist/css/bootstrap.min.css";
-// import "bootstrap-icons/font/bootstrap-icons.css";
 
 // URL to the YAML file on GitHub
 const YAML_URL =
@@ -30,7 +30,14 @@ function ExplorerLoader({ backendMapping }) {
     if (url) setBackendUrl(`${prepend_URL}/${url}`);
   }, [prettyBackend, backendMapping]);
 
-  if (!backendUrl) return <div>Unknown backend "{prettyBackend}"</div>;
+  if (!backendMapping[prettyBackend]) {
+    return (
+      <NotFoundPage
+        backendMapping={backendMapping}
+        attemptedPath={prettyBackend}
+      />
+    );
+  }
 
   return (
     <MaterialsCloudHeader
@@ -40,9 +47,7 @@ function ExplorerLoader({ backendMapping }) {
         { name: prettyBackend, link: null },
       ]}
     >
-      {/* full height wrapper */}
       <div className="flex flex-col mx-4 border-2">
-        {/* Explorer fills available space */}
         <div className="flex-1">
           <Explorer
             baseUrl={backendUrl}
@@ -56,6 +61,9 @@ function ExplorerLoader({ backendMapping }) {
   );
 }
 
+// ----------------- Homepage -----------------
+
+// ----------------- App -----------------
 export default function App() {
   const [backendMapping, setBackendMapping] = useState(null);
 
@@ -77,18 +85,17 @@ export default function App() {
 
   return (
     <Routes>
+      {/* valid explorer routes */}
       <Route
         path="/:prettyBackend/*"
         element={<ExplorerLoader backendMapping={backendMapping} />}
       />
-      <Route
-        path="*"
-        element={
-          <div>
-            Choose a valid backend in the URL, e.g., /mc3d-pbe-v1?rootNode=...
-          </div>
-        }
-      />
+
+      {/* homepage */}
+      <Route path="/" element={<HomePage backendMapping={backendMapping} />} />
+
+      {/* catch-all */}
+      <Route path="*" element={<HomePage backendMapping={backendMapping} />} />
     </Routes>
   );
 }

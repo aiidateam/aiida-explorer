@@ -62,6 +62,8 @@ export default function RawDataVisualiser({ nodeData = {} }) {
   const [previewName, setPreviewName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  console.log("dA", nodeData);
+
   const copyToClipboard = (data, index) => {
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
     setCopiedIndex(index);

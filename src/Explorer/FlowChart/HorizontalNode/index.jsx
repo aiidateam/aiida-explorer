@@ -42,7 +42,7 @@ export function getNodeColorClasses(type, selected = false) {
 export default function HorizontalNode({ data, selected }) {
   const { zoom } = useViewport();
 
-  const baseNodeStyle = `min-w-[120px] text-center p-1.5 px-2 rounded border-3`;
+  const baseNodeStyle = `min-w-[110px] text-center p-1.5 px-4 rounded border-3`;
 
   const baseLinkStyle = `absolute -translate-y-1/4
    whitespace-nowrap opacity-90

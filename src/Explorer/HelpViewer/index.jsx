@@ -14,14 +14,10 @@ import {
 
 export default function HelpViewer() {
   return (
-    <div className="p-6 w-full h-full overflow-y-auto bg-white">
-      <h2 className="text-2xl font-semibold mb-6 text-blue-700">
-        Aiida Explorer Help
-      </h2>
-
+    <div className="p-2 w-full h-full overflow-y-auto bg-white">
       {/* Overview */}
       <section className="mb-4">
-        <h3 className="text-xl  mb-3 flex items-center gap-2">Overview</h3>
+        <h3 className="text-lg  mb-3 flex items-center gap-2">Overview</h3>
         <p className="text-gray-700 leading-relaxed">
           Aiida Explorer is an interactive tool for visualizing AiiDA workflows
           and calculations. You can navigate nodes, inspect their details, and
@@ -40,7 +36,7 @@ export default function HelpViewer() {
 
       {/* Provenance */}
       <section className="mb-4">
-        <h3 className="text-xl  mb-3 flex items-center gap-2">
+        <h3 className="text-lg  mb-3 flex items-center gap-2">
           <GraphIcon size={24} /> Provenance
         </h3>
         <p className="text-gray-700 leading-relaxed">
@@ -64,7 +60,7 @@ export default function HelpViewer() {
 
       {/* Inspecting Nodes */}
       <section className="mb-4">
-        <h3 className="text-xl  mb-3 flex items-center gap-2">
+        <h3 className="text-lg  mb-3 flex items-center gap-2">
           <ClickIcon size={24} /> Inspecting Nodes
         </h3>
         <ul className="pl-4 list-inside text-gray-700 space-y-1">
@@ -95,7 +91,7 @@ export default function HelpViewer() {
             <span className="text-gray-700">
               <li>
                 Quickly navigate back to previously explored nodes. A history of
-                the last 10 visited nodes. is retained.
+                the last 10 visited nodes is retained.
               </li>
             </span>
           </li>
@@ -104,7 +100,7 @@ export default function HelpViewer() {
 
       {/* Buttons & Controls */}
       <section className="mb-4">
-        <h3 className="text-xl  mb-3 flex items-center gap-2">
+        <h3 className="text-lg  mb-3 flex items-center gap-2">
           <GraphIcon size={26} /> Buttons & Controls
         </h3>
         <ul className="pl-4 list-inside text-gray-700 space-y-1 ">
@@ -122,8 +118,8 @@ export default function HelpViewer() {
               <LinksIcon size={20} /> Get Counts:
             </strong>
             <span className="text-gray-700">
-              PFetches the parent/child counts for all nodes currently visible
-              in the graph.
+              Fetches the parent/child counts for all nodes currently visible in
+              the graph.
             </span>
           </li>
           <li className="flex items-center gap-2">
