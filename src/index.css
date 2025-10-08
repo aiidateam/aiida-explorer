@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* The header is bootstraps so we hack here to make sure the logo doesnt grow. */
+.mc-navbrand img {
+  @apply block w-auto !important;
+  height: 50px !important;
+}

@@ -1,0 +1,74 @@
+import React, { useCallback } from "react";
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  applyNodeChanges,
+  applyEdgeChanges,
+} from "reactflow";
+
+import HorizontalNode from "./HorizontalNode";
+
+import "reactflow/dist/style.css";
+
+const nodeTypes = {
+  custom: HorizontalNode,
+};
+
+export default function FlowChart({
+  nodes,
+  edges,
+  setNodes,
+  setEdges,
+  selectedNode,
+  onNodeSelect,
+  onNodeDoubleSelect,
+  onInit,
+}) {
+  const handleNodeClick = useCallback(
+    (event, node) => {
+      if (onNodeSelect) onNodeSelect(node);
+    },
+    [onNodeSelect],
+  );
+
+  const handleNodeDoubleClick = useCallback(
+    (event, node) => {
+      if (onNodeDoubleSelect) onNodeDoubleSelect(node);
+    },
+    [onNodeDoubleSelect],
+  );
+
+  // map nodes and mark the selected one
+  const mappedNodes = nodes.map((n) => ({
+    ...n,
+    type: "custom",
+    selected: selectedNode?.id === n.id,
+  }));
+
+  return (
+    <div className="w-full h-full">
+      <ReactFlow
+        className="bg-slate-50"
+        nodes={mappedNodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={(changes) =>
+          setNodes((nds) => applyNodeChanges(changes, nds))
+        }
+        onEdgesChange={(changes) =>
+          setEdges((eds) => applyEdgeChanges(changes, eds))
+        }
+        onNodeClick={handleNodeClick}
+        onNodeDoubleClick={handleNodeDoubleClick}
+        fitView
+        nodesDraggable={true}
+        nodesConnectable={false}
+        onInit={onInit}
+      >
+        <Controls />
+        <Background variant="dots" gap={12} size={1} />
+      </ReactFlow>
+    </div>
+  );
+}
