@@ -38,12 +38,8 @@ export default function DataTable({
 }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  // Skip rendering if no data and not forced
-  if (!renderIfMissing && (!data || data.length === 0)) {
-    return null;
-  }
-
   const sortedData = useMemo(() => {
+    if (!data) return [];
     if (!sortConfig.key) return data;
 
     const sorted = [...data].sort((a, b) => {
@@ -56,6 +52,10 @@ export default function DataTable({
 
     return sortConfig.direction === "asc" ? sorted : sorted.reverse();
   }, [data, sortConfig]);
+
+  if (!renderIfMissing && (!data || data.length === 0)) {
+    return null;
+  }
 
   return (
     <div className="p-2" style={{ maxWidth }}>

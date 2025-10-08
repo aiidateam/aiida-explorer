@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from "react";
-import Explorer from "./Explorer";
-
-import NotFoundPage from "./NotFoundPage";
-import HomePage from "./HomePage";
-
 import yaml from "js-yaml";
+import MaterialsCloudHeader from "mc-react-header";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useParams, useLocation } from "react-router-dom";
+
+import Explorer from "./Explorer";
+import HomePage from "./HomePage";
+import NotFoundPage from "./NotFoundPage";
 
 import "./index.css";
-
-import { Routes, Route, useParams, useLocation } from "react-router-dom";
-import MaterialsCloudHeader from "mc-react-header";
-
-// TODO - should be moved into the Explorer component
-// TODO Figure out if this why commenting this out breaks the node gfx
 
 // URL to the YAML file on GitHub
 const YAML_URL =

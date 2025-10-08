@@ -1,8 +1,9 @@
 import js from "@eslint/js";
-import globals from "globals";
+import { defineConfig, globalIgnores } from "eslint/config";
+import importPlugin from "eslint-plugin-import"; // ← add this
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import { defineConfig, globalIgnores } from "eslint/config";
+import globals from "globals";
 
 export default defineConfig([
   globalIgnores(["dist"]),
@@ -22,8 +23,35 @@ export default defineConfig([
         sourceType: "module",
       },
     },
+    plugins: {
+      import: importPlugin,
+    },
     rules: {
       "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
+
+      // --- Import ordering rules ---
+      "import/order": [
+        "error",
+        {
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+            ["parent", "sibling", "index"],
+            "object",
+            "type",
+          ],
+          pathGroups: [
+            {
+              pattern: "@/**",
+              group: "internal",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["builtin"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
     },
   },
 ]);

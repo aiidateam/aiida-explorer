@@ -1,17 +1,15 @@
 import React, { useCallback } from "react";
-
-import HorizontalNode from "./HorizontalNode";
-
-import "reactflow/dist/style.css";
-
 import ReactFlow, {
   MiniMap,
   Controls,
   Background,
-  addEdge,
   applyNodeChanges,
   applyEdgeChanges,
 } from "reactflow";
+
+import HorizontalNode from "./HorizontalNode";
+
+import "reactflow/dist/style.css";
 
 const nodeTypes = {
   custom: HorizontalNode,
@@ -31,14 +29,14 @@ export default function FlowChart({
     (event, node) => {
       if (onNodeSelect) onNodeSelect(node);
     },
-    [onNodeSelect]
+    [onNodeSelect],
   );
 
   const handleNodeDoubleClick = useCallback(
     (event, node) => {
       if (onNodeDoubleSelect) onNodeDoubleSelect(node);
     },
-    [onNodeDoubleSelect]
+    [onNodeDoubleSelect],
   );
 
   // map nodes and mark the selected one

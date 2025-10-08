@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
 import { RightDropDownIcon, DownDropDownIcon } from "../../components/Icons";
 
 // Base AIIDA TYPES HIERACHY
 // TODO, use the full_types method to get the subset of these.
+// TODO move to a utility file
 export const aiidaTypes = [
   {
     label: "Data",
@@ -78,14 +80,6 @@ export function TypeCheckboxTree({
 }) {
   const [expanded, setExpanded] = useState({});
 
-  const updateDescendants = (nodes, add) => {
-    nodes.forEach((n) => {
-      if (add) newSelected.add(n.label);
-      else newSelected.delete(n.label);
-      if (n.children) updateDescendants(n.children, add);
-    });
-  };
-
   const allChildrenSelected = (children) =>
     children.every((c) => selectedTypes.includes(c.label));
 
@@ -99,7 +93,7 @@ export function TypeCheckboxTree({
       setSelectedTypes((prev) =>
         prev.includes(label)
           ? prev.filter((t) => t !== label)
-          : [...prev, label]
+          : [...prev, label],
       );
       return;
     }

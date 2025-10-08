@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from "react";
-
 export default function DebugPane({ selectedNode }) {
   return (
     <div className="w-full h-full p-4">

@@ -13,7 +13,7 @@ import { getNodeDisplay } from "./nodeUtils";
  * TODO - could incode prior node (via breadcrumb indexing) and make it
  * appear slightly different (this would also fuck with edge logic.)
  */
-export function getNodeColorClasses(type, selected = false) {
+function getNodeColorClasses(type, selected = false) {
   let bgClass = "bg-gray-200";
   let textClass = "text-black";
   let borderStyle = "transition-all";
@@ -78,7 +78,7 @@ export default function HorizontalNode({ data, selected }) {
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos
+    data.pos,
   );
 
   const uuid = data.aiida.uuid.split("-")[0];
@@ -127,10 +127,10 @@ export default function HorizontalNode({ data, selected }) {
 
       {/* {linkCountLabel} */}
       <div className={leftCountStyle}>
-        {data.parentCount > 99 ? "99+" : data.parentCount ?? ""}
+        {data.parentCount > 99 ? "99+" : (data.parentCount ?? "")}
       </div>
       <div className={rightCountStyle}>
-        {data.childCount > 99 ? "99+" : data.childCount ?? ""}
+        {data.childCount > 99 ? "99+" : (data.childCount ?? "")}
       </div>
       {textHtml}
       {/* node handles - margin modified to make arrows line up nicely.*/}

@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import DataTable from "../../components/DataTable";
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import formatTableData, { columnOrder } from "./formatTable";
-
-import { useNavigate, useLocation } from "react-router-dom";
-
 import { buildQuery } from "./queryHandler";
-
 import {
   TypeCheckboxTree,
   aiidaTypes,
   getFlattenedNodeTypes,
 } from "./TypesCheckbox";
+
+import ErrorDisplay from "../../components/Error";
+import Spinner from "../../components/Spinner";
 
 function sortGroups(groups) {
   return [...groups].sort((a, b) => {
@@ -38,44 +39,58 @@ export default function GroupsViewer({ baseUrl = "" }) {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [offset, setOffset] = useState(0);
-  const limit = 200; // items per 'add more'
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const limit = 200;
 
+  // Fetch groups
   useEffect(() => {
-    fetchGroups(baseUrl).then(setGroups);
+    fetchGroups(baseUrl)
+      .then(setGroups)
+      .catch((err) => console.error("Failed to fetch groups:", err));
   }, [baseUrl]);
 
-  // Auto-fetch some data on initial load
+  // Fetch nodes with loading/error state
+  const fetchNodes = useCallback(
+    async (offsetValue = 0, customLimit = limit) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const nodeTypes = getFlattenedNodeTypes(selectedTypes, aiidaTypes);
+
+        const postMsg = buildQuery({
+          groups: selectedGroups,
+          nodeTypes,
+          limit: customLimit,
+          offset: offsetValue,
+        });
+
+        const result = await fetchFromQueryBuilder(baseUrl, postMsg);
+        const nodes = result.node || [];
+
+        const formattedNodes = formatTableData(nodes, navigate, location);
+
+        setTableData((prev) =>
+          offsetValue === 0 ? formattedNodes : [...prev, ...formattedNodes]
+        );
+        setOffset(offsetValue + nodes.length);
+      } catch (err) {
+        console.error("Failed to fetch nodes:", err);
+        setError(err.message || "Failed to fetch nodes");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [baseUrl, selectedGroups, selectedTypes, navigate, location]
+  );
+
+  // Auto-fetch initial nodes
   useEffect(() => {
     if (groups.length > 0 && tableData.length === 0) {
-      fetchNodes(0, 1000); // grab first 1000 nodes.
+      fetchNodes(0, 1000);
     }
-  }, [groups, tableData.length]);
-
-  const fetchNodes = async (offsetValue = 0, customLimit = limit) => {
-    try {
-      const nodeTypes = getFlattenedNodeTypes(selectedTypes, aiidaTypes);
-
-      const postMsg = buildQuery({
-        groups: selectedGroups,
-        nodeTypes,
-        limit: customLimit,
-        offset: offsetValue,
-      });
-
-      const result = await fetchFromQueryBuilder(baseUrl, postMsg);
-      const nodes = result.node || [];
-
-      const formattedNodes = formatTableData(nodes, navigate, location);
-
-      setTableData((prev) =>
-        offsetValue === 0 ? formattedNodes : [...prev, ...formattedNodes]
-      );
-
-      setOffset(offsetValue + nodes.length);
-    } catch (err) {
-      console.error("Failed to fetch nodes:", err);
-    }
-  };
+  }, [groups, tableData.length, fetchNodes]);
 
   return (
     <div className="flex gap-4 p-3 overflow-auto w-full items-start">
@@ -116,7 +131,6 @@ export default function GroupsViewer({ baseUrl = "" }) {
       </div>
 
       {/* Right table */}
-      {/* TODO add a flag that controls the 'load next feature, it might be nice to control this externally.   */}
       <div className="flex-1 bg-white p-2 rounded">
         <div className="flex gap-4">
           <h4 className="text-xl font-semibold">
@@ -132,12 +146,29 @@ export default function GroupsViewer({ baseUrl = "" }) {
           )}
         </div>
 
-        <DataTable
-          columns={columnOrder}
-          data={tableData || []}
-          sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
-          renderIfMissing={true}
-        />
+        {/* Loading Spinner */}
+        {loading && (
+          <div className="w-full h-[400px] flex items-center justify-center">
+            <Spinner />
+          </div>
+        )}
+
+        {/* Error Display */}
+        {error && !loading && (
+          <div className="w-full h-[400px] flex flex-col items-center justify-center">
+            <ErrorDisplay message={error} onRetry={() => fetchNodes(offset)} />
+          </div>
+        )}
+
+        {/* Data Table */}
+        {!loading && !error && (
+          <DataTable
+            columns={columnOrder}
+            data={tableData || []}
+            sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
+            renderIfMissing={true}
+          />
+        )}
       </div>
     </div>
   );

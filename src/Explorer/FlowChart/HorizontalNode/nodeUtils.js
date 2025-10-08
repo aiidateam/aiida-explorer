@@ -5,7 +5,6 @@
 // Refactoring into some sort of object and object method is likely much cleaner -...-
 // TODO - think about fetching these instantly.
 export function getNodeDisplay(node) {
-  const shortUUID = `${node.aiida.uuid.split("-")[0]}`;
   // const fallback = "\u00A0";  // pregap for this?
   const fallback = ""; // expand on click
 
@@ -15,9 +14,11 @@ export function getNodeDisplay(node) {
       return fallback;
     case "ArrayData":
       return fallback;
-    case "BandsData":
+
+    case "BandsData": {
       const bands = node.attributes?.["array|bands"];
       return bands?.[1] !== undefined ? `Num. bands: ${bands[1]}` : fallback;
+    }
 
     case "Bool":
       return node.attributes?.value !== undefined
@@ -34,10 +35,10 @@ export function getNodeDisplay(node) {
       return proc_type ? proc_type : fallback;
     }
 
-    case "Code":
+    case "Code": {
       const input_plugin = node?.attributes?.input_plugin;
-
       return input_plugin ? input_plugin : fallback;
+    }
 
     case "Dict":
       return node?.attributes
@@ -91,7 +92,7 @@ export function getNodeDisplay(node) {
         };
         const converted = formula.replace(
           /\d/g,
-          (digit) => subscriptMap[digit] || digit
+          (digit) => subscriptMap[digit] || digit,
         );
         // Cull if too long
         if (converted.length > maxLength) {

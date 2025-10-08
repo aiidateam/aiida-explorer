@@ -1,15 +1,15 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom";
 import { JsonView } from "react-json-view-lite";
 import "react-json-view-lite/dist/index.css";
 
+import DataTable from "../../components/DataTable";
 import {
   ClipBoardIcon,
   ClipboardCopyIcon,
   DownloadIcon,
   ViewIcon,
 } from "../../components/Icons";
-import DataTable from "../../components/DataTable";
-import ReactDOM from "react-dom";
 
 function FileTable({ title, dataArray = [], onView }) {
   if (!Array.isArray(dataArray) || dataArray.length === 0) return null;
@@ -62,8 +62,6 @@ export default function RawDataVisualiser({ nodeData = {} }) {
   const [previewName, setPreviewName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log("dA", nodeData);
-
   const copyToClipboard = (data, index) => {
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
     setCopiedIndex(index);
@@ -103,7 +101,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
                 ([format, downloadUrl]) => ({
                   name: format,
                   downloadUrl,
-                })
+                }),
               )
             : []
         }
@@ -198,7 +196,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
               </pre>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

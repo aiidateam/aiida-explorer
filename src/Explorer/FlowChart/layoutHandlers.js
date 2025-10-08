@@ -28,7 +28,7 @@ export function arrangeDataCenterNode(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
   const { spacingX, spacingY, groupGapY, centerX, centerY, edgeStyle } =
     layoutDefaults(options);
@@ -38,39 +38,29 @@ export function arrangeDataCenterNode(
 
   // never more than one calc job - so no need to sort.
   const inputCalcs = inputNodes.filter((n) =>
-    n.data?.node_type.includes("calculation")
+    n.data?.node_type.includes("calculation"),
   );
 
   // new on top
   const inputWorkflows = inputNodes
     .filter((n) => n.data?.node_type.includes("workflow"))
     .sort(
-      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime)
+      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime),
     );
 
   // new on top
   const outputCalcs = outputNodes
     .filter((n) => n.data?.node_type.includes("calculation"))
     .sort(
-      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime)
+      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime),
     );
 
   // new on top
   const outputWorkflows = outputNodes
     .filter((n) => n.data?.node_type.includes("workflow"))
     .sort(
-      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime)
+      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime),
     );
-
-  // Calculate Y extents of all nodes (excluding center for now)
-  const leftNodesY = [
-    ...inputCalcs.map((_, i) => i),
-    ...inputWorkflows.map((_, i) => i),
-  ];
-  const rightNodesY = [
-    ...outputCalcs.map((_, i) => i),
-    ...outputWorkflows.map((_, i) => i),
-  ];
 
   // Compute visual Y midpoint
   const numLeft = inputCalcs.length + inputWorkflows.length;
@@ -170,7 +160,7 @@ export function arrangeCalculationCenterNode(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
   const { spacingX, spacingY, groupGapY, centerX, centerY, edgeStyle } =
     layoutDefaults(options);
@@ -189,7 +179,7 @@ export function arrangeCalculationCenterNode(
   const inputWorkflows = inputNodes
     .filter((n) => n.data?.node_type.includes("workflow"))
     .sort(
-      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime)
+      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime),
     );
 
   // sort alpha
@@ -201,7 +191,7 @@ export function arrangeCalculationCenterNode(
   const outputWorkflows = outputNodes
     .filter((n) => n.data?.node_type.includes("workflow"))
     .sort(
-      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime)
+      (a, b) => new Date(b.data.aiida.ctime) - new Date(a.data.aiida.ctime),
     );
 
   // Inputs: data inline
@@ -286,7 +276,7 @@ export function arrangeWorkflowCenterNode(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
   const { spacingX, spacingY, groupGapY, centerX, centerY, edgeStyle } =
     layoutDefaults(options);
@@ -297,21 +287,21 @@ export function arrangeWorkflowCenterNode(
   nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
 
   const inputData = inputNodes.filter((n) =>
-    n.data?.node_type.startsWith("data")
+    n.data?.node_type.startsWith("data"),
   );
   const inputProcesses = inputNodes.filter((n) =>
     ["calculation", "workflow", "process"].includes(
-      n.data?.node_type.split(".")[1]
-    )
+      n.data?.node_type.split(".")[1],
+    ),
   );
 
   const outputData = outputNodes.filter((n) =>
-    n.data?.node_type.startsWith("data")
+    n.data?.node_type.startsWith("data"),
   );
   const outputProcesses = outputNodes.filter((n) =>
     ["calculation", "workflow", "process"].includes(
-      n.data?.node_type.split(".")[1]
-    )
+      n.data?.node_type.split(".")[1],
+    ),
   );
 
   // Inputs: data inline

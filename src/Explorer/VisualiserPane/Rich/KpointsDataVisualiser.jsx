@@ -1,6 +1,5 @@
 import DataTable from "../../../components/DataTable";
 import { DownloadIcon } from "../../../components/Icons";
-
 import { omitGraphKeys } from "../../utils";
 
 // This could be extended to use the BZ visualiser from this data (if possible);
@@ -8,7 +7,6 @@ import { omitGraphKeys } from "../../utils";
 // TODO - See if this data is explicitily able to produce aiida BZ from the brillouin zone
 // TODO - move this from WIP...
 export default function KpointsDataVisualiser({ nodeData = {} }) {
-  const download = nodeData.download || {};
   const attributes = nodeData.attributes || {};
   const derivedProperties = nodeData.derivedProperties || {};
 
@@ -57,7 +55,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
       x: row[0],
       y: row[1],
       z: row[2],
-    })
+    }),
   );
 
   return (

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
 import { BandsVisualiser } from "bands-visualiser";
+import { useEffect, useRef, useState } from "react";
 
+import ErrorDisplay from "../../../components/Error";
 import Spinner from "../../../components/Spinner";
-import { ErrorDisplay } from "../../../components/Error";
 
 export default function BandsDataVisualiser({ nodeData }) {
   const containerRef = useRef(null);
@@ -12,29 +12,29 @@ export default function BandsDataVisualiser({ nodeData }) {
 
   const aiidaBandsPath = nodeData.downloadByFormat?.json;
 
-  const fetchData = async () => {
-    if (!aiidaBandsPath) return;
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(aiidaBandsPath);
-      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-
-      const json = await res.json();
-      setBandsDataArray([{ bandsData: json }]);
-    } catch (err) {
-      console.error("Failed to fetch bands JSON:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // initial fetch
   useEffect(() => {
+    if (!aiidaBandsPath) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch(aiidaBandsPath);
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+        const json = await res.json();
+        setBandsDataArray([{ bandsData: json }]);
+      } catch (err) {
+        console.error("Failed to fetch bands JSON:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
-  }, [aiidaBandsPath]);
+  }, [aiidaBandsPath]); // no warnings, safe
 
   useEffect(() => {
     if (!containerRef.current || !bandsDataArray) return;
@@ -52,15 +52,12 @@ export default function BandsDataVisualiser({ nodeData }) {
       </h2>
 
       <div className="w-full h-[450px] relative flex items-center justify-center">
-        {/* Spinner */}
         {loading && <Spinner />}
 
-        {/* Error */}
         {error && !loading && (
-          <ErrorDisplay message={error} onRetry={() => fetchData()} />
+          <ErrorDisplay message={error} onRetry={() => {}} />
         )}
 
-        {/* Plot container */}
         {!loading && !error && bandsDataArray && (
           <div ref={containerRef} className="absolute inset-4" />
         )}

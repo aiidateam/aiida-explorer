@@ -1,5 +1,4 @@
 import MaterialsCloudHeader from "mc-react-header";
-
 import { Link } from "react-router-dom";
 
 export default function NotFoundPage({ backendMapping, attemptedPath }) {

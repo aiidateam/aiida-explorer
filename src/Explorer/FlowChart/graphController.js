@@ -10,7 +10,7 @@ export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {}
+  options = {},
 ) {
   const centerType = centerNode.data?.node_type.split(".")[0];
   const centerSubType = centerNode.data?.node_type.split(".")[1];
@@ -28,7 +28,7 @@ export function layoutGraphDefault(
   if (!arranger) {
     console.warn(
       "No arranger found for node type:",
-      centerNode.data?.node_type
+      centerNode.data?.node_type,
     );
     return { nodes: [centerNode], edges: [] };
   }

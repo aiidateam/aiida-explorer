@@ -64,7 +64,7 @@ export async function fetchNodeContents(baseUrl, nodeId) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`,
       );
 
       if (!res.ok) {
@@ -90,7 +90,7 @@ export async function fetchNodeRepoList(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`,
     );
     if (!res.ok) return [];
 
@@ -104,7 +104,7 @@ export async function fetchNodeRepoList(baseUrl, nodeId) {
       .map((file) => ({
         name: file.name,
         downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
-          nodeId
+          nodeId,
         )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
       }));
 
@@ -137,7 +137,7 @@ export async function fetchRetrievedUUID(baseUrl, nodeId) {
 
   try {
     const res = await fetch(
-      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`
+      `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`,
     );
     if (!res.ok) return null;
 
@@ -178,8 +178,8 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
       const files = Array.isArray(json.data?.[ep])
         ? json.data[ep]
         : Array.isArray(json.data)
-        ? json.data
-        : [];
+          ? json.data
+          : [];
 
       // Determine which node's repository to use
       console.log(nodeId);
@@ -191,7 +191,7 @@ export async function fetchFiles(baseUrl, nodeId, retrievedNodeId) {
         .map((file) => ({
           ...file,
           downloadUrl: `${baseUrl}/nodes/${encodeURIComponent(
-            repoNodeId
+            repoNodeId,
           )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
         }));
 
@@ -211,8 +211,8 @@ export async function fetchFileContents(baseUrl, nodeId, filename) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/repo/contents?filename="${filename}"`
+        nodeId,
+      )}/repo/contents?filename="${filename}"`,
     );
 
     if (!res.ok) return null;
@@ -229,8 +229,8 @@ export async function fetchJson(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=json`
+        nodeId,
+      )}/download?download_format=json`,
     );
 
     if (!res.ok) return null;
@@ -247,8 +247,8 @@ export async function fetchCif(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=cif&download=false`
+        nodeId,
+      )}/download?download_format=cif&download=false`,
     );
 
     if (!res.ok) return { cifText: null };
@@ -270,8 +270,8 @@ export async function fetchSourceFile(baseUrl, nodeId) {
   try {
     const res = await fetch(
       `${baseUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/repo/contents?filename=source_file`
+        nodeId,
+      )}/repo/contents?filename=source_file`,
     );
 
     if (!res.ok) return { sourceFile: null };
@@ -353,10 +353,10 @@ export async function fetchLinksFirstPage(baseUrl, nodeId) {
   try {
     const [incomingRes, outgoingRes] = await Promise.all([
       fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/incoming/page/1`
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/incoming/page/1`,
       ),
       fetch(
-        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/page/1`
+        `${baseUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/page/1`,
       ),
     ]);
 
@@ -399,7 +399,7 @@ export async function fetchLinkCounts(baseUrl, nodes = []) {
             childCount,
           },
         };
-      })
+      }),
     );
 
     return updatedNodes;
@@ -425,7 +425,7 @@ export async function fetchLinkCountsFirstPage(baseUrl, nodes = []) {
 
         const { incoming, outgoing } = await fetchLinksFirstPage(
           baseUrl,
-          node.id
+          node.id,
         );
 
         const parentCount = (incoming?.data?.incoming || []).length;
@@ -439,7 +439,7 @@ export async function fetchLinkCountsFirstPage(baseUrl, nodes = []) {
             childCount,
           },
         };
-      })
+      }),
     );
 
     return updatedNodes;
@@ -457,7 +457,7 @@ export async function smartFetchData(
   baseUrl,
   node,
   cachedExtras = {},
-  downloadFormats = null
+  downloadFormats = null,
 ) {
   // Check cache first
   const cached = cachedExtras[node.id];
@@ -523,7 +523,7 @@ export async function smartFetchData(
     const formats = downloadFormats[typeKey] || [];
     updatedData.downloadByFormat = formats.reduce((acc, fmt) => {
       acc[fmt] = `${baseUrl}/nodes/${encodeURIComponent(
-        node.id
+        node.id,
       )}/download?download_format=${encodeURIComponent(fmt)}`;
       return acc;
     }, {});
@@ -542,7 +542,7 @@ export async function smartFetchData(
 export async function fetchGraphByNodeId(
   baseUrl,
   nodeId,
-  singlePageMode = true
+  singlePageMode = true,
 ) {
   const rootNodeRaw = await fetchNodeById(baseUrl, nodeId);
   const rootNode = rootNodeRaw.data.nodes[0];
@@ -597,7 +597,7 @@ export async function fetchGraphByNodeId(
   const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === 0),
     allNodes.filter((n) => n.data.pos === 1),
-    allNodes.filter((n) => n.data.pos === -1)
+    allNodes.filter((n) => n.data.pos === -1),
   );
 
   return { nodes, edges };

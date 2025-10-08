@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Plot from "react-plotly.js";
+
+import ErrorDisplay from "../../../components/Error";
 import Spinner from "../../../components/Spinner";
-import { ErrorDisplay } from "../../../components/Error";
 
 // Temporaray Beta UpfDataVisualiser.
 export default function UpfDataVisualiser({ nodeData }) {
@@ -12,7 +13,7 @@ export default function UpfDataVisualiser({ nodeData }) {
   const aiidaJsonPath = nodeData.downloadByFormat?.json;
 
   // Fetch UPF JSON
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!aiidaJsonPath) {
       setError("No JSON path available");
       setLoading(false);
@@ -33,11 +34,11 @@ export default function UpfDataVisualiser({ nodeData }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [aiidaJsonPath]);
 
   useEffect(() => {
     fetchData();
-  }, [aiidaJsonPath]);
+  }, [fetchData]);
 
   // Display loading or error placeholders
   if (loading)

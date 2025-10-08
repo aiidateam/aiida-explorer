@@ -1,7 +1,3 @@
-import React from "react";
-
-import { useNavigate, useLocation } from "react-router-dom";
-
 // column label mappings
 const columnLabels = {
   uuid: "Unique ID",
@@ -45,7 +41,7 @@ export default function formatTableData(nodes, navigate, location) {
 
     columnOrder.forEach((label) => {
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label
+        (k) => columnLabels[k] === label,
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key]);

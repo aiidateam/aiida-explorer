@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
-import RawDataVisualiser from "./RawDataVisualiser";
-import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
+
 import FormattedMetaData from "./FormattedMetaData";
+import RawDataVisualiser from "./RawDataVisualiser";
 import BandsDataVisualiser from "./Rich/BandsDataVisualiser";
+import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
+import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
 
 export default function VisualiserPane({
@@ -85,8 +86,8 @@ export default function VisualiserPane({
             activeTab === "rich"
               ? "border-b-2 border-blue-500 font-semibold"
               : richTabDisabled
-              ? "text-gray-400 cursor-not-allowed"
-              : ""
+                ? "text-gray-400 cursor-not-allowed"
+                : ""
           }`}
           onClick={() => !richTabDisabled && setActiveTab("rich")}
         >

@@ -1,4 +1,4 @@
-export function ErrorDisplay({ message, onRetry }) {
+export default function ErrorDisplay({ message, onRetry }) {
   return (
     <div className="flex flex-col items-center text-red-500 p-4">
       {/* Error icon */}

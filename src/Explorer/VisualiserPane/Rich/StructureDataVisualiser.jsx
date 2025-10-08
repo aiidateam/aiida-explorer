@@ -1,10 +1,9 @@
-import { StructDownloadButton } from "../../../components/StructDownloadButton";
-
 import StructureVisualizer from "mc-react-structure-visualizer";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
+import ErrorDisplay from "../../../components/Error";
 import Spinner from "../../../components/Spinner";
-import { ErrorDisplay } from "../../../components/Error";
+import { StructDownloadButton } from "../../../components/StructDownloadButton";
 
 // js for calculating very basic lattice information.
 function getVol(nodeData, round = 4) {
@@ -43,7 +42,7 @@ export default function StructureDataVisualiser({ nodeData, baseUrl }) {
   const [error, setError] = useState(null);
 
   // Local fetchData function
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!aiidaCifPath) {
       setError("No CIF file available");
       setLoading(false);
@@ -63,11 +62,11 @@ export default function StructureDataVisualiser({ nodeData, baseUrl }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [aiidaCifPath]);
 
   useEffect(() => {
     fetchData();
-  }, [aiidaCifPath]);
+  }, [fetchData]);
 
   const dlFormats =
     nodeData.label === "CifData"
@@ -86,8 +85,8 @@ export default function StructureDataVisualiser({ nodeData, baseUrl }) {
   const volume = hasDerived
     ? nodeData.derived_properties.dimensionality?.value
     : lattice
-    ? getVol(nodeData)
-    : null;
+      ? getVol(nodeData)
+      : null;
   const numSites = nodeData.attributes?.sites?.length || 0;
 
   return (
@@ -109,6 +108,22 @@ export default function StructureDataVisualiser({ nodeData, baseUrl }) {
       {/* Data */}
       {!loading && !error && cifText && (
         <>
+          {/* CIF viewer */}
+          <div className="w-full h-[500px] relative bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="absolute top-4 right-4 z-50">
+              <StructDownloadButton
+                aiida_rest_url={baseUrl}
+                uuid={nodeData.aiida.uuid}
+                download_formats={dlFormats}
+              />
+            </div>
+            <div className="w-full h-full">
+              <StructureVisualizer
+                cifText={cifText}
+                initSupercell={[2, 2, 2]}
+              />
+            </div>
+          </div>
           {hasDerived && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-1">
@@ -144,23 +159,6 @@ export default function StructureDataVisualiser({ nodeData, baseUrl }) {
               )}
             </div>
           )}
-
-          {/* CIF viewer */}
-          <div className="w-full h-[500px] relative bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="absolute top-4 right-4 z-50">
-              <StructDownloadButton
-                aiida_rest_url={baseUrl}
-                uuid={nodeData.aiida.uuid}
-                download_formats={dlFormats}
-              />
-            </div>
-            <div className="w-full h-full">
-              <StructureVisualizer
-                cifText={cifText}
-                initSupercell={[2, 2, 2]}
-              />
-            </div>
-          </div>
         </>
       )}
     </div>

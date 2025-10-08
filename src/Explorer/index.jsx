@@ -1,17 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
-import FlowChart from "./FlowChart";
-import DebugPane from "./DebugPane";
-import GroupsViewer from "./GroupsViewer";
-
-import Spinner from "../components/Spinner";
-
-import HelpViewer from "./HelpViewer";
-
-import VisualiserPane from "./VisualiserPane";
-import Breadcrumbs from "./Breadcrumbs";
-
+import { createPortal } from "react-dom";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { useSearchParams } from "react-router-dom";
 
 import {
   fetchGraphByNodeId,
@@ -21,10 +11,14 @@ import {
   fetchDownloadFormats,
   fetchLinkCountsFirstPage,
 } from "./api";
-
+import Breadcrumbs from "./Breadcrumbs";
+import DebugPane from "./DebugPane";
+import FlowChart from "./FlowChart";
+import GroupsViewer from "./GroupsViewer";
+import HelpViewer from "./HelpViewer";
+import VisualiserPane from "./VisualiserPane";
 import { GroupIcon, LinksIcon, QuestionIcon } from "../components/Icons";
-
-import { createPortal } from "react-dom";
+import Spinner from "../components/Spinner";
 
 function Overlay({ children, active, onClose, title, container }) {
   if (!active || !container) return null;
@@ -50,13 +44,13 @@ function Overlay({ children, active, onClose, title, container }) {
         <div className="p-3">{children}</div>
       </div>
     </div>,
-    container
+    container,
   );
 }
 
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(
-    () => window.matchMedia(query).matches
+    () => window.matchMedia(query).matches,
   );
   useEffect(() => {
     const media = window.matchMedia(query);
@@ -151,7 +145,7 @@ export default function Explorer({
       if (!mounted) return;
 
       const nodesWithExtras = fetchedNodes.map((n) => {
-        const { pos, ...cachedData } = extraNodeData[n.id] || {};
+        const cachedData = extraNodeData[n.id] || {};
         return {
           ...n,
           data: { ...n.data, ...cachedData },
@@ -174,7 +168,7 @@ export default function Explorer({
             instance.setCenter(
               centralNode.position.x + 50,
               centralNode.position.y,
-              { zoom: 1.22, duration: 1000 }
+              { zoom: 1.22, duration: 1000 },
             );
           }, 150);
         }
@@ -193,7 +187,7 @@ export default function Explorer({
       baseUrl,
       node,
       extraNodeData,
-      downloadFormats
+      downloadFormats,
     );
     setExtraNodeData((prev) => ({
       ...prev,
@@ -210,8 +204,8 @@ export default function Explorer({
       prev.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n
-      )
+          : n,
+      ),
     );
   };
 
@@ -255,10 +249,10 @@ export default function Explorer({
           activeOverlay === "groupsview"
             ? "Groups"
             : activeOverlay === "typesview"
-            ? "Node Types"
-            : activeOverlay === "helpview"
-            ? "Help"
-            : ""
+              ? "Node Types"
+              : activeOverlay === "helpview"
+                ? "Help"
+                : ""
         }
         container={overlayContainerRef.current}
       >
