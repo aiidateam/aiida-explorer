@@ -1,6 +1,17 @@
-# AiiDA Node Explorer
+# AiiDA provenance explorer
 
-A React application for traversing and visualizing AiiDA nodes via the AiiDA REST API. The tool allows you to explore the graph of nodes, view detailed metadata, and track node visits with interactive breadcrumbs.
+[![NPM Version](https://img.shields.io/npm/v/aiida-explorer)](https://www.npmjs.com/package/aiida-explorer)
+
+A React component to explore AiiDA provenance built on top of the AiiDA REST API.
+
+The tool allows you to explore the graph of nodes, view detailed metadata, and track node visits with interactive breadcrumbs.
+
+This repository contains
+
+1. the `AiidaExplorer` component (library), which is also published to `npm`; and
+2. a demo page illustrating the usage, which is deployed to github pages (https://aiidateam.github.io/aiida-explorer/).
+
+
 
 ## Features
 
@@ -13,7 +24,7 @@ A React application for traversing and visualizing AiiDA nodes via the AiiDA RES
 - **Caching of extra node data** to reduce redundant API calls.
 - URL updates for easy sharing of specific nodes (e.g., `?rootNode=<id>`).
 
-### Features to do (TODO):
+### Features TODO:
 
 - add/change Sidepane to include:
   - Raw / Rich information.
@@ -41,7 +52,7 @@ npm run dev
 
 Ensure the desired **AiiDA REST API** endpoint is configured in `App.jsx` and goto `http://localhost:5173`.
 
-## Development
+## Development notes
 
 IMPORTANT TODOS:
 
@@ -72,3 +83,9 @@ For common/simple components (layout managers, tables/Dropdowns etc), these shou
 ### Styling
 
 Most of the styling is handled largely by Tailwind and a little further control is through inline css. Exposing "componentStyle" as a prop gives control on the appearance of individual components without having to hack the styling with css overrides. These can defined such to only append to the baseStyle (since tailwind is right-to-left priority) so that the basestyle is not overwritten.
+
+
+## Notes
+
+* An initial prototype of this tool was created by Sharan Poojari during Google Summer of Code 2024 (see [the final report](https://github.com/aiidateam/aiida-explorer/blob/gsoc/gsoc/README.md)).
+

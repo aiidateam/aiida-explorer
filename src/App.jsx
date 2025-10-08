@@ -1,9 +1,8 @@
 import yaml from "js-yaml";
-import MaterialsCloudHeader from "mc-react-header";
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useParams, useLocation } from "react-router-dom";
 
-import Explorer from "./Explorer";
+import AiidaExplorer from "./AiidaExplorer";
 import HomePage from "./HomePage";
 import NotFoundPage from "./NotFoundPage";
 
@@ -35,24 +34,16 @@ function ExplorerLoader({ backendMapping }) {
   }
 
   return (
-    <MaterialsCloudHeader
-      activeSection="discover"
-      breadcrumbsPath={[
-        { name: "Explore", link: "https://www.materialscloud.org/explore" },
-        { name: prettyBackend, link: null },
-      ]}
-    >
-      <div className="flex flex-col mx-4 border-2">
-        <div className="flex-1">
-          <Explorer
-            baseUrl={backendUrl}
-            startingNode={
-              new URLSearchParams(location.search).get("rootNode") || ""
-            }
-          />
-        </div>
+    <div className="flex flex-col mx-4 border-2">
+      <div className="flex-1">
+        <AiidaExplorer
+          baseUrl={backendUrl}
+          startingNode={
+            new URLSearchParams(location.search).get("rootNode") || ""
+          }
+        />
       </div>
-    </MaterialsCloudHeader>
+    </div>
   );
 }
 

@@ -44,13 +44,13 @@ function Overlay({ children, active, onClose, title, container }) {
         <div className="p-3">{children}</div>
       </div>
     </div>,
-    container,
+    container
   );
 }
 
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(
-    () => window.matchMedia(query).matches,
+    () => window.matchMedia(query).matches
   );
   useEffect(() => {
     const media = window.matchMedia(query);
@@ -68,7 +68,7 @@ function useMediaQuery(query) {
 // TODO add loading and timings of steps...
 
 // TODO handle searchparams and navigation in a proper way. for now this seems way too hacked.
-export default function Explorer({
+export default function AiidaExplorer({
   baseUrl = "",
   startingNode = "",
   debugMode = false,
@@ -168,7 +168,7 @@ export default function Explorer({
             instance.setCenter(
               centralNode.position.x + 50,
               centralNode.position.y,
-              { zoom: 1.22, duration: 1000 },
+              { zoom: 1.22, duration: 1000 }
             );
           }, 150);
         }
@@ -187,7 +187,7 @@ export default function Explorer({
       baseUrl,
       node,
       extraNodeData,
-      downloadFormats,
+      downloadFormats
     );
     setExtraNodeData((prev) => ({
       ...prev,
@@ -204,8 +204,8 @@ export default function Explorer({
       prev.map((n) =>
         n.id === node.id
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n,
-      ),
+          : n
+      )
     );
   };
 
