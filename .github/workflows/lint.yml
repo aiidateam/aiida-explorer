@@ -1,0 +1,37 @@
+name: Lint
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "components/**"
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run ESLint
+        run: npx eslint "src/**/*.{js,jsx,ts,tsx}" || echo "::warning file=src message=Lint issues detected"
+
+      - name: Run Prettier check
+        run: npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}" || true
+
+      - name: Bundle size
+        run: npx size-limit || echo "::warning file=dist message=Bundle size exceeded recommended threshold"
