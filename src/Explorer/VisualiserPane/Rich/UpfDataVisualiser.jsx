@@ -4,13 +4,110 @@ import Plot from "react-plotly.js";
 import ErrorDisplay from "../../../components/Error";
 import Spinner from "../../../components/Spinner";
 
-// Temporaray Beta UpfDataVisualiser.
+// TODO extrace a common config for all plots.
+// Probably a good enough reason to switch to react plotly for the bandstructure visualiser
+
+function getRadialFunctionsTraces(upfDataObject) {
+  if (
+    !upfDataObject ||
+    !upfDataObject.atomic_wave_functions ||
+    !upfDataObject.radial_grid
+  )
+    return [];
+
+  const traces = upfDataObject.atomic_wave_functions.map((wf) => {
+    const label = wf.label ?? "";
+    const ang = wf.angular_momentum != null ? `(ℓ=${wf.angular_momentum}` : "";
+    const occ =
+      wf.occupation != null
+        ? `, occ=${wf.occupation})`
+        : wf.angular_momentum != null
+          ? ")"
+          : "";
+
+    return {
+      x: upfDataObject.radial_grid,
+      y: wf.radial_function,
+      type: "scatter",
+      mode: "lines",
+      name: `${label} ${ang}${occ}`,
+    };
+  });
+
+  return traces;
+}
+
+function getBetaProjectorsTraces(upfDataObject) {
+  if (
+    !upfDataObject ||
+    !upfDataObject.beta_projectors ||
+    !upfDataObject.radial_grid
+  )
+    return [];
+
+  const traces = upfDataObject.beta_projectors.map((wf) => {
+    const label = wf.label ?? "";
+    const ang = wf.angular_momentum != null ? `(ℓ=${wf.angular_momentum}` : "";
+    const cutoff =
+      wf.ultrasoft_cutoff_radius != null
+        ? `, cutoff=${wf.ultrasoft_cutoff_radius})`
+        : wf.angular_momentum != null
+          ? ")"
+          : "";
+
+    return {
+      x: upfDataObject.radial_grid,
+      y: wf.radial_function,
+      type: "scatter",
+      mode: "lines",
+      name: `${label} ${ang}${cutoff}`,
+    };
+  });
+
+  return traces;
+}
+
+function getChargeDensitiesTraces(upfDataObject) {
+  if (!upfDataObject || !upfDataObject.radial_grid) return [];
+
+  console.log("upfObj", upfDataObject);
+
+  const ValenceChargetrace = {
+    x: upfDataObject.radial_grid,
+    y: upfDataObject.total_charge_density,
+    type: "scatter",
+    mode: "lines",
+    name: "Valence Pseudocharge density",
+  };
+
+  console.log("vc", ValenceChargetrace);
+
+  const CoreChargetrace = {
+    x: upfDataObject.radial_grid,
+    y: upfDataObject.core_charge_density,
+    type: "scatter",
+    mode: "lines",
+    name: "Core Pseudocharge density",
+  };
+
+  console.log("cc", CoreChargetrace);
+
+  return [CoreChargetrace, ValenceChargetrace].filter(
+    (t) => Array.isArray(t.y) && t.y.length > 0
+  );
+}
+
+// Temp Beta UpfDataVisualiser.
 export default function UpfDataVisualiser({ nodeData }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [upfData, setUpfData] = useState(null);
 
   const aiidaJsonPath = nodeData.downloadByFormat?.json;
+
+  const orbitalTraces = getRadialFunctionsTraces(upfData);
+  const betaprojTraces = getBetaProjectorsTraces(upfData);
+  const chargeDensitiesTraces = getChargeDensitiesTraces(upfData);
 
   // Fetch UPF JSON
   const fetchData = useCallback(async () => {
@@ -27,7 +124,7 @@ export default function UpfDataVisualiser({ nodeData }) {
       const res = await fetch(aiidaJsonPath);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      setUpfData(json.pseudo_potential); // only pseudo_potential
+      setUpfData(json.pseudo_potential);
     } catch (err) {
       console.error("Failed to fetch UPF JSON:", err);
       setError(err.message || "Failed to load UPF data");
@@ -81,8 +178,83 @@ export default function UpfDataVisualiser({ nodeData }) {
       </div>
 
       <div className="space-y-6">
+        <div className="bg-white border-b-2 p-4">
+          <h3 className="font-semibold mb-2">Orbital radial functions</h3>
+          <Plot
+            data={orbitalTraces}
+            layout={{
+              width: "100%",
+              height: 400,
+              margin: { t: 20, b: 40, l: 50, r: 20 },
+              xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 20] },
+              yaxis: { title: { text: "φ(r)" } },
+              legend: {
+                x: 1,
+                y: 1,
+                xanchor: "right",
+                yanchor: "top",
+                bgcolor: "rgba(255,255,255,0.8)",
+                bordercolor: "#ccc",
+                borderwidth: 1,
+              },
+            }}
+            useResizeHandler
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+
+        <div className="bg-white border-b-2 p-4">
+          <h3 className="font-semibold mb-2">Beta projectors</h3>
+          <Plot
+            data={betaprojTraces}
+            layout={{
+              width: "100%",
+              height: 400,
+              margin: { t: 20, b: 40, l: 50, r: 20 },
+              xaxis: { title: { text: "Radius (Bohr)" } },
+              yaxis: { title: { text: "φ(r)" } },
+              legend: {
+                x: 1,
+                y: 1,
+                xanchor: "right",
+                yanchor: "top",
+                bgcolor: "rgba(255,255,255,0.8)",
+                bordercolor: "#ccc",
+                borderwidth: 1,
+              },
+            }}
+            useResizeHandler
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+
+        <div className="bg-white border-b-2 p-4">
+          <h3 className="font-semibold mb-2">Charge densities</h3>
+          <Plot
+            data={chargeDensitiesTraces}
+            layout={{
+              width: "100%",
+              height: 400,
+              margin: { t: 20, b: 40, l: 50, r: 20 },
+              xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 5] },
+              yaxis: { title: { text: "φ(r)" } },
+              legend: {
+                x: 1,
+                y: 1,
+                xanchor: "right",
+                yanchor: "top",
+                bgcolor: "rgba(255,255,255,0.8)",
+                bordercolor: "#ccc",
+                borderwidth: 1,
+              },
+            }}
+            useResizeHandler
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+
         {/* Local Potential Plot */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white border-b-2 p-4">
           <h3 className="font-semibold mb-2">Local Potential</h3>
           <Plot
             data={[
@@ -111,7 +283,7 @@ export default function UpfDataVisualiser({ nodeData }) {
         </div>
 
         {/* Core Charge Density Plot */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white border-b-2 p-4">
           <h3 className="font-semibold mb-2">Core Charge Density</h3>
           <Plot
             data={[
