@@ -74,6 +74,14 @@ npm version <major/minor/patch>
 git push --follow-tags
 ```
 
+### Deploying the demo page to github-pages
+
+The demo page is deployed to Github pages automatically from the `main` branch.
+
+Additionally, any pull request gets deployed in it's own subpath as well.
+
+Manual deployment to Github pages should not be done, as that might break any PR previews.
+
 ## Notes
 
 - An initial prototype of this tool was created by Sharan Poojari during Google Summer of Code 2024 (see [the final report](https://github.com/aiidateam/aiida-explorer/blob/gsoc/gsoc/README.md)).
