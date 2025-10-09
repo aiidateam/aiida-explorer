@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { useSearchParams } from "react-router-dom";
 
 import {
   fetchGraphByNodeId,
@@ -62,14 +61,12 @@ function useMediaQuery(query) {
 }
 
 // full component handler for  aiidaexplorer.
-//  this manages all states and data to the subcomponents.
+// this manages all states and data to the subcomponents.
 
 // TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
 // TODO add loading and timings of steps...
-
-// TODO handle searchparams and navigation in a proper way. for now this seems way too hacked.
 export default function AiidaExplorer({
-  baseUrl = "",
+  restApiUrl,
   startingNode = "",
   debugMode = false,
 }) {
@@ -86,12 +83,9 @@ export default function AiidaExplorer({
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [extraNodeData, setExtraNodeData] = useState({});
+  const [rootNodeId, setRootNodeId] = useState(startingNode);
 
   const MAX_BREADCRUMBS = 10;
-
-  // --- URL handling ---
-  const [searchParams, setSearchParams] = useSearchParams();
-  const rootNodeId = searchParams.get("rootNode") || startingNode;
 
   const [activeOverlay, setActiveOverlay] = useState("groupsview");
 
@@ -113,24 +107,24 @@ export default function AiidaExplorer({
   // --- Fetch users once ---
   useEffect(() => {
     let mounted = true;
-    fetchUsers(baseUrl).then((data) => {
+    fetchUsers(restApiUrl).then((data) => {
       if (mounted) setUsers(data);
     });
     return () => {
       mounted = false;
     };
-  }, [baseUrl]);
+  }, [restApiUrl]);
 
   // --- Fetch download formats once ---
   useEffect(() => {
     let mounted = true;
-    fetchDownloadFormats(baseUrl).then((data) => {
+    fetchDownloadFormats(restApiUrl).then((data) => {
       if (mounted) setDownloadFormats(data);
     });
     return () => {
       mounted = false;
     };
-  }, [baseUrl]);
+  }, [restApiUrl]);
 
   // --- Load graph whenever rootNodeId changes ---
   useEffect(() => {
@@ -140,7 +134,7 @@ export default function AiidaExplorer({
     async function loadGraph() {
       setLoading(true);
       const { nodes: fetchedNodes, edges: fetchedEdges } =
-        await fetchGraphByNodeId(baseUrl, rootNodeId, singlePageMode);
+        await fetchGraphByNodeId(restApiUrl, rootNodeId, singlePageMode);
 
       if (!mounted) return;
 
@@ -179,12 +173,12 @@ export default function AiidaExplorer({
     return () => {
       mounted = false;
     };
-  }, [rootNodeId, baseUrl, singlePageMode]);
+  }, [rootNodeId, restApiUrl, singlePageMode]);
 
   // --- Cache + merge ---
   const ensureNodeData = async (node) => {
     const enrichedNode = await smartFetchData(
-      baseUrl,
+      restApiUrl,
       node,
       extraNodeData,
       downloadFormats
@@ -219,7 +213,7 @@ export default function AiidaExplorer({
       }
 
       // Update URL param, triggers reload automatically
-      setSearchParams({ rootNode: node.id }, { replace: true });
+      setRootNodeId(node.id);
 
       const enrichedNode = await ensureNodeData(node);
       setSelectedNode(enrichedNode);
@@ -231,7 +225,7 @@ export default function AiidaExplorer({
   // --- Breadcrumb click ---
   const handleBreadcrumbClick = async (node, idx) => {
     setBreadcrumbs((prev) => prev.slice(0, idx + 1));
-    setSearchParams({ rootNode: node.id }, { replace: true });
+    setRootNodeId(node.id);
 
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
@@ -256,8 +250,9 @@ export default function AiidaExplorer({
         }
         container={overlayContainerRef.current}
       >
-        {activeOverlay === "groupsview" && <GroupsViewer baseUrl={baseUrl} />}
-        {activeOverlay === "typesview" && <GridViewer baseUrl={baseUrl} />}
+        {activeOverlay === "groupsview" && (
+          <GroupsViewer restApiUrl={restApiUrl} setRootNodeId={setRootNodeId} />
+        )}
         {activeOverlay === "helpview" && <HelpViewer />}
       </Overlay>
 
@@ -297,8 +292,8 @@ export default function AiidaExplorer({
                     setLoading(true);
                     try {
                       const updatedNodes = singlePageMode
-                        ? await fetchLinkCountsFirstPage(baseUrl, nodes)
-                        : await fetchLinkCounts(baseUrl, nodes);
+                        ? await fetchLinkCountsFirstPage(restApiUrl, nodes)
+                        : await fetchLinkCounts(restApiUrl, nodes);
                       setNodes(updatedNodes);
                     } finally {
                       setLoading(false);
@@ -362,7 +357,7 @@ export default function AiidaExplorer({
           )}
           <div className="flex-1 overflow-y-auto min-h-0">
             <VisualiserPane
-              baseUrl={baseUrl}
+              restApiUrl={restApiUrl}
               selectedNode={selectedNode}
               userData={users}
               downloadFormats={downloadFormats}

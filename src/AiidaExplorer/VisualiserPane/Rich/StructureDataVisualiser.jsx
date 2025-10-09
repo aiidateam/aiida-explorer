@@ -31,11 +31,10 @@ function formatLattice(nodeData) {
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case
 // TODO - alternatively could use discuss with adding download_formats endpoints here instead /
 // TODO - add the download button as a built in inside of StructureVisualizer (mc-react-strucutre-vis) with the js logic embedded inside the component...
-// This will simplify this ugly logic...export default function StructureVisualiser({ nodeData, baseUrl }) {
-export default function StructureDataVisualiser({ nodeData, baseUrl }) {
+export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const aiidaCifPath = nodeData.downloadByFormat?.cif;
 
-  console.log(baseUrl);
+  console.log(restApiUrl);
 
   const [cifText, setCifText] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -112,7 +111,7 @@ export default function StructureDataVisualiser({ nodeData, baseUrl }) {
           <div className="w-full h-[500px] relative bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="absolute top-4 right-4 z-50">
               <StructDownloadButton
-                aiida_rest_url={baseUrl}
+                aiida_rest_url={restApiUrl}
                 uuid={nodeData.aiida.uuid}
                 download_formats={dlFormats}
               />

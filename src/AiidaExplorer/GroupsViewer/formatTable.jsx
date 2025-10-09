@@ -35,13 +35,13 @@ function formatValue(label, value) {
   }
 }
 
-export default function formatTableData(nodes, navigate, location) {
+export default function formatTableData(nodes, setRootNodeId) {
   return nodes.map((row) => {
     const newRow = {};
 
     columnOrder.forEach((label) => {
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label,
+        (k) => columnLabels[k] === label
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key]);
@@ -51,8 +51,7 @@ export default function formatTableData(nodes, navigate, location) {
     newRow[""] = (
       <button
         onClick={() => {
-          const hashPath = location.hash.split("?")[0];
-          navigate(`${hashPath}?rootNode=${row.uuid}`);
+          setRootNodeId(row.uuid);
         }}
         className="px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
       >

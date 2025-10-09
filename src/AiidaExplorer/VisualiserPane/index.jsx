@@ -8,7 +8,7 @@ import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
 
 export default function VisualiserPane({
-  baseUrl,
+  restApiUrl,
   selectedNode,
   userData, // fetched for user if
   downloadFormats, // fetched for download formats.
@@ -26,7 +26,7 @@ export default function VisualiserPane({
           <StructureDataVisualiser
             key={aiida?.uuid}
             nodeData={selectedNode.data}
-            baseUrl={baseUrl}
+            restApiUrl={restApiUrl}
           />
         );
       // case "KpointsData":

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 
 import DataTable from "../../components/DataTable";
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
@@ -30,10 +29,7 @@ function sortGroups(groups) {
 // Component for rendering a checkered box for all common aiida types...
 // TODO - add a flag that enables fetching of other types via the fulltypes endpoint
 // TODO - discussion regarding a schema for dynamic fetching/rendering etc.
-export default function GroupsViewer({ baseUrl = "" }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
+export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -45,10 +41,10 @@ export default function GroupsViewer({ baseUrl = "" }) {
 
   // Fetch groups
   useEffect(() => {
-    fetchGroups(baseUrl)
+    fetchGroups(restApiUrl)
       .then(setGroups)
       .catch((err) => console.error("Failed to fetch groups:", err));
-  }, [baseUrl]);
+  }, [restApiUrl]);
 
   // Fetch nodes with loading/error state
   const fetchNodes = useCallback(
@@ -66,10 +62,10 @@ export default function GroupsViewer({ baseUrl = "" }) {
           offset: offsetValue,
         });
 
-        const result = await fetchFromQueryBuilder(baseUrl, postMsg);
+        const result = await fetchFromQueryBuilder(restApiUrl, postMsg);
         const nodes = result.node || [];
 
-        const formattedNodes = formatTableData(nodes, navigate, location);
+        const formattedNodes = formatTableData(nodes, setRootNodeId);
 
         setTableData((prev) =>
           offsetValue === 0 ? formattedNodes : [...prev, ...formattedNodes]
@@ -82,7 +78,7 @@ export default function GroupsViewer({ baseUrl = "" }) {
         setLoading(false);
       }
     },
-    [baseUrl, selectedGroups, selectedTypes, navigate, location]
+    [restApiUrl, selectedGroups, selectedTypes, setRootNodeId]
   );
 
   // Auto-fetch initial nodes
