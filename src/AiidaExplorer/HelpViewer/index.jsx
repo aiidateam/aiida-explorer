@@ -10,7 +10,7 @@ import {
   DoubleClickIcon,
   BreadcrumbsIcon,
   GithubIcon,
-} from "../../components/Icons";
+} from "../components/Icons";
 
 export default function HelpViewer() {
   return (

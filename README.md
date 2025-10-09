@@ -19,6 +19,26 @@ Main features include:
 - **Breadcrumb trail** tracks visited nodes, clickable for quick navigation.
 - Nodes styled by type (process, data, etc.) with clear selection highlighting.
 
+## Installation and usage
+
+Install via
+
+```bash
+npm install aiida-explorer
+```
+
+And use with the following:
+
+```javascript
+import { AiidaExplorer } from "aiida-explorer";
+
+...
+<AiidaExplorer restApiUrl={AIIDA_REST_URL} />
+...
+```
+
+where `restApiUrl` is the base url of the [AiiDA REST API](https://aiida.readthedocs.io/projects/aiida-core/en/v2.6.2/reference/rest_api.html), e.g. `http://localhost:5000/api/v4` if started locally via `verdi restapi`. For more details see the source code of the demo page.
+
 ## Development
 
 ### Using the demo page
@@ -28,6 +48,30 @@ For development, start the demo page by
 ```bash
 npm install
 npm run dev
+```
+
+### Building the library and testing locally
+
+To build the component library and test locally in an external application (e.g. before publishing to `npm`), use
+
+```bash
+npm run build:lib
+npm pack
+```
+
+which will create a `.tgz` file that can then be installed by the external application via
+
+```bash
+npm install /path/to/aiida-explorer-x.y.z.tgz
+```
+
+### Publishing a new version of the library on npm
+
+To make a new version and publish to npm via GitHub Actions:
+
+```bash
+npm version <major/minor/patch>
+git push --follow-tags
 ```
 
 ## Notes

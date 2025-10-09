@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 
-import DataTable from "../../components/DataTable";
+import DataTable from "../components/DataTable";
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import formatTableData, { columnOrder } from "./formatTable";
 import { buildQuery } from "./queryHandler";
@@ -10,8 +10,8 @@ import {
   getFlattenedNodeTypes,
 } from "./TypesCheckbox";
 
-import ErrorDisplay from "../../components/Error";
-import Spinner from "../../components/Spinner";
+import ErrorDisplay from "../components/Error";
+import Spinner from "../components/Spinner";
 
 function sortGroups(groups) {
   return [...groups].sort((a, b) => {

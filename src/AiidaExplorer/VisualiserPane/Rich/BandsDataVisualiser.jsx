@@ -1,8 +1,8 @@
 import { BandsVisualiser } from "bands-visualiser";
 import { useEffect, useRef, useState } from "react";
 
-import ErrorDisplay from "../../../components/Error";
-import Spinner from "../../../components/Spinner";
+import ErrorDisplay from "../../components/Error";
+import Spinner from "../../components/Spinner";
 
 export default function BandsDataVisualiser({ nodeData }) {
   const containerRef = useRef(null);

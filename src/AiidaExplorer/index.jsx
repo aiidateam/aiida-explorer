@@ -16,8 +16,8 @@ import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
 import VisualiserPane from "./VisualiserPane";
-import { GroupIcon, LinksIcon, QuestionIcon } from "../components/Icons";
-import Spinner from "../components/Spinner";
+import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
+import Spinner from "./components/Spinner";
 
 function Overlay({ children, active, onClose, title, container }) {
   if (!active || !container) return null;
@@ -233,7 +233,10 @@ export default function AiidaExplorer({
 
   // TODO switch the overlay to use ReactDOM portals...
   return (
-    <div ref={overlayContainerRef} className="flex flex-col h-[80vh] relative ">
+    <div
+      ref={overlayContainerRef}
+      className="flex flex-col relative h-full min-h-[300px]"
+    >
       {/* Overlay */}
 
       <Overlay

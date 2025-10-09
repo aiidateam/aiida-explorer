@@ -1,5 +1,5 @@
-import DataTable from "../../../components/DataTable";
-import { DownloadIcon } from "../../../components/Icons";
+import DataTable from "../../components/DataTable";
+import { DownloadIcon } from "../../components/Icons";
 import { omitGraphKeys } from "../../utils";
 
 // This could be extended to use the BZ visualiser from this data (if possible);
@@ -55,7 +55,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
       x: row[0],
       y: row[1],
       z: row[2],
-    }),
+    })
   );
 
   return (

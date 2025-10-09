@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { RightDropDownIcon, DownDropDownIcon } from "../../components/Icons";
+import { RightDropDownIcon, DownDropDownIcon } from "../components/Icons";
 
 // Base AIIDA TYPES HIERACHY
 // TODO, use the full_types method to get the subset of these.
@@ -93,7 +93,7 @@ export function TypeCheckboxTree({
       setSelectedTypes((prev) =>
         prev.includes(label)
           ? prev.filter((t) => t !== label)
-          : [...prev, label],
+          : [...prev, label]
       );
       return;
     }

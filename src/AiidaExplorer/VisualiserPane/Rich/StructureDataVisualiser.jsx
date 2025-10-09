@@ -1,9 +1,9 @@
 import StructureVisualizer from "mc-react-structure-visualizer";
 import { useEffect, useState, useCallback } from "react";
 
-import ErrorDisplay from "../../../components/Error";
-import Spinner from "../../../components/Spinner";
-import { StructDownloadButton } from "../../../components/StructDownloadButton";
+import ErrorDisplay from "../../components/Error";
+import Spinner from "../../components/Spinner";
+import { StructDownloadButton } from "../../components/StructDownloadButton";
 
 // js for calculating very basic lattice information.
 function getVol(nodeData, round = 4) {

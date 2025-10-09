@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Plot from "react-plotly.js";
 
-import ErrorDisplay from "../../../components/Error";
-import Spinner from "../../../components/Spinner";
+import ErrorDisplay from "../../components/Error";
+import Spinner from "../../components/Spinner";
 
 // TODO extrace a common config for all plots.
 // Probably a good enough reason to switch to react plotly for the bandstructure visualiser
