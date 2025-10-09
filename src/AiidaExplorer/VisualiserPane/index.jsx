@@ -3,9 +3,33 @@ import { useState, useEffect } from "react";
 import FormattedMetaData from "./FormattedMetaData";
 import RawDataVisualiser from "./RawDataVisualiser";
 import BandsDataVisualiser from "./Rich/BandsDataVisualiser";
-import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
 import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
+
+const RICH_TYPES = {
+  StructureData: StructureDataVisualiser,
+  CifData: StructureDataVisualiser,
+  BandsData: BandsDataVisualiser,
+  UpfData: UpfDataVisualiser,
+};
+
+function geRichVisualiser(restApiUrl, selectedNode) {
+  if (!selectedNode) return null;
+  if (!selectedNode.data) return null;
+  const { label, aiida } = selectedNode.data;
+  const VisualiserComponent = RICH_TYPES[label];
+  if (VisualiserComponent) {
+    return (
+      <VisualiserComponent
+        key={aiida?.uuid}
+        nodeData={selectedNode.data}
+        restApiUrl={restApiUrl}
+      />
+    );
+  }
+
+  return null;
+}
 
 export default function VisualiserPane({
   restApiUrl,
@@ -13,50 +37,17 @@ export default function VisualiserPane({
   userData, // fetched for user if
   downloadFormats, // fetched for download formats.
 }) {
-  const [activeTab, setActiveTab] = useState("rich");
+  let richVisualiser = geRichVisualiser(restApiUrl, selectedNode);
 
-  // Determine if rich visualiser exists
-  const richVisualiser = (() => {
-    if (!selectedNode) return null;
-    const { label, aiida } = selectedNode.data;
-    switch (label) {
-      case "StructureData":
-      case "CifData":
-        return (
-          <StructureDataVisualiser
-            key={aiida?.uuid}
-            nodeData={selectedNode.data}
-            restApiUrl={restApiUrl}
-          />
-        );
-      // case "KpointsData":
-      //   return (
-      //     <KpointsDataVisualiser
-      //       key={aiida?.uuid}
-      //       nodeData={selectedNode.data}
-      //     />
-      //   );
-
-      case "BandsData":
-        return (
-          <BandsDataVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
-        );
-
-      case "UpfData":
-        return (
-          <UpfDataVisualiser key={aiida?.uuid} nodeData={selectedNode.data} />
-        );
-
-      default:
-        return null;
-    }
-  })();
+  const [activeTab, setActiveTab] = useState(richVisualiser ? "rich" : "raw");
 
   useEffect(() => {
     if (!richVisualiser) {
       setActiveTab("raw");
+    } else {
+      setActiveTab("rich");
     }
-  }, [richVisualiser]);
+  }, [selectedNode]);
 
   if (!selectedNode) {
     return (
@@ -74,7 +65,7 @@ export default function VisualiserPane({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Shortened Metadata */}
-      <div className="px-4 py-3 md:py-4 border-b bg-slate-50">
+      <div className="px-4 py-3 md:py-2 border-b bg-slate-50">
         <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
       </div>
 
