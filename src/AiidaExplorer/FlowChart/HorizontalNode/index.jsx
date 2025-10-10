@@ -42,7 +42,7 @@ function getNodeColorClasses(type, selected = false) {
 export default function HorizontalNode({ data, selected }) {
   const { zoom } = useViewport();
 
-  const baseNodeStyle = `min-w-[110px] text-center p-1.5 px-4 rounded border-3`;
+  const baseNodeStyle = `min-w-[150px] text-center py-1.5 rounded border-3`;
 
   const baseLinkStyle = `absolute -translate-y-1/4
    whitespace-nowrap opacity-90
@@ -69,16 +69,16 @@ export default function HorizontalNode({ data, selected }) {
   ${showCounts ? "" : "hidden"}
 `;
 
-  const leftCountStyle = `${baseCountStyle} left-0 ml-0.5 pr-1 pl-0.5
-   bg-gray-400 bg-opacity-40 rounded-r-md`;
+  const leftCountStyle = `${baseCountStyle} bg-green-800/40 left-0 ml-0.5 pr-1 pl-0.5
+   bg-gray-400 rounded-r-sm`;
 
-  const rightCountStyle = `${baseCountStyle} right-0 mr-0.5 pl-1 pr-0.5
-   bg-gray-400 bg-opacity-40 rounded-l-md`;
+  const rightCountStyle = `${baseCountStyle} bg-orange-800/40 right-0 mr-0.5 pl-1 pr-0.5
+   bg-gray-400 rounded-l-sm`;
 
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos,
+    data.pos
   );
 
   const uuid = data.aiida.uuid.split("-")[0];
