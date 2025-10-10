@@ -19,27 +19,9 @@ import VisualiserPane from "./VisualiserPane";
 import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
 import Spinner from "./components/Spinner";
 
+import useMediaQuery from "./hooks/mediaquery";
+
 import Overlay, { OverlayProvider } from "./components/Overlay";
-
-function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia(query).matches : false
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const media = window.matchMedia(query);
-    const listener = (event) => setMatches(event.matches);
-    media.addEventListener("change", listener);
-
-    setMatches(media.matches);
-
-    return () => media.removeEventListener("change", listener);
-  }, [query]);
-
-  return matches;
-}
 
 // full component handler for  aiidaexplorer.
 // this manages all states and data to the subcomponents.
@@ -53,7 +35,7 @@ export default function AiidaExplorer({
 }) {
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
-  const isMdUp = useMediaQuery("(min-width: 768px)");
+  const isSmallScreen = useMediaQuery("(min-width: 768px)");
 
   const [loading, setLoading] = useState(false);
   const [singlePageMode, setSinglePageMode] = useState(false);
@@ -247,7 +229,7 @@ export default function AiidaExplorer({
       </Overlay>
 
       <PanelGroup
-        direction={isMdUp ? "horizontal" : "vertical"}
+        direction={isSmallScreen ? "horizontal" : "vertical"}
         className="flex-1 min-h-0 overflow-hidden"
       >
         {/* Left-hand pane */}
@@ -327,13 +309,15 @@ export default function AiidaExplorer({
         {/* Resize handle */}
         <PanelResizeHandle
           className={`group flex items-center justify-center bg-slate-200 border-x ${
-            isMdUp ? "w-1.5 cursor-col-resize" : "h-1.5 cursor-row-resize"
+            isSmallScreen
+              ? "w-1.5 cursor-col-resize"
+              : "h-1.5 cursor-row-resize"
           }`}
         >
           {/* Thumb indicator */}
           <div
             className={`bg-gray-700 rounded group-hover:scale-125 ${
-              isMdUp ? "w-0.5 h-6" : "w-6 h-0.5"
+              isSmallScreen ? "w-0.5 h-6" : "w-6 h-0.5"
             }`}
           />
         </PanelResizeHandle>

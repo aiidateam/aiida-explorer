@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import useMediaQuery from "../hooks/mediaquery";
 
 import DataTable from "../components/DataTable";
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
-import formatTableData, { columnOrder } from "./formatTable";
 import { buildQuery } from "./queryHandler";
 import {
   TypeCheckboxTree,
@@ -13,45 +13,124 @@ import {
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";
 
+// column label mappings
+const columnLabels = {
+  uuid: "Unique ID",
+  label: "Label",
+  full_type: "Type",
+  ctime: "Created",
+  mtime: "Modified",
+  id: "ID",
+};
+
+// desired column order
+export const columnOrder = [
+  "Unique ID",
+  "Label",
+  "Type",
+  "Created",
+  "Modified",
+  "",
+];
+
+// format a single value based on label and screen size
+function formatValue(label, value, isSmallScreen = false) {
+  if (value === undefined || value === null) return "";
+
+  switch (label) {
+    case "Type":
+      if (typeof value !== "string") return value;
+      if (isSmallScreen) {
+        // small screen: only show last segment after "."
+        const parts = value.replace(/\|$/, "").split(".");
+        console.log(parts);
+        return parts.at(-2) || value;
+      }
+      // full value for larger screens
+      return value;
+
+    case "Created":
+    case "Modified":
+      const date = new Date(value);
+      return isSmallScreen
+        ? date.toISOString().split("T")[0]
+        : date.toLocaleString();
+
+    case "Unique ID":
+      if (isSmallScreen && typeof value === "string")
+        return value.split("-")[0];
+      return value;
+
+    default:
+      return value;
+  }
+}
+
+// convert raw nodes into table rows
+function formatTableData(nodes, setRootNodeId, isSmallScreen = false) {
+  return nodes.map((row) => {
+    const newRow = {};
+
+    columnOrder.forEach((label) => {
+      const key = Object.keys(columnLabels).find(
+        (k) => columnLabels[k] === label
+      );
+      if (key && row[key] !== undefined) {
+        newRow[label] = formatValue(label, row[key], isSmallScreen);
+      }
+    });
+
+    newRow[""] = (
+      <button
+        onClick={() => setRootNodeId(row.uuid)}
+        className="px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
+      >
+        View
+      </button>
+    );
+
+    return newRow;
+  });
+}
+
 function sortGroups(groups) {
   return [...groups].sort((a, b) => {
     const isNumA = /^\d/.test(a.label);
     const isNumB = /^\d/.test(b.label);
-
-    if (isNumA && !isNumB) return 1; // a goes after b
-    if (!isNumA && isNumB) return -1; // a goes before b
-
-    // Both numeric-start or both text: sort alphabetically
+    if (isNumA && !isNumB) return 1;
+    if (!isNumA && isNumB) return -1;
     return a.label.localeCompare(b.label, undefined, { numeric: true });
   });
 }
 
-// Component for rendering a checkered box for all common aiida types...
-// TODO - add a flag that enables fetching of other types via the fulltypes endpoint
-// TODO - discussion regarding a schema for dynamic fetching/rendering etc.
 export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [tableData, setTableData] = useState([]);
+  const [rawTableData, setRawTableData] = useState([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const limit = 200;
 
-  // Fetch groups
+  // responsive
+  const isSmallScreen = useMediaQuery("(max-width: 900px)");
+
+  // columns based on screen
+  const columnsToRender = isSmallScreen
+    ? columnOrder.filter((c) => c !== "Created" && c !== "Label")
+    : columnOrder;
+
+  // fetch groups once
   useEffect(() => {
-    fetchGroups(restApiUrl)
-      .then(setGroups)
-      .catch((err) => console.error("Failed to fetch groups:", err));
+    fetchGroups(restApiUrl).then(setGroups).catch(console.error);
   }, [restApiUrl]);
 
-  // Fetch nodes with loading/error state
+  // fetch nodes
   const fetchNodes = useCallback(
     async (offsetValue = 0, customLimit = limit) => {
       setLoading(true);
       setError(null);
-
       try {
         const nodeTypes = getFlattenedNodeTypes(selectedTypes, aiidaTypes);
 
@@ -65,31 +144,34 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
         const result = await fetchFromQueryBuilder(restApiUrl, postMsg);
         const nodes = result.node || [];
 
-        const formattedNodes = formatTableData(nodes, setRootNodeId);
-
-        setTableData((prev) =>
-          offsetValue === 0 ? formattedNodes : [...prev, ...formattedNodes]
+        setRawTableData((prev) =>
+          offsetValue === 0 ? nodes : [...prev, ...nodes]
         );
         setOffset(offsetValue + nodes.length);
       } catch (err) {
-        console.error("Failed to fetch nodes:", err);
+        console.error(err);
         setError(err.message || "Failed to fetch nodes");
       } finally {
         setLoading(false);
       }
     },
-    [restApiUrl, selectedGroups, selectedTypes, setRootNodeId]
+    [restApiUrl, selectedGroups, selectedTypes]
   );
 
-  // Auto-fetch initial nodes
+  // auto-fetch initial nodes
   useEffect(() => {
-    if (groups.length > 0 && tableData.length === 0) {
+    if (groups.length > 0 && rawTableData.length === 0) {
       fetchNodes(0, 1000);
     }
-  }, [groups, tableData.length, fetchNodes]);
+  }, [groups, rawTableData.length, fetchNodes]);
+
+  // memoized formatted data (reacts to screen size)
+  const tableData = useMemo(() => {
+    return formatTableData(rawTableData, setRootNodeId, isSmallScreen);
+  }, [rawTableData, isSmallScreen, setRootNodeId]);
 
   return (
-    <div className="flex gap-4 soverflow-auto w-full items-start">
+    <div className="flex gap-4 overflow-auto w-full items-start">
       {/* Left panel */}
       <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-4 rounded">
         <h4 className="font-medium mt-4 mb-2">Filter by Node Types</h4>
@@ -142,34 +224,24 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           )}
         </div>
 
-        {/* Loading Spinner */}
         {loading && (
           <div className="w-full h-[400px] flex items-center justify-center">
             <Spinner />
           </div>
         )}
 
-        {/* Error Display */}
         {error && !loading && (
           <div className="w-full h-[400px] flex flex-col items-center justify-center">
             <ErrorDisplay message={error} onRetry={() => fetchNodes(offset)} />
           </div>
         )}
 
-        {/* Data Table */}
         {!loading && !error && (
           <DataTable
-            columns={columnOrder}
-            data={tableData || []}
-            sortableCols={[
-              "Unique ID",
-              "Label",
-              "Type",
-              "Created",
-              "Modified",
-              "",
-            ]}
-            renderIfMissing={true}
+            columns={columnsToRender}
+            data={tableData}
+            sortableCols={columnsToRender}
+            renderIfMissing
             breakableCols={[
               "Unique ID",
               "Label",
