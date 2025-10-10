@@ -89,7 +89,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   }, [groups, tableData.length, fetchNodes]);
 
   return (
-    <div className="flex gap-4 p-3 overflow-auto w-full items-start">
+    <div className="flex gap-4 soverflow-auto w-full items-start">
       {/* Left panel */}
       <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-4 rounded">
         <h4 className="font-medium mt-4 mb-2">Filter by Node Types</h4>
@@ -127,7 +127,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
       </div>
 
       {/* Right table */}
-      <div className="flex-1 bg-white p-2 rounded">
+      <div className="flex-1 bg-white rounded">
         <div className="flex gap-4">
           <h4 className="text-xl font-semibold">
             {tableData.length} nodes loaded
@@ -161,8 +161,22 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           <DataTable
             columns={columnOrder}
             data={tableData || []}
-            sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
+            sortableCols={[
+              "Unique ID",
+              "Label",
+              "Type",
+              "Created",
+              "Modified",
+              "",
+            ]}
             renderIfMissing={true}
+            breakableCols={[
+              "Unique ID",
+              "Label",
+              "Type",
+              "Created",
+              "Modified",
+            ]}
           />
         )}
       </div>

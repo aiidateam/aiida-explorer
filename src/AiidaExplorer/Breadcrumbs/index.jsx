@@ -4,7 +4,7 @@ export default function Breadcrumbs({ trail, onClick, maxItems = 10 }) {
   const items = trail.slice(-maxItems);
 
   return (
-    <div className="w-full border-t border-gray-300 p-2 flex gap-2 flex-wrap overflow-x-auto items-center">
+    <div className="w-full flex gap-2 flex-wrap overflow-x-auto items-center bg-slate-100 border-t p-2 ">
       <span className="">History:</span>
       {items.map((node, idx) => (
         <React.Fragment key={`${node.id}-${idx}`}>

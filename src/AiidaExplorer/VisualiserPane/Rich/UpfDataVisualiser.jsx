@@ -4,7 +4,7 @@ import Plot from "react-plotly.js";
 import ErrorDisplay from "../../components/Error";
 import Spinner from "../../components/Spinner";
 
-// TODO extrace a common config for all plots.
+// TODO extract a common config for all plots.
 // Probably a good enough reason to switch to react plotly for the bandstructure visualiser
 
 function getRadialFunctionsTraces(upfDataObject) {
@@ -154,13 +154,10 @@ export default function UpfDataVisualiser({ nodeData }) {
 
   if (!upfData) return null;
 
-  const { header, radial_grid, local_potential, core_charge_density } = upfData;
-
-  // Determine a reasonable x-axis truncation if most values cluster near 0
-  const maxRadius = Math.min(Math.max(...radial_grid), 5);
+  const { header, radial_grid } = upfData;
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 space-y-6">
+    <div className="w-full mx-auto p-4 space-y-6">
       {/* Metadata */}
       <div className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-1">
         <p>
@@ -178,12 +175,14 @@ export default function UpfDataVisualiser({ nodeData }) {
       </div>
 
       <div className="space-y-6">
-        <div className="bg-white border-b-2 p-4">
-          <h3 className="font-semibold mb-2">Orbital radial functions</h3>
+        <h3 className="font-semibold mb-2">Orbital radial functions</h3>
+
+        {/* container that constrains width and uses box-sizing */}
+        <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
           <Plot
             data={orbitalTraces}
             layout={{
-              width: "100%",
+              autosize: true,
               height: 400,
               margin: { t: 20, b: 40, l: 50, r: 20 },
               xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 20] },
@@ -198,118 +197,64 @@ export default function UpfDataVisualiser({ nodeData }) {
                 borderwidth: 1,
               },
             }}
-            useResizeHandler
-            style={{ width: "100%", height: "100%" }}
+            config={{ responsive: true }}
+            useResizeHandler={true}
+            style={{ width: "100%", height: 400 }}
           />
         </div>
+      </div>
 
-        <div className="bg-white border-b-2 p-4">
-          <h3 className="font-semibold mb-2">Beta projectors</h3>
-          <Plot
-            data={betaprojTraces}
-            layout={{
-              width: "100%",
-              height: 400,
-              margin: { t: 20, b: 40, l: 50, r: 20 },
-              xaxis: { title: { text: "Radius (Bohr)" } },
-              yaxis: { title: { text: "φ(r)" } },
-              legend: {
-                x: 1,
-                y: 1,
-                xanchor: "right",
-                yanchor: "top",
-                bgcolor: "rgba(255,255,255,0.8)",
-                bordercolor: "#ccc",
-                borderwidth: 1,
-              },
-            }}
-            useResizeHandler
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
+      <h3 className="font-semibold mb-2">Beta projectors</h3>
+      <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
+        <Plot
+          data={betaprojTraces}
+          layout={{
+            autosize: true,
+            height: 400,
+            margin: { t: 20, b: 40, l: 50, r: 20 },
+            xaxis: { title: { text: "Radius (Bohr)" } },
+            yaxis: { title: { text: "φ(r)" } },
+            legend: {
+              x: 1,
+              y: 1,
+              xanchor: "right",
+              yanchor: "top",
+              bgcolor: "rgba(255,255,255,0.8)",
+              bordercolor: "#ccc",
+              borderwidth: 1,
+            },
+          }}
+          config={{ responsive: true }}
+          useResizeHandler={true}
+          style={{ width: "100%", height: 400 }}
+        />
+      </div>
 
-        <div className="bg-white border-b-2 p-4">
-          <h3 className="font-semibold mb-2">Charge densities</h3>
-          <Plot
-            data={chargeDensitiesTraces}
-            layout={{
-              width: "100%",
-              height: 400,
-              margin: { t: 20, b: 40, l: 50, r: 20 },
-              xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 5] },
-              yaxis: { title: { text: "φ(r)" } },
-              legend: {
-                x: 1,
-                y: 1,
-                xanchor: "right",
-                yanchor: "top",
-                bgcolor: "rgba(255,255,255,0.8)",
-                bordercolor: "#ccc",
-                borderwidth: 1,
-              },
-            }}
-            useResizeHandler
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
+      <h3 className="font-semibold mb-2">Charge densities</h3>
 
-        {/* Local Potential Plot */}
-        <div className="bg-white border-b-2 p-4">
-          <h3 className="font-semibold mb-2">Local Potential</h3>
-          <Plot
-            data={[
-              {
-                x: radial_grid,
-                y: local_potential,
-                type: "scatter",
-                mode: "lines",
-                name: "Local Potential",
-                line: { color: "#0096DE" },
-              },
-            ]}
-            layout={{
-              width: "100%",
-              height: 300,
-              margin: { t: 20, b: 40, l: 50, r: 20 },
-              xaxis: {
-                title: { text: "Radius (Bohr)" },
-                range: [0, maxRadius],
-              },
-              yaxis: { title: { text: "Local Potential (Ry)" } },
-            }}
-            useResizeHandler
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-
-        {/* Core Charge Density Plot */}
-        <div className="bg-white border-b-2 p-4">
-          <h3 className="font-semibold mb-2">Core Charge Density</h3>
-          <Plot
-            data={[
-              {
-                x: radial_grid,
-                y: core_charge_density,
-                type: "scatter",
-                mode: "lines",
-                name: "Core Charge Density",
-                line: { color: "#30B808" },
-              },
-            ]}
-            layout={{
-              width: "100%",
-              height: 300,
-              margin: { t: 20, b: 40, l: 50, r: 20 },
-              xaxis: {
-                title: { text: "Radius (Bohr)" },
-                range: [0, maxRadius],
-              },
-              yaxis: { title: { text: "Core Charge Density" } },
-            }}
-            useResizeHandler
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
+      <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
+        <Plot
+          data={chargeDensitiesTraces}
+          layout={{
+            autosize: true,
+            height: 400,
+            margin: { t: 20, b: 40, l: 50, r: 20 },
+            xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 5] },
+            yaxis: { title: { text: "φ(r)" } },
+            legend: {
+              x: 1,
+              y: 1,
+              xanchor: "right",
+              yanchor: "top",
+              bgcolor: "rgba(255,255,255,0.8)",
+              bordercolor: "#ccc",
+              borderwidth: 1,
+            },
+          }}
+          config={{ responsive: true }}
+          useResizeHandler={true}
+          style={{ width: "100%", height: "100%" }}
+        />
       </div>
     </div>
   );

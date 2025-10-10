@@ -32,8 +32,9 @@ export default function DataTable({
   title,
   columns,
   data = [],
-  maxWidth = "1500px",
+  maxWidth = "2000px",
   sortableCols = true,
+  breakableCols = false,
   renderIfMissing = false,
 }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -53,16 +54,14 @@ export default function DataTable({
     return sortConfig.direction === "asc" ? sorted : sorted.reverse();
   }, [data, sortConfig]);
 
-  if (!renderIfMissing && (!data || data.length === 0)) {
-    return null;
-  }
+  if (!renderIfMissing && (!data || data.length === 0)) return null;
 
   return (
     <div className="p-2" style={{ maxWidth }}>
       <h2 className="text-md md:text-lg font-semibold mb-2">{title}</h2>
 
       <div className="overflow-x-auto shadow-md md:shadow bg-white">
-        <table className="min-w-full text-sm text-left">
+        <table className="min-w-full text-xs md:text-sm text-left">
           <thead className="bg-gray-100 text-gray-700">
             <tr>
               {columns.map((col) => {
@@ -108,14 +107,24 @@ export default function DataTable({
                 key={row.id || idx}
                 className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
               >
-                {columns.map((col) => (
-                  <td
-                    key={col}
-                    className="px-3 md:px-4 py-0.5 md:py-2 text-gray-800"
-                  >
-                    {row[col]}
-                  </td>
-                ))}
+                {columns.map((col) => {
+                  const breakable = Array.isArray(breakableCols)
+                    ? breakableCols.includes(col)
+                    : breakableCols;
+
+                  const tdClasses = [
+                    "px-3 md:px-4 py-0.5 md:py-2 text-gray-800",
+                    breakable
+                      ? "whitespace-normal break-all"
+                      : "whitespace-nowrap",
+                  ].join(" ");
+
+                  return (
+                    <td key={col} className={tdClasses}>
+                      {row[col]}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

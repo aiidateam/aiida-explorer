@@ -11,6 +11,8 @@ import {
   ViewIcon,
 } from "../components/Icons";
 
+import Overlay from "../components/Overlay";
+
 function FileTable({ title, dataArray = [], onView }) {
   if (!Array.isArray(dataArray) || dataArray.length === 0) return null;
 
@@ -169,35 +171,15 @@ export default function RawDataVisualiser({ nodeData = {} }) {
         );
       })}
 
-      {/* Modal for preview */}
-      {isOpen &&
-        ReactDOM.createPortal(
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
-            onClick={() => setIsOpen(false)}
-          >
-            <div
-              className="bg-white p-4 rounded-xl shadow-lg w-[600px] max-h-[80vh] flex flex-col transform transition-all duration-200 ease-out animate-fadeIn"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center border-b pb-2 mb-2">
-                <h2 className="text-lg font-semibold">
-                  Preview: {previewName}
-                </h2>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="text-gray-600 hover:text-black"
-                >
-                  ✕
-                </button>
-              </div>
-              <pre className="overflow-y-auto whitespace-pre-wrap text-sm flex-1">
-                {previewContent}
-              </pre>
-            </div>
-          </div>,
-          document.body
-        )}
+      <Overlay
+        active={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={`Preview: ${previewName}`}
+      >
+        <pre className="overflow-y-auto whitespace-pre-wrap text-sm flex-1">
+          {previewContent}
+        </pre>
+      </Overlay>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export default function App() {
   return (
     // For testing, build container that is 95% size and centerd w.r.t. the screen.
     <div className="flex items-center justify-center h-screen">
-      <div className="w-[95vw] h-[95vh] bg-blue-100 border border-gray-400">
+      <div className="w-[95vw] h-[95vh] bg-amber-600">
         <AiidaExplorer restApiUrl={AIIDA_REST_URL} />
       </div>
     </div>

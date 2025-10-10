@@ -19,44 +19,25 @@ import VisualiserPane from "./VisualiserPane";
 import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
 import Spinner from "./components/Spinner";
 
-function Overlay({ children, active, onClose, title, container }) {
-  if (!active || !container) return null;
-
-  return createPortal(
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/30"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white w-full mx-4 h-5/6 rounded-xl overflow-auto transform transition-all duration-300 ease-in-out"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center border-b px-3 py-1">
-          {title && <h2 className="text-lg font-semibold">{title}</h2>}
-          <button
-            onClick={onClose}
-            className="text-gray-600 hover:text-black p-1 rounded"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="p-3">{children}</div>
-      </div>
-    </div>,
-    container
-  );
-}
+import Overlay, { OverlayProvider } from "./components/Overlay";
 
 function useMediaQuery(query) {
-  const [matches, setMatches] = useState(
-    () => window.matchMedia(query).matches
+  const [matches, setMatches] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia(query).matches : false
   );
+
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const media = window.matchMedia(query);
-    const listener = () => setMatches(media.matches);
-    media.addListener(listener);
-    return () => media.removeListener(listener);
+    const listener = (event) => setMatches(event.matches);
+    media.addEventListener("change", listener);
+
+    setMatches(media.matches);
+
+    return () => media.removeEventListener("change", listener);
   }, [query]);
+
   return matches;
 }
 
@@ -167,6 +148,13 @@ export default function AiidaExplorer({
           }, 150);
         }
       });
+
+      // on new graph we should also always fetch central node and select it..
+      const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+      if (centralNode) {
+        const enrichedNode = await ensureNodeData(centralNode);
+        setSelectedNode(enrichedNode);
+      }
     }
 
     loadGraph();
@@ -231,11 +219,10 @@ export default function AiidaExplorer({
     setSelectedNode(enrichedNode);
   };
 
-  // TODO switch the overlay to use ReactDOM portals...
   return (
-    <div
+    <OverlayProvider
       ref={overlayContainerRef}
-      className="flex flex-col relative h-full min-h-[300px]"
+      className="flex flex-col relative h-full min-h-[300px] border rounded-md bg-white"
     >
       {/* Overlay */}
 
@@ -339,13 +326,13 @@ export default function AiidaExplorer({
 
         {/* Resize handle */}
         <PanelResizeHandle
-          className={`group flex items-center justify-center border br-gray-500 bl-gray-500 ${
-            isMdUp ? "w-2 cursor-col-resize" : "h-2 cursor-row-resize"
+          className={`group flex items-center justify-center bg-slate-200 border-x ${
+            isMdUp ? "w-1.5 cursor-col-resize" : "h-1.5 cursor-row-resize"
           }`}
         >
           {/* Thumb indicator */}
           <div
-            className={`bg-gray-400 rounded group-hover:scale-150 ${
+            className={`bg-gray-700 rounded group-hover:scale-125 ${
               isMdUp ? "w-0.5 h-6" : "w-6 h-0.5"
             }`}
           />
@@ -370,13 +357,13 @@ export default function AiidaExplorer({
       </PanelGroup>
 
       {/* Breadcrumbs */}
-      <div className="flex-none h-12 border-t border-gray-300 overflow-x-auto">
+      <div className="flex-none overflow-x-auto">
         <Breadcrumbs
           trail={breadcrumbs}
           onClick={handleBreadcrumbClick}
           maxItems={MAX_BREADCRUMBS}
         />
       </div>
-    </div>
+    </OverlayProvider>
   );
 }

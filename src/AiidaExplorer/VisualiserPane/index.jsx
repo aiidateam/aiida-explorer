@@ -65,12 +65,12 @@ export default function VisualiserPane({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Shortened Metadata */}
-      <div className="px-4 py-3 md:py-2 border-b bg-slate-50">
+      <div className="px-4 py-3 md:py-2 bg-slate-50">
         <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b bg-gray-100">
+      <div className="flex border-y bg-gray-100">
         <button
           disabled={richTabDisabled}
           className={`px-4 py-2 ${
