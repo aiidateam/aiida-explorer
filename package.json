@@ -32,11 +32,11 @@
   "dependencies": {
     "bands-visualiser": "^0.0.1",
     "js-yaml": "^4.1.0",
-    "mc-react-structure-visualizer": "^0.8.1",
+    "mc-react-structure-visualizer": "^0.8.2",
     "plotly.js-basic-dist": "^3.1.1",
     "react-json-view-lite": "^2.5.0",
     "react-plotly.js": "^2.6.0",
-    "react-resizable-panels": "^1.0.0-rc.4",
+    "react-resizable-panels": "^3.0.6",
     "reactflow": "^11.11.4"
   },
   "peerDependencies": {
