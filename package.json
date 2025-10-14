@@ -37,6 +37,7 @@
     "react-json-view-lite": "^2.5.0",
     "react-plotly.js": "^2.6.0",
     "react-resizable-panels": "^3.0.6",
+    "react-router-dom": "^7.9.4",
     "reactflow": "^11.11.4"
   },
   "peerDependencies": {

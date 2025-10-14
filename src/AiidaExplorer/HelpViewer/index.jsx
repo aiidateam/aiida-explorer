@@ -106,7 +106,7 @@ export default function HelpViewer() {
         <ul className="pl-4 list-inside text-gray-700 space-y-1 ">
           <li className="flex items-center gap-2">
             <strong className="flex items-center gap-1">
-              <GroupIcon size={22} /> Query Database:
+              <GroupIcon size={22} /> Find node:
             </strong>
             <span className="text-gray-700">
               Provides a graphical interface for simple AiiDA queries using the

@@ -43,7 +43,6 @@ function formatValue(label, value, isSmallScreen = false) {
       if (isSmallScreen) {
         // small screen: only show last segment after "."
         const parts = value.replace(/\|$/, "").split(".");
-        console.log(parts);
         return parts.at(-2) || value;
       }
       // full value for larger screens

@@ -39,6 +39,16 @@ import { AiidaExplorer } from "aiida-explorer";
 
 where `restApiUrl` is the base url of the [AiiDA REST API](https://aiida.readthedocs.io/projects/aiida-core/en/v2.6.2/reference/rest_api.html), e.g. `http://localhost:5000/api/v4` if started locally via `verdi restapi`. For more details see the source code of the demo page.
 
+One can also manage the `rootNode` state outside the component (e.g. to sync with URL parameters), then one should use
+
+```javascript
+<AiidaExplorer
+  restApiUrl={AIIDA_REST_URL}
+  rootNode={rootNode}
+  onRootNodeChange={onRootNodeChange}
+/>
+```
+
 ## Development
 
 ### Using the demo page

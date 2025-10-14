@@ -69,11 +69,9 @@ export default function HorizontalNode({ data, selected }) {
   ${showCounts ? "" : "hidden"}
 `;
 
-  const leftCountStyle = `${baseCountStyle} bg-green-800/40 left-0 ml-0.5 pr-1 pl-0.5
-   bg-gray-400 rounded-r-sm`;
+  const leftCountStyle = `${baseCountStyle} left-0 ml-0.5 pr-1 pl-0.5 bg-gray-400/50 rounded-r-sm`;
 
-  const rightCountStyle = `${baseCountStyle} bg-orange-800/40 right-0 mr-0.5 pl-1 pr-0.5
-   bg-gray-400 rounded-l-sm`;
+  const rightCountStyle = `${baseCountStyle} right-0 mr-0.5 pl-1 pr-0.5 bg-gray-400/50 rounded-l-sm`;
 
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,

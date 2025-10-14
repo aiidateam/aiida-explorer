@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import {
@@ -23,19 +22,33 @@ import useMediaQuery from "./hooks/mediaquery";
 
 import Overlay, { OverlayProvider } from "./components/Overlay";
 
-// full component handler for  aiidaexplorer.
+// full component handler for aiidaexplorer.
 // this manages all states and data to the subcomponents.
 
 // TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
 // TODO add loading and timings of steps...
 export default function AiidaExplorer({
   restApiUrl,
-  startingNode = "",
+  rootNode, // controlled value
+  defaultRootNode = "", // uncontrolled fallback
+  onRootNodeChange = () => {},
   debugMode = false,
 }) {
+  // Controlled vs uncontrolled pattern:
+  // If parent specifies rootNode, that is used as the source of truth,
+  // otherwise the internal state is used.
+  const isControlled = rootNode !== undefined;
+  const [internalRootNodeId, setInternalRootNodeId] = useState(defaultRootNode);
+  const rootNodeId = isControlled ? rootNode : internalRootNodeId;
+
+  const setRootNodeId = (id) => {
+    if (!isControlled) setInternalRootNodeId(id);
+    onRootNodeChange(id);
+  };
+
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
-  const isSmallScreen = useMediaQuery("(min-width: 768px)");
+  const isWideScreen = useMediaQuery("(min-width: 768px)");
 
   const [loading, setLoading] = useState(false);
   const [singlePageMode, setSinglePageMode] = useState(false);
@@ -46,20 +59,18 @@ export default function AiidaExplorer({
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [extraNodeData, setExtraNodeData] = useState({});
-  const [rootNodeId, setRootNodeId] = useState(startingNode);
-
-  const MAX_BREADCRUMBS = 10;
 
   const [activeOverlay, setActiveOverlay] = useState("groupsview");
+
+  const MAX_BREADCRUMBS = 10;
 
   const initialRender = useRef(true);
 
   useEffect(() => {
+    // handle overlay
     if (initialRender.current && !rootNodeId) {
       initialRender.current = false; // skip first render
       setActiveOverlay("groupsview");
-
-      return;
     } else if (rootNodeId) {
       setActiveOverlay(null);
     } else {
@@ -67,26 +78,12 @@ export default function AiidaExplorer({
     }
   }, [rootNodeId]);
 
-  // --- Fetch users once ---
   useEffect(() => {
-    let mounted = true;
-    fetchUsers(restApiUrl).then((data) => {
-      if (mounted) setUsers(data);
-    });
-    return () => {
-      mounted = false;
-    };
+    fetchUsers(restApiUrl).then(setUsers);
   }, [restApiUrl]);
 
-  // --- Fetch download formats once ---
   useEffect(() => {
-    let mounted = true;
-    fetchDownloadFormats(restApiUrl).then((data) => {
-      if (mounted) setDownloadFormats(data);
-    });
-    return () => {
-      mounted = false;
-    };
+    fetchDownloadFormats(restApiUrl).then(setDownloadFormats);
   }, [restApiUrl]);
 
   // --- Load graph whenever rootNodeId changes ---
@@ -131,11 +128,16 @@ export default function AiidaExplorer({
         }
       });
 
-      // on new graph we should also always fetch central node and select it..
-      const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
-      if (centralNode) {
-        const enrichedNode = await ensureNodeData(centralNode);
+      const rootNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+      if (rootNode) {
+        const enrichedNode = await ensureNodeData(rootNode);
         setSelectedNode(enrichedNode);
+      }
+
+      // every time root node changes, check/update breadcrumbs
+      // Don't update if the last node is already the root node (e.g. via the history click)
+      if (breadcrumbs[breadcrumbs.length - 1]?.id !== rootNode.id) {
+        setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
       }
     }
 
@@ -160,7 +162,7 @@ export default function AiidaExplorer({
     return enrichedNode;
   };
 
-  // --- Single click ---
+  // --- Single click on a node ---
   const handleNodeSelect = async (node) => {
     const enrichedNode = await ensureNodeData(node);
     setSelectedNode(enrichedNode);
@@ -178,15 +180,7 @@ export default function AiidaExplorer({
     if (loading) return;
     setLoading(true);
     try {
-      if (breadcrumbs[breadcrumbs.length - 1]?.id !== node.id) {
-        setBreadcrumbs((prev) => [...prev, node].slice(-MAX_BREADCRUMBS));
-      }
-
-      // Update URL param, triggers reload automatically
       setRootNodeId(node.id);
-
-      const enrichedNode = await ensureNodeData(node);
-      setSelectedNode(enrichedNode);
     } finally {
       setLoading(false);
     }
@@ -196,9 +190,6 @@ export default function AiidaExplorer({
   const handleBreadcrumbClick = async (node, idx) => {
     setBreadcrumbs((prev) => prev.slice(0, idx + 1));
     setRootNodeId(node.id);
-
-    const enrichedNode = await ensureNodeData(node);
-    setSelectedNode(enrichedNode);
   };
 
   return (
@@ -229,12 +220,12 @@ export default function AiidaExplorer({
       </Overlay>
 
       <PanelGroup
-        direction={isSmallScreen ? "horizontal" : "vertical"}
+        direction={isWideScreen ? "horizontal" : "vertical"}
         className="flex-1 min-h-0 overflow-hidden"
       >
         {/* Left-hand pane */}
         <Panel
-          className=" border-gray-300 flex flex-col min-h-0 relative"
+          className="flex flex-col min-h-0 relative"
           defaultSize={50} // initial % width
           minSize={10} // min % width
         >
@@ -253,7 +244,7 @@ export default function AiidaExplorer({
                 >
                   <GroupIcon className="text-blue-600 group-hover:text-blue-800 transition-colors w-4 h-4 md:w-5 md:h-5" />
                   <span className="hidden md:inline transition-colors">
-                    Query database
+                    Find node
                   </span>
                 </button>
 
@@ -309,15 +300,13 @@ export default function AiidaExplorer({
         {/* Resize handle */}
         <PanelResizeHandle
           className={`group flex items-center justify-center bg-slate-200 border-x ${
-            isSmallScreen
-              ? "w-1.5 cursor-col-resize"
-              : "h-1.5 cursor-row-resize"
+            isWideScreen ? "w-1.5 cursor-col-resize" : "h-1.5 cursor-row-resize"
           }`}
         >
           {/* Thumb indicator */}
           <div
             className={`bg-gray-700 rounded group-hover:scale-125 ${
-              isSmallScreen ? "w-0.5 h-6" : "w-6 h-0.5"
+              isWideScreen ? "w-0.5 h-6" : "w-6 h-0.5"
             }`}
           />
         </PanelResizeHandle>
