@@ -11,7 +11,7 @@ permissions:
 jobs:
   build-and-deploy:
     concurrency: ci-${{ github.ref }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.repository == 'aiidateam/aiida-explorer'
 
     steps:
@@ -21,14 +21,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Set vite base path variable
         run: echo "VITE_BASE_PATH=/aiida-explorer/" >> $GITHUB_ENV
 
       - name: Install and build project
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Deploy to GitHub Pages
