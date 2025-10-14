@@ -16,7 +16,6 @@ export const aiidaTypes = [
         label: "ArrayData",
         type: "data.core.array.%",
         children: [
-          { label: "ArrayData", type: "data.core.array.%" },
           { label: "BandsData", type: "data.core.array.bands.%" },
           { label: "XyData", type: "data.core.array.xy.%" },
           { label: "TrajectoryData", type: "data.core.array.trajectory.%" },
@@ -40,10 +39,10 @@ export const aiidaTypes = [
     type: "process.%",
     children: [
       { label: "CalcJob", type: "process.calculation.calcjob.%" },
-      { label: "CalcFunction", type: "process.calculation.calcjob.%" },
+      { label: "CalcFunction", type: "process.calculation.calcfunction.%" },
       { label: "WorkFunction", type: "process.workflow.workfunction.%" },
       { label: "Workgraph", type: "process.workflow.workgraph.%" },
-      { label: "Workchain", type: "process.workflow.workgraph.%" },
+      { label: "Workchain", type: "process.workflow.workchain.%" },
     ],
   },
 ];
