@@ -9,7 +9,7 @@ The tool allows you to explore the graph of nodes, view detailed metadata, and t
 This repository contains
 
 1. the `AiidaExplorer` component (library), which is also published to `npm`; and
-2. a demo page illustrating the usage, which is deployed to github pages (https://aiidateam.github.io/aiida-explorer/).
+2. a demo page illustrating the usage, which is deployed to github pages (https://aiidateam.github.io/aiida-explorer/). This also allows to directly explore your local AiiDA database (using `verdi restapi`), but might depend on the browser security settings (confirmed working with Firefox).
 
 Main features include:
 
