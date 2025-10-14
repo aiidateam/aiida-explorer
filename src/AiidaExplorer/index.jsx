@@ -22,12 +22,19 @@ import useMediaQuery from "./hooks/mediaquery";
 
 import Overlay, { OverlayProvider } from "./components/Overlay";
 
+/**
+ * AiidaExplorer wrapper to reset internal state when restApiUrl changes
+ */
+export default function AiidaExplorer(props) {
+  return <AiidaExplorerInner key={props.restApiUrl} {...props} />;
+}
+
 // full component handler for aiidaexplorer.
 // this manages all states and data to the subcomponents.
 
 // TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
 // TODO add loading and timings of steps...
-export default function AiidaExplorer({
+function AiidaExplorerInner({
   restApiUrl,
   rootNode, // controlled value
   defaultRootNode = "", // uncontrolled fallback
@@ -204,7 +211,7 @@ export default function AiidaExplorer({
         onClose={() => setActiveOverlay(null)}
         title={
           activeOverlay === "groupsview"
-            ? "Groups"
+            ? "Find node"
             : activeOverlay === "typesview"
               ? "Node Types"
               : activeOverlay === "helpview"
