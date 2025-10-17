@@ -152,7 +152,7 @@ function AiidaExplorerInner({
     return () => {
       mounted = false;
     };
-  }, [rootNodeId, restApiUrl, singlePageMode]);
+  }, [rootNodeId, restApiUrl, singlePageMode, downloadFormats, users]);
 
   // --- Cache + merge ---
   const ensureNodeData = async (node) => {

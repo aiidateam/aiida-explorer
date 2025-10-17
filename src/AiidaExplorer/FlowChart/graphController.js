@@ -1,37 +1,113 @@
 import { Position } from "reactflow";
 
-import {
-  arrangeDataCenterNode,
-  arrangeWorkflowCenterNode,
-  arrangeCalculationCenterNode,
-} from "./layoutHandlers";
+import { edgeStyleFor, categorizeNodes } from "./layoutHandlers";
 
 export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
-  options = {},
+  options = {}
 ) {
-  const centerType = centerNode.data?.node_type.split(".")[0];
-  const centerSubType = centerNode.data?.node_type.split(".")[1];
+  const {
+    spacingX = 280,
+    spacingY = 70,
+    groupGapY = 90,
+    centerX = window.innerWidth / 2,
+    centerY = window.innerHeight / 2,
+    edgeStyle = { stroke: "grey", strokeWidth: 2 },
+    smallThreshold = 20, // total nodes below this count use "small" mode
+  } = options;
 
-  // three arrangers exist - this is should cover EVERY case...
-  const arrangers = {
-    data: arrangeDataCenterNode,
-    calculation: arrangeCalculationCenterNode,
-    workflow: arrangeWorkflowCenterNode,
+  const nodes = [];
+  const edges = [];
+
+  const inputs = categorizeNodes(inputNodes);
+  const outputs = categorizeNodes(outputNodes);
+
+  const layoutGroupOrders = {
+    data: ["calculations", "workflows", "data"],
+    calculation: ["data", "calculation", "workflow"],
+    workflow: ["data", "calculation", "workflow"],
   };
 
-  // pick the arranger based on type or subtype
-  const arranger = arrangers[centerType] || arrangers[centerSubType];
+  const centerType = centerNode.data?.node_type.split(".")[1];
+  console.log(centerType);
+  const order = layoutGroupOrders[centerType] || layoutGroupOrders["data"];
 
-  if (!arranger) {
-    console.warn(
-      "No arranger found for node type:",
-      centerNode.data?.node_type,
+  console.log(order);
+
+  nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
+
+  // Merge inputs and outputs to get total node count
+  const totalNodes = order.flatMap((g) => [
+    ...(inputs[g] || []),
+    ...(outputs[g] || []),
+  ]).length;
+
+  const smallMode = totalNodes <= smallThreshold;
+
+  const layoutGroup = (
+    groupNodes,
+    startY,
+    directionX,
+    stackDownward = true
+  ) => {
+    (groupNodes || []).forEach((node, i) => {
+      const y = stackDownward ? startY + i * spacingY : startY - i * spacingY;
+      const x = centerX + spacingX * directionX;
+
+      node.position = { x, y };
+      nodes.push(node);
+
+      edges.push({
+        id: `e-${directionX < 0 ? node.id + "->" : centerNode.id + "->"}${
+          directionX < 0 ? centerNode.id : node.id
+        }`,
+        source: directionX < 0 ? node.id : centerNode.id,
+        target: directionX < 0 ? centerNode.id : node.id,
+        sourcePosition: directionX < 0 ? "right" : "left",
+        targetPosition: directionX < 0 ? "left" : "right",
+        type: "smoothstep",
+        style: edgeStyleFor(node, edgeStyle),
+        markerEnd: { type: "arrow", color: "grey", width: 20, height: 15 },
+      });
+    });
+  };
+
+  if (smallMode) {
+    console.log("small Mode");
+    // Flatten all groups into a single side stack.
+    const leftStack = order.flatMap((g) => inputs[g] || []).reverse();
+    const rightStack = order.flatMap((g) => outputs[g] || []).reverse();
+
+    // Compute startY for each side independently
+    const startYLeft = centerY - ((leftStack.length - 1) / 2) * spacingY;
+    const startYRight = centerY - ((rightStack.length - 1) / 2) * spacingY;
+
+    // Layout consecutively
+    leftStack.forEach((node, i) =>
+      layoutGroup([node], startYLeft + i * spacingY, -1, true)
     );
-    return { nodes: [centerNode], edges: [] };
+    rightStack.forEach((node, i) =>
+      layoutGroup([node], startYRight + i * spacingY, +1, true)
+    );
+  } else {
+    // --- Large mode: primary downward, secondary upward ---
+    const primaryInput = inputs[order[0]] || [];
+    const primaryOutput = outputs[order[0]] || [];
+
+    const secondaryNames = order.slice(1, 3);
+    const secondaryInput = secondaryNames.flatMap((g) => inputs[g] || []);
+    const secondaryOutput = secondaryNames.flatMap((g) => outputs[g] || []);
+
+    const startYPrimary = centerY - 175;
+    layoutGroup(primaryInput, startYPrimary, -1, true);
+    layoutGroup(primaryOutput, startYPrimary, +1, true);
+
+    const startYSecondary = startYPrimary - groupGapY;
+    layoutGroup(secondaryInput, startYSecondary, -1, false);
+    layoutGroup(secondaryOutput, startYSecondary, +1, false);
   }
 
-  return arranger(centerNode, inputNodes, outputNodes, options);
+  return { nodes, edges };
 }

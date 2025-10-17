@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import Plot from "react-plotly.js";
+import Plotly from "plotly.js-basic-dist";
+
+import SimplePlot from "../../components/SimplePlot";
 
 import ErrorDisplay from "../../components/Error";
 import Spinner from "../../components/Spinner";
@@ -179,7 +181,7 @@ export default function UpfDataVisualiser({ nodeData }) {
 
         {/* container that constrains width and uses box-sizing */}
         <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
-          <Plot
+          <SimplePlot
             data={orbitalTraces}
             layout={{
               autosize: true,
@@ -206,7 +208,7 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       <h3 className="font-semibold mb-2">Beta projectors</h3>
       <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
-        <Plot
+        <SimplePlot
           data={betaprojTraces}
           layout={{
             autosize: true,
@@ -225,15 +227,13 @@ export default function UpfDataVisualiser({ nodeData }) {
             },
           }}
           config={{ responsive: true }}
-          useResizeHandler={true}
-          style={{ width: "100%", height: 400 }}
         />
       </div>
 
       <h3 className="font-semibold mb-2">Charge densities</h3>
 
       <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
-        <Plot
+        <SimplePlot
           data={chargeDensitiesTraces}
           layout={{
             autosize: true,

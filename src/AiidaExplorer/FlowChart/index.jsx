@@ -25,18 +25,19 @@ export default function FlowChart({
   onNodeDoubleSelect,
   onInit,
 }) {
+  // TODO - stop spam firing this when held down.
   const handleNodeClick = useCallback(
     (event, node) => {
       if (onNodeSelect) onNodeSelect(node);
     },
-    [onNodeSelect],
+    [onNodeSelect]
   );
 
   const handleNodeDoubleClick = useCallback(
     (event, node) => {
       if (onNodeDoubleSelect) onNodeDoubleSelect(node);
     },
-    [onNodeDoubleSelect],
+    [onNodeDoubleSelect]
   );
 
   // map nodes and mark the selected one

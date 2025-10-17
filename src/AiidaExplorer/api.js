@@ -596,10 +596,19 @@ export async function fetchGraphByNodeId(
     })),
   ];
 
+  // Remove duplicates by `id`
+  // TODO - for now i am just mapping IDs to remove duplicates.
+  // THIS IS CATATROPHIC SINCE NODES CAN BE IN MULTIPLE GRAPHS MULTIPLE TIMES.
+  const nodeMap = new Map();
+  for (const node of allNodes) {
+    if (!nodeMap.has(node.id)) nodeMap.set(node.id, node);
+  }
+  const uniqueAllNodes = Array.from(nodeMap.values());
+
   const { nodes, edges } = layoutGraphDefault(
-    allNodes.find((n) => n.data.pos === 0),
-    allNodes.filter((n) => n.data.pos === 1),
-    allNodes.filter((n) => n.data.pos === -1)
+    uniqueAllNodes.find((n) => n.data.pos === 0),
+    uniqueAllNodes.filter((n) => n.data.pos === 1),
+    uniqueAllNodes.filter((n) => n.data.pos === -1)
   );
 
   return { nodes, edges };
