@@ -100,7 +100,8 @@ function sortGroups(groups) {
     return a.label.localeCompare(b.label, undefined, { numeric: true });
   });
 }
-
+// TODO - refactor, this is very messy atm.
+// TODO check the search feature - maybe wire into full_types api...?
 export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
@@ -109,6 +110,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchNode, setSearchNode] = useState(""); // new state for search
   const limit = 200;
 
   // responsive
@@ -116,7 +118,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
 
   // columns based on screen
   const columnsToRender = isSmallScreen
-    ? columnOrder.filter((c) => c !== "Created" && c !== "Label")
+    ? columnOrder.filter((c) => c !== "Created")
     : columnOrder;
 
   // fetch groups once
@@ -168,11 +170,28 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
     return formatTableData(rawTableData, setRootNodeId, isSmallScreen);
   }, [rawTableData, isSmallScreen, setRootNodeId]);
 
+  // handle manual node navigation
+  const handleNodeSearch = () => {
+    if (searchNode.trim() !== "") {
+      setRootNodeId(searchNode.trim());
+      setSearchNode(""); // clear input after navigation
+    }
+  };
+
   return (
-    <div className="flex gap-4 overflow-auto w-full items-start">
+    <div className="flex flex-col md:flex-row gap-4 overflow-auto w-full items-start">
       {/* Left panel */}
-      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-4 rounded">
-        <h4 className="font-medium mt-4 mb-2">Filter by Node Types</h4>
+      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-3 rounded">
+        {/* Top header + button */}
+        <div className="flex justify-between items-center mb-2">
+          <h4 className="font-medium mt-2">Filter by Node Types</h4>
+          <button
+            onClick={() => fetchNodes(0)}
+            className="px-3 py-1 rounded bg-indigo-700 text-white hover:bg-indigo-800 transition"
+          >
+            Apply
+          </button>
+        </div>
         <TypeCheckboxTree
           types={aiidaTypes}
           selectedTypes={selectedTypes}
@@ -198,28 +217,42 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
             </span>
           </label>
         ))}
-        <button
-          onClick={() => fetchNodes(0)}
-          className="px-3 py-1 my-2 ml-2 rounded bg-indigo-700 text-white hover:bg-indigo-800 transition"
-        >
-          Apply
-        </button>
       </div>
 
       {/* Right table */}
       <div className="flex-1 bg-white rounded">
-        <div className="flex gap-4">
-          <h4 className="text-xl font-semibold">
-            {tableData.length} nodes loaded
-          </h4>
-          {tableData.length > 0 && (
+        <div className="flex flex-col md:flex-row">
+          {/* Left side: node count + load more */}
+          <div className="flex-1 flex items-center gap-2 py-2 md:py-0">
+            <h4 className="text-xl font-semibold">
+              {tableData.length} nodes loaded
+            </h4>
+            {tableData.length > 0 && (
+              <button
+                onClick={() => fetchNodes(offset)}
+                className="px-3 py-1 rounded bg-gray-700 text-white hover:bg-gray-800 transition"
+              >
+                Load next 200
+              </button>
+            )}
+          </div>
+
+          {/* Right side: search */}
+          <div className="flex md:flex-row gap-2 py-0.5">
+            <input
+              type="text"
+              value={searchNode}
+              onChange={(e) => setSearchNode(e.target.value)}
+              placeholder="Navigate to a UUID"
+              className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-700 rounded px-1 py-1"
+            />
             <button
-              onClick={() => fetchNodes(offset)}
-              className="px-3 py-1 mr-10 rounded bg-gray-700 text-white hover:bg-gray-800 transition"
+              onClick={handleNodeSearch}
+              className="px-1 py-0.5 md:px-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
             >
-              Load next 200
+              Go
             </button>
-          )}
+          </div>
         </div>
 
         {loading && (
