@@ -1,6 +1,6 @@
 import { Position } from "reactflow";
 
-import { edgeStyleFor, categorizeNodes } from "./layoutHandlers";
+import { edgeStyleFor, categorizeNodes } from "./layoutUtils";
 
 export function layoutGraphDefault(
   centerNode,

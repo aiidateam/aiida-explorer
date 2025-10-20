@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Plotly from "plotly.js-basic-dist";
 
 import SimplePlot from "../../components/SimplePlot";
@@ -82,8 +82,6 @@ function getChargeDensitiesTraces(upfDataObject) {
     name: "Valence Pseudocharge density",
   };
 
-  console.log("vc", ValenceChargetrace);
-
   const CoreChargetrace = {
     x: upfDataObject.radial_grid,
     y: upfDataObject.core_charge_density,
@@ -91,8 +89,6 @@ function getChargeDensitiesTraces(upfDataObject) {
     mode: "lines",
     name: "Core Pseudocharge density",
   };
-
-  console.log("cc", CoreChargetrace);
 
   return [CoreChargetrace, ValenceChargetrace].filter(
     (t) => Array.isArray(t.y) && t.y.length > 0
@@ -107,9 +103,18 @@ export default function UpfDataVisualiser({ nodeData }) {
 
   const aiidaJsonPath = nodeData.downloadByFormat?.json;
 
-  const orbitalTraces = getRadialFunctionsTraces(upfData);
-  const betaprojTraces = getBetaProjectorsTraces(upfData);
-  const chargeDensitiesTraces = getChargeDensitiesTraces(upfData);
+  const orbitalTraces = useMemo(
+    () => getRadialFunctionsTraces(upfData),
+    [upfData]
+  );
+  const betaprojTraces = useMemo(
+    () => getBetaProjectorsTraces(upfData),
+    [upfData]
+  );
+  const chargeDensitiesTraces = useMemo(
+    () => getChargeDensitiesTraces(upfData),
+    [upfData]
+  );
 
   // Fetch UPF JSON
   const fetchData = useCallback(async () => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Handle, Position, useViewport } from "reactflow";
 
 import { getNodeDisplay } from "./nodeUtils";
@@ -39,7 +39,7 @@ function getNodeColorClasses(type, selected = false) {
 }
 
 // custom node component.
-export default function HorizontalNode({ data, selected }) {
+function HorizontalNode({ data, selected }) {
   const { zoom } = useViewport();
 
   const baseNodeStyle = `min-w-[150px] text-center py-1.5 rounded border-3`;
@@ -153,3 +153,5 @@ export default function HorizontalNode({ data, selected }) {
     </div>
   );
 }
+
+export default memo(HorizontalNode);
