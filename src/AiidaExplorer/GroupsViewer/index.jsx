@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import useMediaQuery from "../hooks/mediaquery";
 
-import DataTable from "../components/DataTable";
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import { buildQuery } from "./queryHandler";
 import {
@@ -9,9 +7,10 @@ import {
   aiidaTypes,
   getFlattenedNodeTypes,
 } from "./TypesCheckbox";
-
+import DataTable from "../components/DataTable";
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";
+import useMediaQuery from "../hooks/useMediaQuery";
 
 // column label mappings
 const columnLabels = {

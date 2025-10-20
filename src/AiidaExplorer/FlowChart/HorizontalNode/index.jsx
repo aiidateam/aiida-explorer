@@ -44,14 +44,6 @@ function HorizontalNode({ data, selected }) {
 
   const baseNodeStyle = `min-w-[150px] text-center py-1.5 rounded border-3`;
 
-  const baseLinkStyle = `absolute -translate-y-1/4
-   whitespace-nowrap opacity-90
-   bg-slate-200 border border-gray-300
-   rounded-md px-1 py-0.5 text-gray-700 `;
-
-  const leftLinkStyle = `${baseLinkStyle} left-full ml-1 text-left`;
-  const rightLinkStyle = `${baseLinkStyle} right-full mr-1 text-right`;
-
   // counts styling
   // ----------
   const showCounts = zoom > 1.2; // only show counts when zoomed in
@@ -103,25 +95,10 @@ function HorizontalNode({ data, selected }) {
     </div>
   );
 
-  // Link label
-  const linkLabelHtml =
-    data.aiida?.link_label && data.pos !== 0 ? (
-      <div
-        className={`${
-          data.pos === 1 ? leftLinkStyle : rightLinkStyle
-        } ${linkFontSizeClass}`}
-      >
-        {data.aiida.link_label.length > 21
-          ? `${data.aiida.link_label.slice(0, 18)}...`
-          : data.aiida.link_label}
-      </div>
-    ) : null;
-
   return (
     // main node
     <div className={`${baseNodeStyle} ${bgClass} ${textClass} ${borderStyle}`}>
       {/* text strings. */}
-      {data.pos !== 0 && linkLabelHtml}
 
       {/* {linkCountLabel} */}
       <div className={leftCountStyle}>

@@ -1,9 +1,8 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
 import Plotly from "plotly.js-basic-dist";
-
-import SimplePlot from "../../components/SimplePlot";
+import { useEffect, useState, useCallback, useMemo } from "react";
 
 import ErrorDisplay from "../../components/Error";
+import SimplePlot from "../../components/SimplePlot";
 import Spinner from "../../components/Spinner";
 
 // TODO extract a common config for all plots.
@@ -71,8 +70,6 @@ function getBetaProjectorsTraces(upfDataObject) {
 
 function getChargeDensitiesTraces(upfDataObject) {
   if (!upfDataObject || !upfDataObject.radial_grid) return [];
-
-  console.log("upfObj", upfDataObject);
 
   const ValenceChargetrace = {
     x: upfDataObject.radial_grid,

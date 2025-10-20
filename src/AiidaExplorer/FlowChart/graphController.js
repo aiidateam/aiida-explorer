@@ -1,6 +1,6 @@
 import { Position } from "reactflow";
 
-import { edgeStyleFor, categorizeNodes } from "./layoutUtils";
+import { categorizeNodes } from "./layoutUtils";
 
 export function layoutGraphDefault(
   centerNode,
@@ -14,7 +14,6 @@ export function layoutGraphDefault(
     groupGapY = 90,
     centerX = window.innerWidth / 2,
     centerY = window.innerHeight / 2,
-    edgeStyle = { stroke: "grey", strokeWidth: 2 },
     smallThreshold = 20, // total nodes below this count use "small" mode
   } = options;
 
@@ -31,10 +30,7 @@ export function layoutGraphDefault(
   };
 
   const centerType = centerNode.data?.node_type.split(".")[1];
-  console.log(centerType);
   const order = layoutGroupOrders[centerType] || layoutGroupOrders["data"];
-
-  console.log(order);
 
   nodes.push({ ...centerNode, position: { x: centerX, y: centerY } });
 
@@ -59,6 +55,22 @@ export function layoutGraphDefault(
       node.position = { x, y };
       nodes.push(node);
 
+      // Determine link label
+      let linkLabel = "";
+      if (node?.data?.aiida?.link_label) {
+        const rawLabel = node.data.aiida.link_label;
+        linkLabel =
+          rawLabel.length > 21 ? `${rawLabel.slice(0, 18)}...` : rawLabel;
+      }
+
+      const style = {};
+      const type = node.data?.node_type || "";
+
+      // render dashed if workflow or processnode.
+      if (type.includes("workflow") || type.includes("process")) {
+        style.strokeDasharray = "5,5"; // dashed for workflow/process
+      }
+
       edges.push({
         id: `e-${directionX < 0 ? node.id + "->" : centerNode.id + "->"}${
           directionX < 0 ? centerNode.id : node.id
@@ -67,15 +79,17 @@ export function layoutGraphDefault(
         target: directionX < 0 ? centerNode.id : node.id,
         sourcePosition: directionX < 0 ? "right" : "left",
         targetPosition: directionX < 0 ? "left" : "right",
-        type: "smoothstep",
-        style: edgeStyleFor(node, edgeStyle),
-        markerEnd: { type: "arrow", color: "grey", width: 20, height: 15 },
+        type: "custom",
+        style: style,
+        data: {
+          label: linkLabel,
+          labelPosition: directionX < 0 ? "start" : "end",
+        },
       });
     });
   };
 
   if (smallMode) {
-    console.log("small Mode");
     // Flatten all groups into a single side stack.
     const leftStack = order.flatMap((g) => inputs[g] || []).reverse();
     const rightStack = order.flatMap((g) => outputs[g] || []).reverse();

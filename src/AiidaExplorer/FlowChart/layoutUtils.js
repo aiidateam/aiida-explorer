@@ -1,13 +1,5 @@
 import { Position } from "reactflow";
 
-export function edgeStyleFor(node, base) {
-  const t = node.data?.node_type || "";
-  if (t.includes("workflow") || t.includes("process")) {
-    return { ...base, strokeDasharray: "5,5" };
-  }
-  return base;
-}
-
 // --- Categorize and sort helper ---
 export function sortByCtimeDescending(a, b) {
   const at = new Date(a?.data?.aiida?.ctime || 0);

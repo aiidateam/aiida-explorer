@@ -96,9 +96,7 @@ export async function fetchNodeRepoList(restApiUrl, nodeId) {
     );
     if (!res.ok) return [];
 
-    const repoFiles = await res.json(); // original array of { name, ... }
-
-    console.log("repo", repoFiles.data.repo_list);
+    const repoFiles = await res.json();
 
     // Transform each file into { name, downloadUrl }
     const filesWithUrls = repoFiles.data.repo_list
@@ -129,10 +127,6 @@ export async function fetchAPIFullTypes(restApiUrl) {
   }
 }
 
-// --------------------------
-// defined datatype api hits are here
-// --------------------------
-
 // helper api hit that fetches the retrieved folder UUID for a specific node
 export async function fetchRetrievedUUID(restApiUrl, nodeId) {
   if (!nodeId) return null;
@@ -156,7 +150,7 @@ export async function fetchRetrievedUUID(restApiUrl, nodeId) {
 
 // calcJobs have a special endpoint (input_files/output_files)
 // annoyingly this calcjob node has information about the retrieved files but no information about the node they were retrieved from...
-// as a result this method relies on
+// as a result this method relies on a retrievedNodeID...
 export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
   if (!nodeId) return null;
 
@@ -206,25 +200,6 @@ export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
   return results;
 }
 
-// currently unused method but is a useful way to get the contents of a file.
-export async function fetchFileContents(restApiUrl, nodeId, filename) {
-  if (!nodeId) return { incoming: [], outgoing: [] };
-
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/repo/contents?filename="${filename}"`
-    );
-
-    if (!res.ok) return null;
-    return res.json();
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
-  }
-}
-
 export async function fetchJson(restApiUrl, nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
@@ -266,6 +241,7 @@ export async function fetchCif(restApiUrl, nodeId) {
   }
 }
 
+// CalcJob Special endpoint...
 export async function fetchSourceFile(restApiUrl, nodeId) {
   if (!nodeId) return { sourceFile: null };
 
@@ -349,29 +325,6 @@ export async function fetchLinks(restApiUrl, nodeId) {
   }
 }
 
-export async function fetchLinksFirstPage(restApiUrl, nodeId) {
-  if (!nodeId) return { incoming: [], outgoing: [] };
-
-  try {
-    const [incomingRes, outgoingRes] = await Promise.all([
-      fetch(
-        `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/incoming/page/1`
-      ),
-      fetch(
-        `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/page/1`
-      ),
-    ]);
-
-    const incoming = incomingRes.ok ? await incomingRes.json() : [];
-    const outgoing = outgoingRes.ok ? await outgoingRes.json() : [];
-
-    return { incoming, outgoing };
-  } catch (err) {
-    console.error("Error fetching links:", err);
-    return { incoming: [], outgoing: [] };
-  }
-}
-
 // get all links to a node (currently unpaginated)
 // TODO - check if there is a nice query builder version of this.
 export async function fetchLinkCounts(restApiUrl, nodes = []) {
@@ -389,46 +342,6 @@ export async function fetchLinkCounts(restApiUrl, nodes = []) {
         }
 
         const { incoming, outgoing } = await fetchLinks(restApiUrl, node.id);
-
-        const parentCount = (incoming?.data?.incoming || []).length;
-        const childCount = (outgoing?.data?.outgoing || []).length;
-
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            parentCount,
-            childCount,
-          },
-        };
-      })
-    );
-
-    return updatedNodes;
-  } catch (err) {
-    console.error("Error fetching next level nodes:", err);
-    return nodes;
-  }
-}
-
-export async function fetchLinkCountsFirstPage(restApiUrl, nodes = []) {
-  if (!nodes.length) return nodes;
-
-  try {
-    const updatedNodes = await Promise.all(
-      nodes.map(async (node) => {
-        // Skip fetch if parent/child counts already exist
-        if (
-          typeof node?.data?.parentCount === "number" &&
-          typeof node?.data?.childCount === "number"
-        ) {
-          return node;
-        }
-
-        const { incoming, outgoing } = await fetchLinksFirstPage(
-          restApiUrl,
-          node.id
-        );
 
         const parentCount = (incoming?.data?.incoming || []).length;
         const childCount = (outgoing?.data?.outgoing || []).length;
@@ -531,9 +444,6 @@ export async function smartFetchData(
     }, {});
   }
 
-  console.log(`Fetched data for node ${node.id}`);
-  console.log(updatedData);
-
   return { ...node, data: updatedData };
 }
 
@@ -541,22 +451,12 @@ export async function smartFetchData(
  * Fetch a node and all its immediate input nodes, returning
  * nodes and edges suitable for React Flow.
  */
-export async function fetchGraphByNodeId(
-  restApiUrl,
-  nodeId,
-  singlePageMode = true
-) {
+export async function fetchGraphByNodeId(restApiUrl, nodeId) {
   const rootNodeRaw = await fetchNodeById(restApiUrl, nodeId);
   const rootNode = rootNodeRaw.data.nodes[0];
   if (!rootNode) return { nodes: [], edges: [] };
 
-  let incoming;
-  let outgoing;
-  if (singlePageMode) {
-    ({ incoming, outgoing } = await fetchLinksFirstPage(restApiUrl, nodeId));
-  } else {
-    ({ incoming, outgoing } = await fetchLinks(restApiUrl, nodeId));
-  }
+  const { incoming, outgoing } = await fetchLinks(restApiUrl, nodeId);
 
   const linksIn = incoming?.data?.incoming || [];
   const linksOut = outgoing?.data?.outgoing || [];

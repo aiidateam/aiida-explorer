@@ -10,7 +10,6 @@ import {
   DownloadIcon,
   ViewIcon,
 } from "../components/Icons";
-
 import Overlay from "../components/Overlay";
 
 function FileTable({ title, dataArray = [], onView }) {

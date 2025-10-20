@@ -138,7 +138,7 @@ export default function HelpViewer() {
         This tool is currently in beta testing stage. Report unexpected
         behaviour, bugs or general suggestions on{" "}
         <a
-          href="https://github.com/Bud-Macaulay/aiida-explorer/issues/new"
+          href="https://github.com/aiidateam/aiida-explorer/issues/new"
           className="group inline-flex items-center gap-0.5 text-blue-400"
           target="_blank"
         >

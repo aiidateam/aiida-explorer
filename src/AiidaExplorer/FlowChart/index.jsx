@@ -9,10 +9,16 @@ import ReactFlow, {
 
 import HorizontalNode from "./HorizontalNode";
 
+import CustomEdge from "./CustomEdge";
+
 import "reactflow/dist/style.css";
 
 const nodeTypes = {
   custom: HorizontalNode,
+};
+
+const edgeTypes = {
+  custom: CustomEdge,
 };
 
 export default function FlowChart({
@@ -60,6 +66,8 @@ export default function FlowChart({
         onEdgesChange={(changes) =>
           setEdges((eds) => applyEdgeChanges(changes, eds))
         }
+        edgeTypes={edgeTypes}
+        edgesFocusable={false}
         onNodeClick={handleNodeClick}
         onNodeDoubleClick={handleNodeDoubleClick}
         fitView

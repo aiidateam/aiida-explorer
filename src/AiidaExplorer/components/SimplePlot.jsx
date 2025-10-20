@@ -1,5 +1,5 @@
-import { useEffect, useRef, useMemo } from "react";
 import Plotly from "plotly.js-basic-dist";
+import { useEffect, useRef, useMemo } from "react";
 
 export default function SimplePlot({
   data,
@@ -15,24 +15,25 @@ export default function SimplePlot({
   const memoConfig = useMemo(() => config, [JSON.stringify(config)]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    Plotly.newPlot(containerRef.current, memoData, memoLayout, {
+    Plotly.newPlot(container, memoData, memoLayout, {
       responsive: true,
       ...memoConfig,
     });
 
     const handleResize = () => {
-      if (containerRef.current) {
-        Plotly.Plots.resize(containerRef.current);
+      if (container) {
+        Plotly.Plots.resize(container);
       }
     };
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (containerRef.current) {
-        Plotly.purge(containerRef.current);
+      if (container) {
+        Plotly.purge(container);
       }
     };
   }, [memoData, memoLayout, memoConfig]);

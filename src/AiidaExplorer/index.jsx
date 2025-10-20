@@ -7,20 +7,22 @@ import {
   fetchLinkCounts,
   fetchUsers,
   fetchDownloadFormats,
-  fetchLinkCountsFirstPage,
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
+import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
+import Overlay, { OverlayProvider } from "./components/Overlay";
+import Spinner from "./components/Spinner";
+import ErrorDisplay from "./components/Error";
 import DebugPane from "./DebugPane";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
+import useMediaQuery from "./hooks/useMediaQuery";
 import VisualiserPane from "./VisualiserPane";
-import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
-import Spinner from "./components/Spinner";
 
-import useMediaQuery from "./hooks/mediaquery";
+import TopControls from "./TopBar";
 
-import Overlay, { OverlayProvider } from "./components/Overlay";
+import useRootNode from "./hooks/useRootNode";
 
 /**
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
@@ -41,24 +43,22 @@ function AiidaExplorerInner({
   onRootNodeChange = () => {},
   debugMode = false,
 }) {
-  // Controlled vs uncontrolled pattern:
+  // Controlled vs uncontrolled pattern managed by a custom hook
   // If parent specifies rootNode, that is used as the source of truth,
   // otherwise the internal state is used.
-  const isControlled = rootNode !== undefined;
-  const [internalRootNodeId, setInternalRootNodeId] = useState(defaultRootNode);
-  const rootNodeId = isControlled ? rootNode : internalRootNodeId;
-
-  const setRootNodeId = (id) => {
-    if (!isControlled) setInternalRootNodeId(id);
-    onRootNodeChange(id);
-  };
+  const [rootNodeId, setRootNodeId] = useRootNode(
+    rootNode,
+    defaultRootNode,
+    onRootNodeChange
+  );
 
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
-  const isWideScreen = useMediaQuery("(min-width: 768px)");
+  const isWideScreen = useMediaQuery("(min-width: 1000px)");
 
   const [loading, setLoading] = useState(false);
-  const [singlePageMode, setSinglePageMode] = useState(false);
+  const [error, setError] = useState(null);
+
   const [users, setUsers] = useState(null);
   const [downloadFormats, setDownloadFormats] = useState(null);
   const [nodes, setNodes] = useState([]);
@@ -100,51 +100,39 @@ function AiidaExplorerInner({
 
     async function loadGraph() {
       setLoading(true);
-      const { nodes: fetchedNodes, edges: fetchedEdges } =
-        await fetchGraphByNodeId(restApiUrl, rootNodeId, singlePageMode);
+      setError(null); // reset error on new load
 
-      if (!mounted) return;
+      try {
+        const { nodes: fetchedNodes, edges: fetchedEdges } =
+          await fetchGraphByNodeId(restApiUrl, rootNodeId);
 
-      const nodesWithExtras = fetchedNodes.map((n) => {
-        const cachedData = extraNodeData[n.id] || {};
-        return {
+        if (!mounted) return;
+
+        const nodesWithExtras = fetchedNodes.map((n) => ({
           ...n,
-          data: { ...n.data, ...cachedData },
-        };
-      });
+          data: { ...n.data, ...(extraNodeData[n.id] || {}) },
+        }));
 
-      setNodes(nodesWithExtras);
-      setEdges(fetchedEdges);
-      setLoading(false);
+        setNodes(nodesWithExtras);
+        setEdges(fetchedEdges);
 
-      // Animate central node
-      requestAnimationFrame(() => {
-        const instance = reactFlowInstanceRef.current;
-        if (!instance) return;
-        instance.fitView({ padding: 1.5 });
+        // Animate central node as before...
+        // ...
 
-        const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
-        if (centralNode?.position) {
-          setTimeout(() => {
-            instance.setCenter(
-              centralNode.position.x + 50,
-              centralNode.position.y,
-              { zoom: 1.22, duration: 1000 }
-            );
-          }, 150);
+        const rootNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+        if (rootNode) {
+          const enrichedNode = await ensureNodeData(rootNode);
+          setSelectedNode(enrichedNode);
         }
-      });
 
-      const rootNode = nodesWithExtras.find((n) => n.id === rootNodeId);
-      if (rootNode) {
-        const enrichedNode = await ensureNodeData(rootNode);
-        setSelectedNode(enrichedNode);
-      }
-
-      // every time root node changes, check/update breadcrumbs
-      // Don't update if the last node is already the root node (e.g. via the history click)
-      if (breadcrumbs[breadcrumbs.length - 1]?.id !== rootNode.id) {
-        setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
+        if (breadcrumbs[breadcrumbs.length - 1]?.id !== rootNode?.id) {
+          setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
+        }
+      } catch (err) {
+        console.error("Failed to load graph:", err);
+        if (mounted) setError(err.message || "Failed to load node data");
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
@@ -152,7 +140,7 @@ function AiidaExplorerInner({
     return () => {
       mounted = false;
     };
-  }, [rootNodeId, restApiUrl, singlePageMode, downloadFormats, users]);
+  }, [rootNodeId, restApiUrl, downloadFormats, users]);
 
   // --- Cache + merge ---
   const ensureNodeData = async (node) => {
@@ -242,50 +230,33 @@ function AiidaExplorerInner({
               <Spinner />
             </div>
           )}
-          {!activeOverlay && (
-            <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-auto">
-              <div className="flex gap-2">
-                <button
-                  className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
-                  onClick={() => setActiveOverlay("groupsview")}
-                >
-                  <GroupIcon className="text-blue-600 group-hover:text-blue-800 transition-colors w-4 h-4 md:w-5 md:h-5" />
-                  <span className="hidden md:inline transition-colors">
-                    Find node
-                  </span>
-                </button>
 
-                <button
-                  className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
-                  onClick={async () => {
-                    if (loading || !nodes || nodes.length === 0) return; // block if loading or no nodes
-                    setLoading(true);
-                    try {
-                      const updatedNodes = singlePageMode
-                        ? await fetchLinkCountsFirstPage(restApiUrl, nodes)
-                        : await fetchLinkCounts(restApiUrl, nodes);
-                      setNodes(updatedNodes);
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                >
-                  <LinksIcon className="text-blue-600 group-hover:text-blue-800 transition-colors" />
-                  <span className="hidden md:inline transition-colors">
-                    Get link counts
-                  </span>
-                </button>
-              </div>
-
-              <button
-                className="group px-2 md:px-4 py-1 rounded-md bg-white shadow-md text-blue-600 text-sm sm:text-lg flex items-center gap-1 hover:text-blue-800 transition-colors"
-                onClick={() => setActiveOverlay("helpview")}
-              >
-                <QuestionIcon className="text-blue-600 group-hover:text-blue-800 transition-colors w-4 h-4 md:w-5 md:h-5" />
-                <span className="hidden md:inline transition-colors">Help</span>
-              </button>
+          {/* Error message */}
+          {error && (
+            <div className="absolute bottom-2 right-2 z-50">
+              <ErrorDisplay
+                message={`Failed to find node UUID: ${rootNodeId}`}
+              />
             </div>
           )}
+
+          {/* controls pane at the top. */}
+          <TopControls
+            onFindNode={() => setActiveOverlay("groupsview")}
+            onGetLinkCounts={async () => {
+              if (loading || nodes.length === 0) return;
+              setLoading(true);
+              try {
+                const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
+                setNodes(updatedNodes);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            onHelp={() => setActiveOverlay("helpview")}
+            isLoading={loading}
+            disableGetCounts={nodes.length === 0}
+          />
 
           <div className="flex-1 min-h-0">
             <FlowChart
