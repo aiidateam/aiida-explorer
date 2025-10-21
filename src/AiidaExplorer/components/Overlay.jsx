@@ -57,7 +57,7 @@ export default function Overlay({
       onClick={onClose}
     >
       <div
-        className="bg-white w-full mx-4 h-5/6 rounded-xl overflow-auto transform transition-all duration-800 ease-in-out"
+        className="bg-white w-full mx-4 h-5/6 rounded-md overflow-auto transform transition-all duration-800 ease-in-out"
         style={{ maxWidth, width: "100%" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -65,7 +65,7 @@ export default function Overlay({
           {title && <h2 className="text-lg font-semibold">{title}</h2>}
           <button
             onClick={onClose}
-            className="text-gray-600 hover:text-black p-1 rounded"
+            className="text-gray-600 hover:text-black p-1"
           >
             ✕
           </button>

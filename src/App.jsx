@@ -56,12 +56,12 @@ export default function App() {
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
           placeholder="Enter AiiDA REST API URL"
-          className="flex-grow p-2 border border-gray-400 rounded"
+          className="flex-grow p-2 border border-gray-400"
           onKeyDown={(e) => e.key === "Enter" && handleLoadClick()}
         />
         <button
           onClick={handleLoadClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700"
         >
           Load
         </button>

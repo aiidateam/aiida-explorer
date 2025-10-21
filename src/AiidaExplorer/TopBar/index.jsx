@@ -12,7 +12,7 @@ export default function TopControls({
       {/* Left side buttons */}
       <div className="flex gap-2">
         <button
-          className="group px-3 py-1 rounded-md bg-theme-200 text-theme-700 flex items-center gap-1 hover:bg-theme-300 transition-colors"
+          className="group px-3 py-1 bg-theme-200 text-theme-700 flex items-center gap-1 hover:bg-theme-300 "
           onClick={onFindNode}
         >
           <GroupIcon className="w-5 h-5" />
@@ -20,7 +20,7 @@ export default function TopControls({
         </button>
 
         <button
-          className="group px-3 py-1 rounded-md bg-theme-200 text-theme-700 flex items-center gap-1 hover:bg-theme-300 transition-colors"
+          className="group px-3 py-1 bg-theme-200 text-theme-700 flex items-center gap-1 hover:bg-theme-300 "
           onClick={onGetLinkCounts}
           disabled={disableGetCounts || isLoading}
         >
@@ -31,7 +31,7 @@ export default function TopControls({
 
       {/* Right side button */}
       <button
-        className="group px-3 py-1 rounded-md bg-theme-200 text-theme-700 flex items-center gap-1 hover:bg-theme-300 transition-colors"
+        className="group px-3 py-1 bg-theme-200 text-theme-700 flex items-center gap-1 hover:bg-theme-300 "
         onClick={onHelp}
       >
         <QuestionIcon className="w-5 h-5" />

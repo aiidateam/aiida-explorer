@@ -3,7 +3,11 @@
 /* TODO - move to a postcss/tailwindconfig to avoid long repetition.*/
 @layer base {
   button {
-    @apply cursor-pointer hover:cursor-pointer;
+    @apply cursor-pointer rounded transition;
+  }
+
+  input {
+    @apply rounded transition;
   }
 
   /* Default (slate) theme */

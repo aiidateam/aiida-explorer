@@ -210,7 +210,7 @@ function AiidaExplorerInner({
     <div data-theme={theme} className="flex flex-col h-full">
       <OverlayProvider
         ref={overlayContainerRef}
-        className="flex flex-col relative h-full min-h-[300px] border rounded-sm bg-theme-50"
+        className="flex flex-col relative h-full min-h-[300px] border bg-theme-50"
       >
         {/* Overlay */}
 

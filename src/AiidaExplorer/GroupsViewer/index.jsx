@@ -81,7 +81,7 @@ function formatTableData(nodes, setRootNodeId, isSmallScreen = false) {
     newRow[""] = (
       <button
         onClick={() => setRootNodeId(row.uuid)}
-        className="px-2 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
+        className="px-2 py-1 bg-theme-500 text-white hover:bg-theme-700"
       >
         View
       </button>
@@ -187,7 +187,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           <h4 className="font-medium">Filter by Node Types</h4>
           <button
             onClick={() => fetchNodes(0)}
-            className="px-3 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
+            className="px-3 py-1 bg-theme-500 text-white hover:bg-theme-700"
           >
             Apply
           </button>
@@ -220,35 +220,36 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
       </div>
 
       {/* Right table */}
-      <div className="flex-1 bg-white rounded">
-        <div className="flex flex-col md:flex-row">
+      <div className="flex-1 bg-white rounded gap-2">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-2">
           {/* Left side: node count + load more */}
-          <div className="flex-1 flex items-center gap-2 py-2 md:py-0">
+          <div className="flex-1 flex items-center gap-2 py-2">
             <h4 className="text-xl font-semibold">
               {tableData.length} nodes loaded
             </h4>
             {tableData.length > 0 && (
               <button
                 onClick={() => fetchNodes(offset)}
-                className="px-3 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
+                className="px-3 py-1 bg-theme-500 text-white hover:bg-theme-700"
               >
                 Load next 200
               </button>
             )}
           </div>
 
-          {/* Right side: search */}
-          <div className="flex md:flex-row gap-2 py-0.5">
+          {/* Right side: search with label */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 py-1 w-full lg:w-auto">
+            <span className="font-semibold">Navigate via UUID:</span>
             <input
               type="text"
               value={searchNode}
               onChange={(e) => setSearchNode(e.target.value)}
-              placeholder="Navigate to a UUID"
-              className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-700 rounded px-1 py-1"
+              placeholder="Enter a UUID"
+              className="flex-1 min-w-80 border-2 border-gray-300 focus:outline-none focus:border-theme-500 px-2 py-1"
             />
             <button
               onClick={handleNodeSearch}
-              className="px-1 py-0.5 md:px-2 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
+              className="px-2 py-1 bg-theme-500 text-white hover:bg-theme-700 font-medium"
             >
               Go
             </button>

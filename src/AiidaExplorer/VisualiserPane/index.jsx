@@ -75,7 +75,7 @@ export default function VisualiserPane({
       <div className="flex border-y bg-theme-100">
         <button
           disabled={richTabDisabled}
-          className={`px-4 py-2 ${
+          className={`px-4 py-2 !rounded-none ${
             activeTab === "rich"
               ? "border-b-2 border-theme-500 font-semibold"
               : richTabDisabled
@@ -89,7 +89,7 @@ export default function VisualiserPane({
         <button
           className={`px-4 py-2 ${
             activeTab === "raw"
-              ? "border-b-2 border-theme-500 font-semibold"
+              ? "border-b-2 border-theme-500 !rounded-none font-semibold"
               : ""
           }`}
           onClick={() => setActiveTab("raw")}

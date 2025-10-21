@@ -9,7 +9,7 @@ export default function ErrorDisplay({ message, onRetry }) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-3 px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
+          className="mt-3 px-3 py-1 bg-red-500 text-white hover:bg-red-600"
         >
           Retry
         </button>
