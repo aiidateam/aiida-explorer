@@ -377,7 +377,7 @@ export async function smartFetchData(
   // Check cache first
   const cached = cachedExtras[node.id];
   if (cached) {
-    console.log(`${node.id} data is already cached`);
+    console.debug(`${node.id} data is already cached`);
     return { ...node, data: { ...node.data, ...cached } };
   }
 

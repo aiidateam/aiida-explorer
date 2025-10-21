@@ -31,6 +31,7 @@
   ],
   "dependencies": {
     "bands-visualiser": "^0.0.1",
+    "brillouinzone-visualizer": "^0.4.0",
     "js-yaml": "^4.1.0",
     "mc-react-structure-visualizer": "^0.8.2",
     "plotly.js-basic-dist": "^3.1.1",

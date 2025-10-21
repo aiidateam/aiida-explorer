@@ -72,7 +72,11 @@ export function getNodeDisplay(node) {
         return `Grid: ${x} × ${y} × ${z}`;
       }
       if (node.attributes?.labels && node.attributes?.label_numbers) {
-        return `Path: ${node.attributes.labels.join(" → ")}`;
+        let path = node.attributes.labels.join(" → ");
+        if (path.length > 20) {
+          path = path.slice(0, 17) + "...";
+        }
+        return `Path: ${path}`;
       }
       return fallback;
 
@@ -92,7 +96,7 @@ export function getNodeDisplay(node) {
         };
         const converted = formula.replace(
           /\d/g,
-          (digit) => subscriptMap[digit] || digit,
+          (digit) => subscriptMap[digit] || digit
         );
         // Cull if too long
         if (converted.length > maxLength) {

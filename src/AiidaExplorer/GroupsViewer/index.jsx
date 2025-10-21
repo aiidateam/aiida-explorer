@@ -114,7 +114,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   const limit = 200;
 
   // responsive
-  const isSmallScreen = useMediaQuery("(max-width: 900px)");
+  const isSmallScreen = useMediaQuery("(max-width: 790px)");
 
   // columns based on screen
   const columnsToRender = isSmallScreen
@@ -179,12 +179,12 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 overflow-auto w-full items-start">
+    <div className="flex flex-col lg:flex-row gap-4 overflow-auto w-full items-start">
       {/* Left panel */}
       <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-theme-50 p-2 px-3 rounded">
         {/* Top header + button */}
         <div className="flex gap-4 items-center mb-2">
-          <h4 className="font-medium mt-2">Filter by Node Types</h4>
+          <h4 className="font-medium">Filter by Node Types</h4>
           <button
             onClick={() => fetchNodes(0)}
             className="px-3 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"

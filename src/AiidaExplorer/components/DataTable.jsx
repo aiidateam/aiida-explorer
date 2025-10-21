@@ -58,7 +58,7 @@ export default function DataTable({
 
   return (
     <div className="p-2" style={{ maxWidth }}>
-      <h2 className="text-md md:text-lg font-semibold mb-2">{title}</h2>
+      <h2 className="text-md md:text-md font-semibold mb-2">{title}</h2>
 
       <div className="overflow-x-auto shadow-md md:shadow bg-white">
         <table className="min-w-full text-xs md:text-sm text-left">

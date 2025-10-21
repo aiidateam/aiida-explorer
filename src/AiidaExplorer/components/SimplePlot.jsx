@@ -18,27 +18,33 @@ export default function SimplePlot({
     const container = containerRef.current;
     if (!container) return;
 
-    // Initial plot
+    // --- Measure data size ---
+    const numTraces = memoData.length;
+    let numPoints = 0;
+    memoData.forEach((trace) => {
+      // sum lengths of x, y, z arrays if they exist
+      numPoints +=
+        (trace.x?.length || 0) +
+        (trace.y?.length || 0) +
+        (trace.z?.length || 0);
+    });
+
+    console.debug(
+      `Rendering ${numTraces} traces with ~${numPoints} data points`
+    );
+
+    // --- Measure render time ---
+    const t0 = performance.now();
+
     Plotly.newPlot(container, memoData, memoLayout, {
       responsive: true,
       ...memoConfig,
+    }).then(() => {
+      const t1 = performance.now();
+      console.log(
+        `Plotly rendering took ${(t1 - t0).toFixed(2)} ms for ${numTraces} traces (~${numPoints} points)`
+      );
     });
-
-    // Resize observer to detect container size changes
-    const resizeObserver = new ResizeObserver(() => {
-      if (container) {
-        Plotly.Plots.resize(container);
-      }
-    });
-
-    resizeObserver.observe(container);
-
-    return () => {
-      resizeObserver.disconnect();
-      if (container) {
-        Plotly.purge(container);
-      }
-    };
   }, [memoData, memoLayout, memoConfig]);
 
   return <div ref={containerRef} style={style} />;

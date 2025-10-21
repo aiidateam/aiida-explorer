@@ -129,7 +129,6 @@ function AiidaExplorerInner({
           if (centralNode?.position) {
             // zoom back in
             setTimeout(() => {
-              if (!mounted) return;
               instance.setCenter(
                 centralNode.position.x + 70,
                 centralNode.position.y + 0,

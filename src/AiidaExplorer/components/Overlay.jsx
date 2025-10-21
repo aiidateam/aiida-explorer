@@ -70,7 +70,7 @@ export default function Overlay({
             ✕
           </button>
         </div>
-        <div className="px-8 py-4">{children}</div>
+        <div className="px-4 py-4">{children}</div>
       </div>
     </div>,
     containerRef.current

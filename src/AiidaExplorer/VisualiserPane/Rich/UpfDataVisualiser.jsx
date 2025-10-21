@@ -5,6 +5,8 @@ import ErrorDisplay from "../../components/Error";
 import SimplePlot from "../../components/SimplePlot";
 import Spinner from "../../components/Spinner";
 
+import CardContainer from "../../components/CardContainer";
+
 // TODO extract a common config for all plots.
 // Probably a good enough reason to switch to react plotly for the bandstructure visualiser
 
@@ -160,113 +162,99 @@ export default function UpfDataVisualiser({ nodeData }) {
 
   const { header, radial_grid } = upfData;
 
+  const commonLegend = {
+    x: 1,
+    y: 1,
+    xanchor: "right",
+    yanchor: "top",
+    bgcolor: "rgba(255,255,255,0.8)",
+    bordercolor: "#ccc",
+    borderwidth: 1,
+  };
+  const commonMargin = { t: 20, b: 40, l: 50, r: 20 };
+
   return (
     <div className="w-full mx-auto p-4 space-y-6">
-      {/* Metadata */}
-      <div className="bg-theme-100 border-1 border-theme-200 p-4 rounded-lg shadow-md space-y-1">
+      <CardContainer header="Metadata">
         <p>
-          <strong>Element:</strong> {header?.element || "N/A"}
+          <span className="font-medium">Element:</span>{" "}
+          {header?.element || "N/A"}
         </p>
         <p>
-          <strong>Valence Electrons:</strong> {header?.z_valence ?? "N/A"}
+          <span className="font-medium">Valence Electrons:</span>{" "}
+          {header?.z_valence ?? "N/A"}
         </p>
         <p>
-          <strong>Pseudopotential Type:</strong> {header?.pseudo_type || "N/A"}
+          <span className="font-medium">Pseudopotential Type:</span>{" "}
+          {header?.pseudo_type || "N/A"}
         </p>
         <p>
-          <strong>Functional:</strong> {header?.functional || "N/A"}
+          <span className="font-medium">Functional:</span>{" "}
+          {header?.functional || "N/A"}
         </p>
-      </div>
+      </CardContainer>
 
-      <div className="space-y-6">
-        <h3 className="font-semibold mb-2">Orbital radial functions</h3>
+      {/* container that constrains width and uses box-sizing */}
+      <CardContainer
+        header="Orbital radial functions"
+        className="!px-1.5 !py-2"
+        childrenClassName="!p-0"
+      >
+        <SimplePlot
+          data={orbitalTraces}
+          layout={{
+            autosize: true,
+            height: 400,
+            margin: commonMargin,
+            xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 20] },
+            yaxis: { title: { text: "φ(r)" } },
+            legend: commonLegend,
+          }}
+          config={{ responsive: true }}
+          useResizeHandler={true}
+          style={{ width: "100%", height: 400 }}
+        />
+      </CardContainer>
 
-        {/* container that constrains width and uses box-sizing */}
-        <div
-          className="w-full max-w-full bg-theme-100 rounded-md border border-theme-200 shadow-sm p-1"
-          style={{ boxSizing: "border-box" }}
-        >
-          <SimplePlot
-            data={orbitalTraces}
-            layout={{
-              autosize: true,
-              height: 400,
-              margin: { t: 20, b: 40, l: 50, r: 20 },
-              xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 20] },
-              yaxis: { title: { text: "φ(r)" } },
-              legend: {
-                x: 1,
-                y: 1,
-                xanchor: "right",
-                yanchor: "top",
-                bgcolor: "rgba(255,255,255,0.8)",
-                bordercolor: "#ccc",
-                borderwidth: 1,
-              },
-            }}
-            config={{ responsive: true }}
-            useResizeHandler={true}
-            style={{ width: "100%", height: 400 }}
-          />
-        </div>
-      </div>
-
-      <h3 className="font-semibold mb-2">Beta projectors</h3>
-      <div
-        className="w-full max-w-full bg-theme-100 rounded-md border border-theme-200 shadow-sm p-1"
-        style={{ boxSizing: "border-box" }}
+      <CardContainer
+        header="Beta projectors"
+        className="!px-1.5 !py-2"
+        childrenClassName="!p-0"
       >
         <SimplePlot
           data={betaprojTraces}
           layout={{
             autosize: true,
             height: 400,
-            margin: { t: 20, b: 40, l: 50, r: 20 },
+            margin: commonMargin,
             xaxis: { title: { text: "Radius (Bohr)" } },
             yaxis: { title: { text: "φ(r)" } },
-            legend: {
-              x: 1,
-              y: 1,
-              xanchor: "right",
-              yanchor: "top",
-              bgcolor: "rgba(255,255,255,0.8)",
-              bordercolor: "#ccc",
-              borderwidth: 1,
-            },
+            legend: commonLegend,
           }}
           config={{ responsive: true }}
         />
-      </div>
+      </CardContainer>
 
-      <h3 className="font-semibold mb-2">Charge densities</h3>
-
-      <div
-        className="w-full max-w-full bg-theme-100 rounded-md border border-theme-200 shadow-sm p-1"
-        style={{ boxSizing: "border-box" }}
+      <CardContainer
+        header="Charge densities"
+        className="!px-1.5 !py-2"
+        childrenClassName="!p-0"
       >
         <SimplePlot
           data={chargeDensitiesTraces}
           layout={{
             autosize: true,
             height: 400,
-            margin: { t: 20, b: 40, l: 50, r: 20 },
+            margin: commonMargin,
             xaxis: { title: { text: "Radius (Bohr)" }, range: [0, 5] },
             yaxis: { title: { text: "φ(r)" } },
-            legend: {
-              x: 1,
-              y: 1,
-              xanchor: "right",
-              yanchor: "top",
-              bgcolor: "rgba(255,255,255,0.8)",
-              bordercolor: "#ccc",
-              borderwidth: 1,
-            },
+            legend: commonLegend,
           }}
           config={{ responsive: true }}
           useResizeHandler={true}
           style={{ width: "100%", height: "100%" }}
         />
-      </div>
+      </CardContainer>
     </div>
   );
 }

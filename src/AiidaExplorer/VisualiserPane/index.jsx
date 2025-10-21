@@ -5,12 +5,14 @@ import RawDataVisualiser from "./RawDataVisualiser";
 import BandsDataVisualiser from "./Rich/BandsDataVisualiser";
 import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
+import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
 
 const RICH_TYPES = {
   StructureData: StructureDataVisualiser,
   CifData: StructureDataVisualiser,
   BandsData: BandsDataVisualiser,
   UpfData: UpfDataVisualiser,
+  KpointsData: KpointsDataVisualiser,
 };
 
 function geRichVisualiser(restApiUrl, selectedNode) {

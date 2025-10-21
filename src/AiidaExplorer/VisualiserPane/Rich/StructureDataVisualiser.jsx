@@ -1,9 +1,11 @@
 import StructureVisualizer from "mc-react-structure-visualizer";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 import ErrorDisplay from "../../components/Error";
 import Spinner from "../../components/Spinner";
 import { StructDownloadButton } from "../../components/StructDownloadButton";
+
+import CardContainer from "../../components/CardContainer";
 
 // js for calculating very basic lattice information.
 function getVol(nodeData, round = 4) {
@@ -37,6 +39,17 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const [cifText, setCifText] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isSmall, setIsSmall] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const ro = new ResizeObserver(([entry]) => {
+      setIsSmall(entry.contentRect.width < 600);
+    });
+    if (ref.current) ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, []);
 
   // Local fetchData function
   const fetchData = useCallback(async () => {
@@ -87,77 +100,68 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const numSites = nodeData.attributes?.sites?.length || 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 space-y-4">
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center justify-center w-full h-[500px]">
-          <Spinner />
-        </div>
-      )}
-
-      {/* Error */}
-      {error && !loading && (
-        <div className="flex flex-col items-center justify-center w-full h-[500px] space-y-2">
-          <ErrorDisplay message={error} onRetry={() => fetchData()} />
-        </div>
-      )}
-
-      {/* Data */}
-      {!loading && !error && cifText && (
-        <>
-          {/* CIF viewer */}
-          <div className="w-full h-[500px] relative bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="absolute top-4 right-4 z-50">
-              <StructDownloadButton
-                aiida_rest_url={restApiUrl}
-                uuid={nodeData.aiida.uuid}
-                download_formats={dlFormats}
-              />
-            </div>
-            <div className="w-full h-full">
-              <StructureVisualizer
-                cifText={cifText}
-                initSupercell={[2, 2, 2]}
-              />
-            </div>
+    <div className="w-full mx-auto p-4 space-y-6">
+      <div
+        ref={ref}
+        className={`grid gap-4 ${isSmall ? "grid-cols-1" : "grid-cols-[1fr_auto]"}`}
+      >
+        {/* Left: Structure Viewer */}
+        <div className="w-full h-[500px] relative bg-theme-100 shadow-sm overflow-hidden">
+          <div className="absolute top-4 right-4 z-50">
+            <StructDownloadButton
+              aiida_rest_url={restApiUrl}
+              uuid={nodeData.aiida.uuid}
+              download_formats={dlFormats}
+            />
           </div>
+          <div className="w-full h-full">
+            <StructureVisualizer cifText={cifText} initSupercell={[2, 2, 2]} />
+          </div>
+        </div>
+        {/* Right: Text Cards */}
+        <div className="flex flex-col space-y-4 max-w-xs">
           {hasDerived && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-theme-100 border-1 border-theme-200 p-2 rounded-lg shadow-md space-y-1">
+            <>
+              <CardContainer>
                 <p>
-                  <strong>Cell Volume:</strong> {volume?.toFixed(4)} Å³
+                  <span className="font-medium">Cell Volume:</span>{" "}
+                  {volume?.toFixed(4)} Å³
                 </p>
                 <p>
-                  <strong>Formula:</strong>{" "}
+                  <span className="font-medium">Formula:</span>{" "}
                   {nodeData.derived_properties.formula}
                 </p>
                 <p>
-                  <strong>Dimensionality:</strong>{" "}
+                  <span className="font-medium">Dimensionality:</span>{" "}
                   {nodeData.derived_properties.dimensionality?.description ||
                     "N/A"}
                 </p>
-              </div>
+              </CardContainer>
 
               {lattice && (
-                <div className="bg-theme-100 border-1 border-theme-200 p-2 rounded-lg shadow-md space-y-1">
+                <CardContainer>
                   <p>
-                    <strong>Lattice a:</strong> {lattice.a.toFixed(4)} Å
+                    <span className="font-medium">Lattice a:</span>{" "}
+                    {lattice.a.toFixed(4)} Å
                   </p>
                   <p>
-                    <strong>Lattice b:</strong> {lattice.b.toFixed(4)} Å
+                    <span className="font-medium">Lattice b:</span>{" "}
+                    {lattice.b.toFixed(4)} Å
                   </p>
                   <p>
-                    <strong>Lattice c:</strong> {lattice.c.toFixed(4)} Å
+                    <span className="font-medium">Lattice c:</span>{" "}
+                    {lattice.c.toFixed(4)} Å
                   </p>
                   <p>
-                    <strong>Number of Sites:</strong> {numSites}
+                    <span className="font-medium">Number of Sites:</span>{" "}
+                    {numSites}
                   </p>
-                </div>
+                </CardContainer>
               )}
-            </div>
+            </>
           )}
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

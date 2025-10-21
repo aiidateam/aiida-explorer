@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import ErrorDisplay from "../../components/Error";
 import Spinner from "../../components/Spinner";
 
+import CardContainer from "../../components/CardContainer";
+
 export default function BandsDataVisualiser({ nodeData }) {
   const containerRef = useRef(null);
   const [bandsDataArray, setBandsDataArray] = useState(null);
@@ -46,22 +48,24 @@ export default function BandsDataVisualiser({ nodeData }) {
   }, [bandsDataArray]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-2 bg-white border-gray-200 shadow-sm rounded-lg">
-      <h2 className="text-md md:text-lg font-semibold px-3 pt-2">
-        Bands Structure Plot
-      </h2>
+    <div className="w-full mx-auto p-4 space-y-6">
+      <CardContainer
+        header="Bands Structure Plot"
+        className="!px-1.5 !pt-2 !pb-0"
+        childrenClassName="!p-0"
+      >
+        <div className="w-full h-[450px] relative flex items-center justify-center">
+          {loading && <Spinner />}
 
-      <div className="w-full h-[450px] relative flex items-center justify-center">
-        {loading && <Spinner />}
+          {error && !loading && (
+            <ErrorDisplay message={error} onRetry={() => {}} />
+          )}
 
-        {error && !loading && (
-          <ErrorDisplay message={error} onRetry={() => {}} />
-        )}
-
-        {!loading && !error && bandsDataArray && (
-          <div ref={containerRef} className="absolute inset-4" />
-        )}
-      </div>
+          {!loading && !error && bandsDataArray && (
+            <div ref={containerRef} className="absolute inset-4" />
+          )}
+        </div>
+      </CardContainer>
     </div>
   );
 }
