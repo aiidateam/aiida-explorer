@@ -13,6 +13,7 @@ export default function BandsDataVisualiser({ nodeData }) {
   const [error, setError] = useState(null);
 
   const aiidaBandsPath = nodeData.downloadByFormat?.json;
+  const yAxisUnits = nodeData?.attributes?.units || "N/A";
 
   useEffect(() => {
     if (!aiidaBandsPath) return;
@@ -43,7 +44,12 @@ export default function BandsDataVisualiser({ nodeData }) {
 
     BandsVisualiser(containerRef.current, {
       bandsDataArray,
-      settings: { showlegend: false },
+      settings: {
+        showlegend: false,
+        yaxis: { title: { text: `Value [${yAxisUnits}]` } },
+        xaxis: { title: { text: `Path` } },
+        margin: { l: 80, b: 45 },
+      },
     });
   }, [bandsDataArray]);
 
@@ -51,7 +57,7 @@ export default function BandsDataVisualiser({ nodeData }) {
     <div className="w-full mx-auto p-4 space-y-6">
       <CardContainer
         header="Bands Structure Plot"
-        className="!px-1.5 !pt-2 !pb-0"
+        className="!px-1.5 !pt-2"
         childrenClassName="!p-0"
       >
         <div className="w-full h-[450px] relative flex items-center justify-center">
@@ -62,7 +68,7 @@ export default function BandsDataVisualiser({ nodeData }) {
           )}
 
           {!loading && !error && bandsDataArray && (
-            <div ref={containerRef} className="absolute inset-4" />
+            <div ref={containerRef} className="absolute inset-0 " />
           )}
         </div>
       </CardContainer>
