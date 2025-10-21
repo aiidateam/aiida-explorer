@@ -24,7 +24,7 @@ export function layoutGraphDefault(
   const outputs = categorizeNodes(outputNodes);
 
   const layoutGroupOrders = {
-    data: ["calculations", "workflows", "data"],
+    data: ["calculation", "workflows", "data"],
     calculation: ["data", "calculation", "workflow"],
     workflow: ["data", "calculation", "workflow"],
   };

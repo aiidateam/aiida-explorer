@@ -157,7 +157,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
 
       {/* Tables in cards */}
       <DataTable
-        title="Recipricol cell vectors (1/Å)"
+        title="Reciprocal cell vectors (1/Å)"
         columns={recipColumns}
         data={recipData}
         sortableCols={false}

@@ -12,7 +12,7 @@ export function sortByLabel(a, b) {
 }
 
 export function categorizeNodes(nodes) {
-  const calculations = nodes
+  const calculation = nodes
     .filter((n) => n.data?.node_type.includes("calculation"))
     .sort(sortByCtimeDescending);
 
@@ -24,5 +24,5 @@ export function categorizeNodes(nodes) {
     .filter((n) => n.data?.node_type.includes("data"))
     .sort(sortByLabel);
 
-  return { calculations, workflow, data };
+  return { calculation, workflow, data };
 }
