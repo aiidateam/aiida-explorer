@@ -8,7 +8,7 @@ export default function TopControls({
   disableGetCounts = false,
 }) {
   return (
-    <div className="w-full shadow-md bg-theme-50 border-b px-4 py-2 flex justify-between items-center z-50">
+    <div className="w-full shadow-md bg-theme-100 border-b px-4 py-2 flex justify-between items-center z-50">
       {/* Left side buttons */}
       <div className="flex gap-2">
         <button

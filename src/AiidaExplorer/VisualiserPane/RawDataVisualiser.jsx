@@ -127,7 +127,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
   );
 
   return (
-    <div className="flex flex-col px-3 py-2 gap-2 md:gap-4">
+    <div className="flex flex-col px-3 py-2 gap-2 lg:gap-4">
       {fileTables}
 
       {dataSections.map((section, index) => {
@@ -137,7 +137,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
         return (
           <div key={index} className="py-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-md md:text-lg ml-2 font-semibold">
+              <h3 className="text-md lg:text-lg ml-2 font-semibold">
                 {section.title}
               </h3>
               <button

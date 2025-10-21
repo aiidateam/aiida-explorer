@@ -163,11 +163,10 @@ export default function UpfDataVisualiser({ nodeData }) {
   const { header, radial_grid } = upfData;
 
   const commonLegend = {
-    x: 1,
-    y: 1,
+    x: 0.97,
+    y: 0.95,
     xanchor: "right",
     yanchor: "top",
-    bgcolor: "rgba(255,255,255,0.8)",
     bordercolor: "#ccc",
     borderwidth: 1,
   };
