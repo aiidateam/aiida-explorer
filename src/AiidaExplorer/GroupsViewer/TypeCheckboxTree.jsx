@@ -2,76 +2,7 @@ import { useState } from "react";
 
 import { RightDropDownIcon, DownDropDownIcon } from "../components/Icons";
 
-// Base AIIDA TYPES HIERACHY
-// TODO, use the full_types method to get the subset of these.
-// TODO move to a utility file
-export const aiidaTypes = [
-  {
-    label: "Data",
-    type: "data",
-    children: [
-      { label: "Int", type: "data.core.int.%" },
-      { label: "Float", type: "data.core.float.%" },
-      {
-        label: "ArrayData",
-        type: "data.core.array.%",
-        children: [
-          { label: "BandsData", type: "data.core.array.bands.%" },
-          { label: "XyData", type: "data.core.array.xy.%" },
-          { label: "TrajectoryData", type: "data.core.array.trajectory.%" },
-          { label: "KpointsData", type: "data.core.array.kpoints.%" },
-        ],
-      },
-      { label: "Str", type: "data.core.str.%" },
-      { label: "Bool", type: "data.core.bool.%" },
-      { label: "List", type: "data.core.list.%" },
-      { label: "Dict", type: "data.core.dict.%" },
-      { label: "StructureData", type: "data.core.structure.%" },
-      { label: "RemoteData", type: "data.core.remote.%" },
-      { label: "FolderData", type: "data.core.folder.%" },
-      { label: "SinglefileData", type: "data.core.singlefile.%" },
-      { label: "UpfData", type: "data.core.upf.%" },
-      { label: "Code", type: "data.core.code.%" },
-    ],
-  },
-  {
-    label: "Process",
-    type: "process.%",
-    children: [
-      { label: "CalcJob", type: "process.calculation.calcjob.%" },
-      { label: "CalcFunction", type: "process.calculation.calcfunction.%" },
-      { label: "WorkFunction", type: "process.workflow.workfunction.%" },
-      { label: "Workgraph", type: "process.workflow.workgraph.%" },
-      { label: "Workchain", type: "process.workflow.workchain.%" },
-    ],
-  },
-];
-
-/**
- * Recursively collect all node types for the selected labels
- * @param {string[]} selectedLabels - selected type labels
- * @param {Array} typesHierarchy - full hierarchy (aiidaTypes)
- * @returns {string[]} flattened list of type strings
- */
-export function getFlattenedNodeTypes(selectedLabels, typesHierarchy) {
-  const result = [];
-
-  const traverse = (nodes) => {
-    nodes.forEach((n) => {
-      if (selectedLabels.includes(n.label)) {
-        result.push(n.type);
-        if (n.children) traverse(n.children);
-      } else if (n.children) {
-        traverse(n.children);
-      }
-    });
-  };
-
-  traverse(typesHierarchy);
-  return result;
-}
-
-export function TypeCheckboxTree({
+export default function TypeCheckboxTree({
   types,
   selectedTypes,
   setSelectedTypes,

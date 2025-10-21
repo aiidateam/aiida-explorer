@@ -1,16 +1,13 @@
-import DataTable from "../../components/DataTable";
+import { createBZVisualizer } from "brillouinzone-visualizer";
+import React, { useEffect, useRef } from "react";
+
 import CardContainer from "../../components/CardContainer";
+import DataTable from "../../components/DataTable";
 
-import { DownloadIcon } from "../../components/Icons";
-import { omitGraphKeys } from "../../utils";
-
-// This could be extended to use the BZ visualiser from this data (if possible);
 // TODO - build a KPOINT converter that spits out VASP/QE formats
-// TODO - move this from WIP...
+// TODO - Dont render missing tables / better fallbacks?
 
 // src/components/BZVisualizer.jsx
-import React, { useEffect, useRef } from "react";
-import { createBZVisualizer } from "brillouinzone-visualizer";
 
 function BZVisualizer({ data, options }) {
   const containerRef = useRef(null);

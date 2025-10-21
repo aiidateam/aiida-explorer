@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
-import { buildQuery } from "./queryHandler";
-import {
-  TypeCheckboxTree,
-  aiidaTypes,
-  getFlattenedNodeTypes,
-} from "./TypesCheckbox";
+
+import TypeCheckboxTree from "./TypeCheckboxTree";
+import { getFlattenedNodeTypes, aiidaTypes, buildQuery } from "./utils";
+
 import DataTable from "../components/DataTable";
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";

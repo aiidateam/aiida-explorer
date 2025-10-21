@@ -9,20 +9,20 @@ import {
   fetchDownloadFormats,
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
+import ErrorDisplay from "./components/Error";
 import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
 import Overlay, { OverlayProvider } from "./components/Overlay";
 import Spinner from "./components/Spinner";
-import ErrorDisplay from "./components/Error";
 import DebugPane from "./DebugPane";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
 import useMediaQuery from "./hooks/useMediaQuery";
+import useRootNode from "./hooks/useRootNode";
+import TopControls from "./TopBar";
 import VisualiserPane from "./VisualiserPane";
 
-import TopControls from "./TopBar";
 
-import useRootNode from "./hooks/useRootNode";
 
 /**
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes

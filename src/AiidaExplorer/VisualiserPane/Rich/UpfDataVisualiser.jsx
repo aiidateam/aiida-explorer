@@ -1,11 +1,11 @@
 import Plotly from "plotly.js-basic-dist";
 import { useEffect, useState, useCallback, useMemo } from "react";
 
+import CardContainer from "../../components/CardContainer";
 import ErrorDisplay from "../../components/Error";
 import SimplePlot from "../../components/SimplePlot";
 import Spinner from "../../components/Spinner";
 
-import CardContainer from "../../components/CardContainer";
 
 // TODO extract a common config for all plots.
 // Probably a good enough reason to switch to react plotly for the bandstructure visualiser

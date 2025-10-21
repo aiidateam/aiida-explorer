@@ -1,10 +1,9 @@
 import { BandsVisualiser } from "bands-visualiser";
 import { useEffect, useRef, useState } from "react";
 
+import CardContainer from "../../components/CardContainer";
 import ErrorDisplay from "../../components/Error";
 import Spinner from "../../components/Spinner";
-
-import CardContainer from "../../components/CardContainer";
 
 export default function BandsDataVisualiser({ nodeData }) {
   const containerRef = useRef(null);
@@ -51,7 +50,7 @@ export default function BandsDataVisualiser({ nodeData }) {
         margin: { l: 80, b: 45 },
       },
     });
-  }, [bandsDataArray]);
+  }, [bandsDataArray, yAxisUnits]);
 
   return (
     <div className="w-full mx-auto p-4 space-y-6">

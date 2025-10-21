@@ -1,11 +1,10 @@
 import StructureVisualizer from "mc-react-structure-visualizer";
 import { useEffect, useState, useCallback, useRef } from "react";
 
+import CardContainer from "../../components/CardContainer";
 import ErrorDisplay from "../../components/Error";
 import Spinner from "../../components/Spinner";
 import { StructDownloadButton } from "../../components/StructDownloadButton";
-
-import CardContainer from "../../components/CardContainer";
 
 // js for calculating very basic lattice information.
 function getVol(nodeData, round = 4) {
@@ -98,6 +97,20 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
       ? getVol(nodeData)
       : null;
   const numSites = nodeData.attributes?.sites?.length || 0;
+
+  if (loading)
+    return (
+      <div className="w-full min-h-[450px] flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="w-full min-h-[450px] flex items-center justify-center">
+        <ErrorDisplay message={error} onRetry={fetchData} />
+      </div>
+    );
 
   return (
     <div className="w-full mx-auto p-4 space-y-6">

@@ -6,12 +6,10 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
 } from "reactflow";
-
-import HorizontalNode from "./HorizontalNode";
+import "reactflow/dist/style.css";
 
 import CustomEdge from "./CustomEdge";
-
-import "reactflow/dist/style.css";
+import HorizontalNode from "./HorizontalNode";
 
 const nodeTypes = {
   custom: HorizontalNode,

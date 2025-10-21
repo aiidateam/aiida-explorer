@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import FormattedMetaData from "./FormattedMetaData";
 import RawDataVisualiser from "./RawDataVisualiser";
 import BandsDataVisualiser from "./Rich/BandsDataVisualiser";
+import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
 import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
-import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
 
 const RICH_TYPES = {
   StructureData: StructureDataVisualiser,

@@ -78,8 +78,7 @@ function HorizontalNode({ data, selected }) {
   // Determine fontsize based on zoom
   // ----------
   const fontSizeClass = zoom > 1.2 ? "text-[12px]" : "text-[14px]";
-  const linkFontSizeClass =
-    zoom > 1.2 ? "text-[9px] px-2 py-1" : "text-[12px] px-2 py-1";
+
   // Main label content
   const textHtml = (
     <div className={`${fontSizeClass}`}>
