@@ -5,7 +5,7 @@ export default function SimplePlot({
   data,
   layout,
   config = {},
-  style = { width: "100%", height: 400 },
+  style = { width: "100%", height: "400" },
 }) {
   const containerRef = useRef(null);
 
@@ -18,20 +18,23 @@ export default function SimplePlot({
     const container = containerRef.current;
     if (!container) return;
 
+    // Initial plot
     Plotly.newPlot(container, memoData, memoLayout, {
       responsive: true,
       ...memoConfig,
     });
 
-    const handleResize = () => {
+    // Resize observer to detect container size changes
+    const resizeObserver = new ResizeObserver(() => {
       if (container) {
         Plotly.Plots.resize(container);
       }
-    };
-    window.addEventListener("resize", handleResize);
+    });
+
+    resizeObserver.observe(container);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
       if (container) {
         Plotly.purge(container);
       }

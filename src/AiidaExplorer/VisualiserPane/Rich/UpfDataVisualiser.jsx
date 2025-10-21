@@ -163,7 +163,7 @@ export default function UpfDataVisualiser({ nodeData }) {
   return (
     <div className="w-full mx-auto p-4 space-y-6">
       {/* Metadata */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-1">
+      <div className="bg-theme-100 border-1 border-theme-200 p-4 rounded-lg shadow-md space-y-1">
         <p>
           <strong>Element:</strong> {header?.element || "N/A"}
         </p>
@@ -182,7 +182,10 @@ export default function UpfDataVisualiser({ nodeData }) {
         <h3 className="font-semibold mb-2">Orbital radial functions</h3>
 
         {/* container that constrains width and uses box-sizing */}
-        <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
+        <div
+          className="w-full max-w-full bg-theme-100 rounded-md border border-theme-200 shadow-sm p-1"
+          style={{ boxSizing: "border-box" }}
+        >
           <SimplePlot
             data={orbitalTraces}
             layout={{
@@ -209,7 +212,10 @@ export default function UpfDataVisualiser({ nodeData }) {
       </div>
 
       <h3 className="font-semibold mb-2">Beta projectors</h3>
-      <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
+      <div
+        className="w-full max-w-full bg-theme-100 rounded-md border border-theme-200 shadow-sm p-1"
+        style={{ boxSizing: "border-box" }}
+      >
         <SimplePlot
           data={betaprojTraces}
           layout={{
@@ -234,7 +240,10 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       <h3 className="font-semibold mb-2">Charge densities</h3>
 
-      <div className="w-full max-w-full" style={{ boxSizing: "border-box" }}>
+      <div
+        className="w-full max-w-full bg-theme-100 rounded-md border border-theme-200 shadow-sm p-1"
+        style={{ boxSizing: "border-box" }}
+      >
         <SimplePlot
           data={chargeDensitiesTraces}
           layout={{

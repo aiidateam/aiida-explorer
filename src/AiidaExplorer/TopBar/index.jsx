@@ -8,11 +8,11 @@ export default function TopControls({
   disableGetCounts = false,
 }) {
   return (
-    <div className="w-full shadow-md bg-slate-50 border-b px-4 py-2 flex justify-between items-center z-50">
+    <div className="w-full shadow-md bg-theme-50 border-b px-4 py-2 flex justify-between items-center z-50">
       {/* Left side buttons */}
       <div className="flex gap-2">
         <button
-          className="group px-3 py-1 rounded-md bg-slate-100 text-blue-700 flex items-center gap-1 hover:bg-slate-200 transition-colors"
+          className="group px-3 py-1 rounded-md bg-theme-100 text-theme-700 flex items-center gap-1 hover:bg-theme-200 transition-colors"
           onClick={onFindNode}
         >
           <GroupIcon className="w-5 h-5" />
@@ -20,7 +20,7 @@ export default function TopControls({
         </button>
 
         <button
-          className="group px-3 py-1 rounded-md bg-slate-100 text-blue-700 flex items-center gap-1 hover:bg-slate-200 transition-colors"
+          className="group px-3 py-1 rounded-md bg-theme-100 text-theme-700 flex items-center gap-1 hover:bg-theme-200 transition-colors"
           onClick={onGetLinkCounts}
           disabled={disableGetCounts || isLoading}
         >
@@ -31,7 +31,7 @@ export default function TopControls({
 
       {/* Right side button */}
       <button
-        className="group px-3 py-1 rounded-md bg-slate-100 text-blue-700 flex items-center gap-1 hover:bg-slate-200 transition-colors"
+        className="group px-3 py-1 rounded-md bg-theme-100 text-theme-700 flex items-center gap-1 hover:bg-theme-200 transition-colors"
         onClick={onHelp}
       >
         <QuestionIcon className="w-5 h-5" />

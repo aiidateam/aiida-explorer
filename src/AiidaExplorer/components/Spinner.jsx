@@ -1,12 +1,12 @@
 export default function Spinner({ size = 100, message = "Loading..." }) {
   return (
-    <div className="flex flex-col items-center justify-center space-y-2">
+    <div className="flex flex-col items-center justify-center">
       <svg
-        className="animate-spin"
+        className="animate-spin origin-center"
         xmlns="http://www.w3.org/2000/svg"
         width={size}
-        height={size * (376 / 400)}
-        viewBox="0 0 400 376"
+        height={size}
+        viewBox="0 0 390 390"
       >
         <g className="origin-center">
           <path

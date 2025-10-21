@@ -42,6 +42,7 @@ function AiidaExplorerInner({
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
   debugMode = false,
+  theme = "default",
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
   // If parent specifies rootNode, that is used as the source of truth,
@@ -100,7 +101,7 @@ function AiidaExplorerInner({
 
     async function loadGraph() {
       setLoading(true);
-      setError(null); // reset error on new load
+      setError(null);
 
       try {
         const { nodes: fetchedNodes, edges: fetchedEdges } =
@@ -116,8 +117,27 @@ function AiidaExplorerInner({
         setNodes(nodesWithExtras);
         setEdges(fetchedEdges);
 
-        // Animate central node as before...
-        // ...
+        // Wait until next React render to ensure nodes are placed
+        requestAnimationFrame(() => {
+          const instance = reactFlowInstanceRef.current;
+          if (!instance) return;
+
+          // zoom out
+          instance.fitView({ padding: 1.5, duration: 300 });
+
+          const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+          if (centralNode?.position) {
+            // zoom back in
+            setTimeout(() => {
+              if (!mounted) return;
+              instance.setCenter(
+                centralNode.position.x + 70,
+                centralNode.position.y + 0,
+                { zoom: 1.22, duration: 500 }
+              );
+            }, 400); // a bit more than fitView's duration
+          }
+        });
 
         const rootNode = nodesWithExtras.find((n) => n.id === rootNodeId);
         if (rootNode) {
@@ -188,133 +208,141 @@ function AiidaExplorerInner({
   };
 
   return (
-    <OverlayProvider
-      ref={overlayContainerRef}
-      className="flex flex-col relative h-full min-h-[300px] border rounded-md bg-white"
-    >
-      {/* Overlay */}
-
-      <Overlay
-        active={activeOverlay}
-        onClose={() => setActiveOverlay(null)}
-        title={
-          activeOverlay === "groupsview"
-            ? "Find node"
-            : activeOverlay === "typesview"
-              ? "Node Types"
-              : activeOverlay === "helpview"
-                ? "Help"
-                : ""
-        }
-        container={overlayContainerRef.current}
+    <div data-theme={theme} className="flex flex-col h-full">
+      <OverlayProvider
+        ref={overlayContainerRef}
+        className="flex flex-col relative h-full min-h-[300px] border rounded-sm bg-theme-50"
       >
-        {activeOverlay === "groupsview" && (
-          <GroupsViewer restApiUrl={restApiUrl} setRootNodeId={setRootNodeId} />
-        )}
-        {activeOverlay === "helpview" && <HelpViewer />}
-      </Overlay>
+        {/* Overlay */}
 
-      <PanelGroup
-        direction={isWideScreen ? "horizontal" : "vertical"}
-        className="flex-1 min-h-0 overflow-hidden"
-      >
-        {/* Left-hand pane */}
-        <Panel
-          className="flex flex-col min-h-0 relative"
-          defaultSize={50} // initial % width
-          minSize={10} // min % width
+        <Overlay
+          active={activeOverlay}
+          onClose={() => setActiveOverlay(null)}
+          title={
+            activeOverlay === "groupsview"
+              ? "Find node"
+              : activeOverlay === "typesview"
+                ? "Node Types"
+                : activeOverlay === "helpview"
+                  ? "Help"
+                  : ""
+          }
+          container={overlayContainerRef.current}
         >
-          {/* Loading spinner */}
-          {loading && (
-            <div className="absolute bottom-2 right-2 z-50">
-              <Spinner />
-            </div>
+          {activeOverlay === "groupsview" && (
+            <GroupsViewer
+              restApiUrl={restApiUrl}
+              setRootNodeId={setRootNodeId}
+            />
           )}
+          {activeOverlay === "helpview" && <HelpViewer />}
+        </Overlay>
 
-          {/* Error message */}
-          {error && (
-            <div className="absolute bottom-2 right-2 z-50">
-              <ErrorDisplay
-                message={`Failed to find node UUID: ${rootNodeId}`}
+        <PanelGroup
+          direction={isWideScreen ? "horizontal" : "vertical"}
+          className="flex-1 min-h-0 overflow-hidden"
+        >
+          {/* Left-hand pane */}
+          <Panel
+            className="flex flex-col min-h-0 relative"
+            defaultSize={50} // initial % width
+            minSize={10} // min % width
+          >
+            {/* Loading spinner */}
+            {loading && (
+              <div className="absolute bottom-2 right-2 z-50">
+                <Spinner />
+              </div>
+            )}
+
+            {/* Error message */}
+            {error && (
+              <div className="absolute bottom-2 right-2 z-50">
+                <ErrorDisplay
+                  message={`Failed to find node UUID: ${rootNodeId}`}
+                />
+              </div>
+            )}
+
+            {/* controls pane at the top. */}
+            <TopControls
+              onFindNode={() => setActiveOverlay("groupsview")}
+              onGetLinkCounts={async () => {
+                if (loading || nodes.length === 0) return;
+                setLoading(true);
+                try {
+                  const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
+                  setNodes(updatedNodes);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              onHelp={() => setActiveOverlay("helpview")}
+              isLoading={loading}
+              disableGetCounts={nodes.length === 0}
+            />
+
+            <div className="flex-1 min-h-0">
+              <FlowChart
+                className="flex-1 min-h-0"
+                nodes={nodes}
+                edges={edges}
+                setNodes={setNodes}
+                setEdges={setEdges}
+                selectedNode={selectedNode}
+                onNodeSelect={handleNodeSelect}
+                onNodeDoubleSelect={handleDoubleClick}
+                onInit={(instance) => {
+                  reactFlowInstanceRef.current = instance;
+                }}
               />
             </div>
-          )}
+          </Panel>
 
-          {/* controls pane at the top. */}
-          <TopControls
-            onFindNode={() => setActiveOverlay("groupsview")}
-            onGetLinkCounts={async () => {
-              if (loading || nodes.length === 0) return;
-              setLoading(true);
-              try {
-                const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
-                setNodes(updatedNodes);
-              } finally {
-                setLoading(false);
-              }
-            }}
-            onHelp={() => setActiveOverlay("helpview")}
-            isLoading={loading}
-            disableGetCounts={nodes.length === 0}
-          />
-
-          <div className="flex-1 min-h-0">
-            <FlowChart
-              className="flex-1 min-h-0"
-              nodes={nodes}
-              edges={edges}
-              setNodes={setNodes}
-              setEdges={setEdges}
-              selectedNode={selectedNode}
-              onNodeSelect={handleNodeSelect}
-              onNodeDoubleSelect={handleDoubleClick}
-              onInit={(instance) => {
-                reactFlowInstanceRef.current = instance;
-              }}
-            />
-          </div>
-        </Panel>
-
-        {/* Resize handle */}
-        <PanelResizeHandle
-          className={`group flex items-center justify-center bg-slate-200 border-x ${
-            isWideScreen ? "w-1.5 cursor-col-resize" : "h-1.5 cursor-row-resize"
-          }`}
-        >
-          {/* Thumb indicator */}
-          <div
-            className={`bg-gray-700 rounded group-hover:scale-125 ${
-              isWideScreen ? "w-0.5 h-6" : "w-6 h-0.5"
+          {/* Resize handle */}
+          <PanelResizeHandle
+            data-theme={theme}
+            className={`group flex items-center justify-center bg-theme-200 border-x ${
+              isWideScreen
+                ? "w-1.5 cursor-col-resize"
+                : "h-1.5 cursor-row-resize"
             }`}
-          />
-        </PanelResizeHandle>
-
-        {/* Right-hand pane */}
-        <Panel className="flex-1 flex flex-col min-h-0">
-          {debugMode && (
-            <div className="hidden md:flex h-1/4 border-b border-gray-300 overflow-y-auto">
-              <DebugPane selectedNode={selectedNode} />
-            </div>
-          )}
-          <div className="flex-1 overflow-y-auto min-h-0">
-            <VisualiserPane
-              restApiUrl={restApiUrl}
-              selectedNode={selectedNode}
-              userData={users}
-              downloadFormats={downloadFormats}
+          >
+            {/* Thumb indicator */}
+            <div
+              className={`bg-theme-700 rounded group-hover:scale-125 ${
+                isWideScreen ? "w-0.5 h-6" : "w-6 h-0.5"
+              }`}
             />
-          </div>
-        </Panel>
-      </PanelGroup>
+          </PanelResizeHandle>
 
-      {/* Breadcrumbs */}
-      <div className="flex-none overflow-x-auto">
-        <Breadcrumbs
-          trail={breadcrumbs}
-          onClick={handleBreadcrumbClick}
-          maxItems={MAX_BREADCRUMBS}
-        />
-      </div>
-    </OverlayProvider>
+          {/* Right-hand pane */}
+          <Panel className="flex-1 flex flex-col min-h-0">
+            {debugMode && (
+              <div className="hidden md:flex h-1/4 border-b border-theme-300 overflow-y-auto">
+                <DebugPane selectedNode={selectedNode} />
+              </div>
+            )}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <VisualiserPane
+                restApiUrl={restApiUrl}
+                selectedNode={selectedNode}
+                userData={users}
+                downloadFormats={downloadFormats}
+              />
+            </div>
+          </Panel>
+        </PanelGroup>
+
+        {/* Breadcrumbs */}
+        <div className="flex-none overflow-x-auto">
+          <Breadcrumbs
+            trail={breadcrumbs}
+            onClick={handleBreadcrumbClick}
+            maxItems={MAX_BREADCRUMBS}
+          />
+        </div>
+      </OverlayProvider>
+    </div>
   );
 }

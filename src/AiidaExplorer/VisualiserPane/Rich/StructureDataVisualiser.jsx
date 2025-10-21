@@ -123,7 +123,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
           </div>
           {hasDerived && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-1">
+              <div className="bg-theme-100 border-1 border-theme-200 p-2 rounded-lg shadow-md space-y-1">
                 <p>
                   <strong>Cell Volume:</strong> {volume?.toFixed(4)} Å³
                 </p>
@@ -139,7 +139,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
               </div>
 
               {lattice && (
-                <div className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-1">
+                <div className="bg-theme-100 border-1 border-theme-200 p-2 rounded-lg shadow-md space-y-1">
                   <p>
                     <strong>Lattice a:</strong> {lattice.a.toFixed(4)} Å
                   </p>

@@ -1,7 +1,582 @@
 @import "tailwindcss";
 
+/* TODO - move to a postcss/tailwindconfig to avoid long repetition.*/
 @layer base {
-  * {
-    border-color: theme("colors.slate.700");
+  button {
+    @apply cursor-pointer hover:cursor-pointer;
+  }
+
+  /* Default (slate) theme */
+  :root {
+    --theme-50: #f9fafb;
+    --theme-100: #f3f4f6;
+    --theme-200: #e5e7eb;
+    --theme-300: #d1d5db;
+    --theme-400: #9ca3af;
+    --theme-500: #6b7280;
+    --theme-600: #4b5563;
+    --theme-700: #374151;
+    --theme-800: #1f2937;
+    --theme-900: #111827;
+  }
+
+  /* Blue theme */
+  [data-theme="blue"] {
+    --theme-50: #eff6ff;
+    --theme-100: #dbeafe;
+    --theme-200: #bfdbfe;
+    --theme-300: #93c5fd;
+    --theme-400: #60a5fa;
+    --theme-500: #3b82f6;
+    --theme-600: #2563eb;
+    --theme-700: #1d4ed8;
+    --theme-800: #1e40af;
+    --theme-900: #1e3a8a;
+  }
+
+  /* Red theme */
+  [data-theme="red"] {
+    --theme-50: #fef2f2;
+    --theme-100: #fee2e2;
+    --theme-200: #fecaca;
+    --theme-300: #fca5a5;
+    --theme-400: #f87171;
+    --theme-500: #ef4444;
+    --theme-600: #dc2626;
+    --theme-700: #b91c1c;
+    --theme-800: #991b1b;
+    --theme-900: #7f1d1d;
+  }
+  /* Green theme */
+  [data-theme="green"] {
+    --theme-50: #f0fdf4;
+    --theme-100: #dcfce7;
+    --theme-200: #bbf7d0;
+    --theme-300: #86efac;
+    --theme-400: #4ade80;
+    --theme-500: #22c55e;
+    --theme-600: #16a34a;
+    --theme-700: #15803d;
+    --theme-800: #166534;
+    --theme-900: #14532d;
+  }
+
+  /* Amber theme */
+  [data-theme="amber"] {
+    --theme-50: #fffbeb;
+    --theme-100: #fef3c7;
+    --theme-200: #fde68a;
+    --theme-300: #fcd34d;
+    --theme-400: #fbbf24;
+    --theme-500: #f59e0b;
+    --theme-600: #d97706;
+    --theme-700: #b45309;
+    --theme-800: #92400e;
+    --theme-900: #78350f;
+  }
+
+  /* Violet theme */
+  [data-theme="violet"] {
+    --theme-50: #f5f3ff;
+    --theme-100: #ede9fe;
+    --theme-200: #ddd6fe;
+    --theme-300: #c4b5fd;
+    --theme-400: #a78bfa;
+    --theme-500: #8b5cf6;
+    --theme-600: #7c3aed;
+    --theme-700: #6d28d9;
+    --theme-800: #5b21b6;
+    --theme-900: #4c1d95;
+  }
+
+  /* Emerald theme */
+  [data-theme="emerald"] {
+    --theme-50: #ecfdf5;
+    --theme-100: #d1fae5;
+    --theme-200: #a7f3d0;
+    --theme-300: #6ee7b7;
+    --theme-400: #34d399;
+    --theme-500: #10b981;
+    --theme-600: #059669;
+    --theme-700: #047857;
+    --theme-800: #065f46;
+    --theme-900: #064e3b;
+  }
+
+  [data-theme="indigo"] {
+    --theme-50: #eef2ff;
+    --theme-100: #e0e7ff;
+    --theme-200: #c7d2fe;
+    --theme-300: #a5b4fc;
+    --theme-400: #818cf8;
+    --theme-500: #6366f1;
+    --theme-600: #4f46e5;
+    --theme-700: #4338ca;
+    --theme-800: #3730a3;
+    --theme-900: #312e81;
+  }
+
+  /* Pink theme */
+  [data-theme="pink"] {
+    --theme-50: #fdf2f8;
+    --theme-100: #fce7f3;
+    --theme-200: #fbcfe8;
+    --theme-300: #f9a8d4;
+    --theme-400: #f472b6;
+    --theme-500: #ec4899;
+    --theme-600: #db2777;
+    --theme-700: #be185d;
+    --theme-800: #9d174d;
+    --theme-900: #831843;
+  }
+
+  /* Rose theme */
+  [data-theme="rose"] {
+    --theme-50: #fff1f2;
+    --theme-100: #ffe4e6;
+    --theme-200: #fecdd3;
+    --theme-300: #fda4af;
+    --theme-400: #fb7185;
+    --theme-500: #f43f5e;
+    --theme-600: #e11d48;
+    --theme-700: #be123c;
+    --theme-800: #9f1239;
+    --theme-900: #881337;
+  }
+
+  /* Cyan theme */
+  [data-theme="cyan"] {
+    --theme-50: #ecfeff;
+    --theme-100: #cffafe;
+    --theme-200: #a5f3fc;
+    --theme-300: #67e8f9;
+    --theme-400: #22d3ee;
+    --theme-500: #06b6d4;
+    --theme-600: #0891b2;
+    --theme-700: #0e7490;
+    --theme-800: #155e75;
+    --theme-900: #164e63;
+  }
+
+  /* Teal theme */
+  [data-theme="teal"] {
+    --theme-50: #f0fdfa;
+    --theme-100: #ccfbf1;
+    --theme-200: #99f6e4;
+    --theme-300: #5eead4;
+    --theme-400: #2dd4bf;
+    --theme-500: #14b8a6;
+    --theme-600: #0d9488;
+    --theme-700: #0f766e;
+    --theme-800: #115e59;
+    --theme-900: #134e4a;
+  }
+
+  /* Yellow theme */
+  [data-theme="yellow"] {
+    --theme-50: #fefce8;
+    --theme-100: #fef9c3;
+    --theme-200: #fef08a;
+    --theme-300: #fde047;
+    --theme-400: #facc15;
+    --theme-500: #eab308;
+    --theme-600: #ca8a04;
+    --theme-700: #a16207;
+    --theme-800: #854d0e;
+    --theme-900: #713f12;
+  }
+
+  /* Orange theme */
+  [data-theme="orange"] {
+    --theme-50: #fff7ed;
+    --theme-100: #ffedd5;
+    --theme-200: #fed7aa;
+    --theme-300: #fdba74;
+    --theme-400: #fb923c;
+    --theme-500: #f97316;
+    --theme-600: #ea580c;
+    --theme-700: #c2410c;
+    --theme-800: #9a3412;
+    --theme-900: #7c2d12;
+  }
+}
+
+@layer utilities {
+  /* --------- BG --------- */
+  .bg-theme-50 {
+    background-color: var(--theme-50);
+  }
+  .bg-theme-100 {
+    background-color: var(--theme-100);
+  }
+  .bg-theme-200 {
+    background-color: var(--theme-200);
+  }
+  .bg-theme-300 {
+    background-color: var(--theme-300);
+  }
+  .bg-theme-400 {
+    background-color: var(--theme-400);
+  }
+  .bg-theme-500 {
+    background-color: var(--theme-500);
+  }
+  .bg-theme-600 {
+    background-color: var(--theme-600);
+  }
+  .bg-theme-700 {
+    background-color: var(--theme-700);
+  }
+  .bg-theme-800 {
+    background-color: var(--theme-800);
+  }
+  .bg-theme-900 {
+    background-color: var(--theme-900);
+  }
+
+  /* BG hover/focus/active */
+  .hover\:bg-theme-50:hover {
+    background-color: var(--theme-50);
+  }
+  .hover\:bg-theme-100:hover {
+    background-color: var(--theme-100);
+  }
+  .hover\:bg-theme-200:hover {
+    background-color: var(--theme-200);
+  }
+  .hover\:bg-theme-300:hover {
+    background-color: var(--theme-300);
+  }
+  .hover\:bg-theme-400:hover {
+    background-color: var(--theme-400);
+  }
+  .hover\:bg-theme-500:hover {
+    background-color: var(--theme-500);
+  }
+  .hover\:bg-theme-600:hover {
+    background-color: var(--theme-600);
+  }
+  .hover\:bg-theme-700:hover {
+    background-color: var(--theme-700);
+  }
+  .hover\:bg-theme-800:hover {
+    background-color: var(--theme-800);
+  }
+  .hover\:bg-theme-900:hover {
+    background-color: var(--theme-900);
+  }
+
+  .focus\:bg-theme-50:focus {
+    background-color: var(--theme-50);
+  }
+  .focus\:bg-theme-100:focus {
+    background-color: var(--theme-100);
+  }
+  .focus\:bg-theme-200:focus {
+    background-color: var(--theme-200);
+  }
+  .focus\:bg-theme-300:focus {
+    background-color: var(--theme-300);
+  }
+  .focus\:bg-theme-400:focus {
+    background-color: var(--theme-400);
+  }
+  .focus\:bg-theme-500:focus {
+    background-color: var(--theme-500);
+  }
+  .focus\:bg-theme-600:focus {
+    background-color: var(--theme-600);
+  }
+  .focus\:bg-theme-700:focus {
+    background-color: var(--theme-700);
+  }
+  .focus\:bg-theme-800:focus {
+    background-color: var(--theme-800);
+  }
+  .focus\:bg-theme-900:focus {
+    background-color: var(--theme-900);
+  }
+
+  .active\:bg-theme-50:active {
+    background-color: var(--theme-50);
+  }
+  .active\:bg-theme-100:active {
+    background-color: var(--theme-100);
+  }
+  .active\:bg-theme-200:active {
+    background-color: var(--theme-200);
+  }
+  .active\:bg-theme-300:active {
+    background-color: var(--theme-300);
+  }
+  .active\:bg-theme-400:active {
+    background-color: var(--theme-400);
+  }
+  .active\:bg-theme-500:active {
+    background-color: var(--theme-500);
+  }
+  .active\:bg-theme-600:active {
+    background-color: var(--theme-600);
+  }
+  .active\:bg-theme-700:active {
+    background-color: var(--theme-700);
+  }
+  .active\:bg-theme-800:active {
+    background-color: var(--theme-800);
+  }
+  .active\:bg-theme-900:active {
+    background-color: var(--theme-900);
+  }
+
+  /* --------- TEXT --------- */
+  .text-theme-50 {
+    color: var(--theme-50);
+  }
+  .text-theme-100 {
+    color: var(--theme-100);
+  }
+  .text-theme-200 {
+    color: var(--theme-200);
+  }
+  .text-theme-300 {
+    color: var(--theme-300);
+  }
+  .text-theme-400 {
+    color: var(--theme-400);
+  }
+  .text-theme-500 {
+    color: var(--theme-500);
+  }
+  .text-theme-600 {
+    color: var(--theme-600);
+  }
+  .text-theme-700 {
+    color: var(--theme-700);
+  }
+  .text-theme-800 {
+    color: var(--theme-800);
+  }
+  .text-theme-900 {
+    color: var(--theme-900);
+  }
+
+  /* TEXT hover/focus/active */
+  .hover\:text-theme-50:hover {
+    color: var(--theme-50);
+  }
+  .hover\:text-theme-100:hover {
+    color: var(--theme-100);
+  }
+  .hover\:text-theme-200:hover {
+    color: var(--theme-200);
+  }
+  .hover\:text-theme-300:hover {
+    color: var(--theme-300);
+  }
+  .hover\:text-theme-400:hover {
+    color: var(--theme-400);
+  }
+  .hover\:text-theme-500:hover {
+    color: var(--theme-500);
+  }
+  .hover\:text-theme-600:hover {
+    color: var(--theme-600);
+  }
+  .hover\:text-theme-700:hover {
+    color: var(--theme-700);
+  }
+  .hover\:text-theme-800:hover {
+    color: var(--theme-800);
+  }
+  .hover\:text-theme-900:hover {
+    color: var(--theme-900);
+  }
+
+  .focus\:text-theme-50:focus {
+    color: var(--theme-50);
+  }
+  .focus\:text-theme-100:focus {
+    color: var(--theme-100);
+  }
+  .focus\:text-theme-200:focus {
+    color: var(--theme-200);
+  }
+  .focus\:text-theme-300:focus {
+    color: var(--theme-300);
+  }
+  .focus\:text-theme-400:focus {
+    color: var(--theme-400);
+  }
+  .focus\:text-theme-500:focus {
+    color: var(--theme-500);
+  }
+  .focus\:text-theme-600:focus {
+    color: var(--theme-600);
+  }
+  .focus\:text-theme-700:focus {
+    color: var(--theme-700);
+  }
+  .focus\:text-theme-800:focus {
+    color: var(--theme-800);
+  }
+  .focus\:text-theme-900:focus {
+    color: var(--theme-900);
+  }
+
+  .active\:text-theme-50:active {
+    color: var(--theme-50);
+  }
+  .active\:text-theme-100:active {
+    color: var(--theme-100);
+  }
+  .active\:text-theme-200:active {
+    color: var(--theme-200);
+  }
+  .active\:text-theme-300:active {
+    color: var(--theme-300);
+  }
+  .active\:text-theme-400:active {
+    color: var(--theme-400);
+  }
+  .active\:text-theme-500:active {
+    color: var(--theme-500);
+  }
+  .active\:text-theme-600:active {
+    color: var(--theme-600);
+  }
+  .active\:text-theme-700:active {
+    color: var(--theme-700);
+  }
+  .active\:text-theme-800:active {
+    color: var(--theme-800);
+  }
+  .active\:text-theme-900:active {
+    color: var(--theme-900);
+  }
+
+  /* --------- BORDER --------- */
+  .border-theme-50 {
+    border-color: var(--theme-50);
+  }
+  .border-theme-100 {
+    border-color: var(--theme-100);
+  }
+  .border-theme-200 {
+    border-color: var(--theme-200);
+  }
+  .border-theme-300 {
+    border-color: var(--theme-300);
+  }
+  .border-theme-400 {
+    border-color: var(--theme-400);
+  }
+  .border-theme-500 {
+    border-color: var(--theme-500);
+  }
+  .border-theme-600 {
+    border-color: var(--theme-600);
+  }
+  .border-theme-700 {
+    border-color: var(--theme-700);
+  }
+  .border-theme-800 {
+    border-color: var(--theme-800);
+  }
+  .border-theme-900 {
+    border-color: var(--theme-900);
+  }
+
+  /* BORDER hover/focus/active */
+  .hover\:border-theme-50:hover {
+    border-color: var(--theme-50);
+  }
+  .hover\:border-theme-100:hover {
+    border-color: var(--theme-100);
+  }
+  .hover\:border-theme-200:hover {
+    border-color: var(--theme-200);
+  }
+  .hover\:border-theme-300:hover {
+    border-color: var(--theme-300);
+  }
+  .hover\:border-theme-400:hover {
+    border-color: var(--theme-400);
+  }
+  .hover\:border-theme-500:hover {
+    border-color: var(--theme-500);
+  }
+  .hover\:border-theme-600:hover {
+    border-color: var(--theme-600);
+  }
+  .hover\:border-theme-700:hover {
+    border-color: var(--theme-700);
+  }
+  .hover\:border-theme-800:hover {
+    border-color: var(--theme-800);
+  }
+  .hover\:border-theme-900:hover {
+    border-color: var(--theme-900);
+  }
+
+  .focus\:border-theme-50:focus {
+    border-color: var(--theme-50);
+  }
+  .focus\:border-theme-100:focus {
+    border-color: var(--theme-100);
+  }
+  .focus\:border-theme-200:focus {
+    border-color: var(--theme-200);
+  }
+  .focus\:border-theme-300:focus {
+    border-color: var(--theme-300);
+  }
+  .focus\:border-theme-400:focus {
+    border-color: var(--theme-400);
+  }
+  .focus\:border-theme-500:focus {
+    border-color: var(--theme-500);
+  }
+  .focus\:border-theme-600:focus {
+    border-color: var(--theme-600);
+  }
+  .focus\:border-theme-700:focus {
+    border-color: var(--theme-700);
+  }
+  .focus\:border-theme-800:focus {
+    border-color: var(--theme-800);
+  }
+  .focus\:border-theme-900:focus {
+    border-color: var(--theme-900);
+  }
+
+  .active\:border-theme-50:active {
+    border-color: var(--theme-50);
+  }
+  .active\:border-theme-100:active {
+    border-color: var(--theme-100);
+  }
+  .active\:border-theme-200:active {
+    border-color: var(--theme-200);
+  }
+  .active\:border-theme-300:active {
+    border-color: var(--theme-300);
+  }
+  .active\:border-theme-400:active {
+    border-color: var(--theme-400);
+  }
+  .active\:border-theme-500:active {
+    border-color: var(--theme-500);
+  }
+  .active\:border-theme-600:active {
+    border-color: var(--theme-600);
+  }
+  .active\:border-theme-700:active {
+    border-color: var(--theme-700);
+  }
+  .active\:border-theme-800:active {
+    border-color: var(--theme-800);
+  }
+  .active\:border-theme-900:active {
+    border-color: var(--theme-900);
   }
 }

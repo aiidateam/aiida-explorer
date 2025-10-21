@@ -12,7 +12,7 @@ export default function TreeDropdown({
   onSelect,
   openNodes,
   toggleNode,
-  arrowClassName = "w-8 h-8 text-blue-500 transform transition-transform duration-300",
+  arrowClassName = "w-8 h-8 transform transition-transform duration-300",
 }) {
   if (!data) return null;
 

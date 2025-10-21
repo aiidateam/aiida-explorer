@@ -81,7 +81,7 @@ function formatTableData(nodes, setRootNodeId, isSmallScreen = false) {
     newRow[""] = (
       <button
         onClick={() => setRootNodeId(row.uuid)}
-        className="px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
+        className="px-2 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
       >
         View
       </button>
@@ -181,13 +181,13 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   return (
     <div className="flex flex-col md:flex-row gap-4 overflow-auto w-full items-start">
       {/* Left panel */}
-      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-3 rounded">
+      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-theme-50 p-2 px-3 rounded">
         {/* Top header + button */}
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex gap-4 items-center mb-2">
           <h4 className="font-medium mt-2">Filter by Node Types</h4>
           <button
             onClick={() => fetchNodes(0)}
-            className="px-3 py-1 rounded bg-indigo-700 text-white hover:bg-indigo-800 transition"
+            className="px-3 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
           >
             Apply
           </button>
@@ -230,7 +230,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
             {tableData.length > 0 && (
               <button
                 onClick={() => fetchNodes(offset)}
-                className="px-3 py-1 rounded bg-gray-700 text-white hover:bg-gray-800 transition"
+                className="px-3 py-1 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
               >
                 Load next 200
               </button>
@@ -244,11 +244,11 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
               value={searchNode}
               onChange={(e) => setSearchNode(e.target.value)}
               placeholder="Navigate to a UUID"
-              className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-700 rounded px-1 py-1"
+              className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-theme-700 rounded px-1 py-1"
             />
             <button
               onClick={handleNodeSearch}
-              className="px-1 py-0.5 md:px-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              className="px-1 py-0.5 md:px-2 rounded bg-theme-500 text-white hover:bg-theme-700 transition"
             >
               Go
             </button>
@@ -271,7 +271,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           <DataTable
             columns={columnsToRender}
             data={tableData}
-            sortableCols={columnsToRender}
+            sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
             renderIfMissing
             breakableCols={[
               "Unique ID",

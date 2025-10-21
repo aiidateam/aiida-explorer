@@ -7,7 +7,7 @@ export default function FormattedMetaData({ nodeData, userData }) {
 
   if (!aiida) {
     return (
-      <div className="p-4 text-gray-500 italic">No metadata available</div>
+      <div className="p-4 text-theme-500 italic">No metadata available</div>
     );
   }
 
@@ -19,20 +19,20 @@ export default function FormattedMetaData({ nodeData, userData }) {
     <div className="">
       {/* Label with arrow on small screens */}
       <div
-        className="flex gap-2 items-center cursor-pointer sm:cursor-default"
+        className="flex gap-2 items-center cursor-pointer md:cursor-default"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className="text-md md:text-lg font-semibold">
+        <h2 className="text-md lg:text-lg font-semibold">
           {nodeData.label || ""}
         </h2>
-        <span className="md:hidden transition-transform duration-200">
+        <span className="lg:hidden transition-transform duration-200">
           {isOpen ? "▲" : "▼"}
         </span>
       </div>
 
       {/* Metadata content */}
-      <div className={`${isOpen ? "block" : "hidden"} mt-1 md:block md:mt-2`}>
-        <div className="space-y-1 px-1 text-xs md:text-sm">
+      <div className={`${isOpen ? "block" : "hidden"} mt-1 lg:block lg:mt-2`}>
+        <div className="space-y-1 px-1 text-xs lg:text-sm">
           {aiida.uuid && (
             <div>
               <span className="font-medium">UUID:</span> {aiida.uuid}
