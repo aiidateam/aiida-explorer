@@ -7,8 +7,6 @@ import DataTable from "../../components/DataTable";
 // TODO - build a KPOINT converter that spits out VASP/QE formats
 // TODO - Dont render missing tables / better fallbacks?
 
-// src/components/BZVisualizer.jsx
-
 function BZVisualizer({ data, options }) {
   const containerRef = useRef(null);
 

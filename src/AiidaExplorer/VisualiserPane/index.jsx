@@ -6,6 +6,7 @@ import BandsDataVisualiser from "./Rich/BandsDataVisualiser";
 import KpointsDataVisualiser from "./Rich/KpointsDataVisualiser";
 import StructureDataVisualiser from "./Rich/StructureDataVisualiser";
 import UpfDataVisualiser from "./Rich/UpfDataVisualiser";
+import CalcJobVisualiser from "./Rich/CalcJobVisualiser";
 
 const RICH_TYPES = {
   StructureData: StructureDataVisualiser,
@@ -13,6 +14,7 @@ const RICH_TYPES = {
   BandsData: BandsDataVisualiser,
   UpfData: UpfDataVisualiser,
   KpointsData: KpointsDataVisualiser,
+  CalcJobNode: CalcJobVisualiser,
 };
 
 function geRichVisualiser(restApiUrl, selectedNode) {

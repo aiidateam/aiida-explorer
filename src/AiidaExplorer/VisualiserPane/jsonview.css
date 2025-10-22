@@ -1,0 +1,5 @@
+/* Make BG BE TRANSPARENT + override fontsize.*/
+.custom-json-container {
+  background-color: transparent !important;
+  font-size: 14px;
+}

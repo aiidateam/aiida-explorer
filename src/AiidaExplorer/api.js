@@ -4,59 +4,94 @@ import { layoutGraphDefault } from "./FlowChart/graphController";
 // Toplevel api hits (run and done)
 // --------------------------
 
-export async function fetchUsers(restApiUrl) {
+/**
+ * Generic fetch runner with logging
+ * @param {string} url - The full endpoint URL
+ * @param {object} [options] - Fetch options (method, headers, body, etc.)
+ * @param {*} [defaultValue=null] - Value to return if fetch fails
+ * @returns {Promise<*>} - Resolves to the JSON response or defaultValue
+ */
+export async function fetchGeneric(url, options = {}, defaultValue = null) {
   try {
-    const res = await fetch(`${restApiUrl}/users/`);
-    if (!res.ok) return null;
+    const res = await fetch(url, options);
 
-    const resp = await res.json();
-    const data = resp.data;
-    console.log("users", data);
+    if (!res.ok) {
+      console.warn(`Fetch failed for ${url} with status ${res.status}`);
+      return defaultValue;
+    }
 
-    return data;
+    return await res.json();
   } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
+    console.error(`Error fetching ${url}:`, err);
+    return defaultValue;
   }
+}
+
+// --------------------------
+// TOP LEVEL API HITS
+// based solely on restApiUrl so should only need to be ran once...
+// --------------------------
+export async function fetchUsers(restApiUrl) {
+  const url = `${restApiUrl}/users/`;
+  const resp = await fetchGeneric(url, {}, { data: [] });
+  return resp.data;
 }
 
 export async function fetchDownloadFormats(restApiUrl) {
+  const url = `${restApiUrl}/nodes/download_formats/`;
+  const resp = await fetchGeneric(url, {}, { data: [] });
+  return resp.data;
+}
+
+// Unused as hard-coded for now...
+export async function fetchAPIFullTypes(restApiUrl) {
+  const url = `${restApiUrl}/nodes/full_types`;
+  return fetchGeneric(url, {}, { data: null });
+}
+
+export async function fetchGroups(restApiUrl) {
+  const url = `${restApiUrl}/groups`;
+  const result = await fetchGeneric(url, {}, { data: { groups: [] } });
+
+  return result?.data?.groups || [];
+}
+
+// -------------------------
+// query builder requires a POST and doesnt use the helper.
+// --------------------------
+export async function fetchFromQueryBuilder(restApiUrl, postMsg) {
   try {
-    const res = await fetch(`${restApiUrl}/nodes/download_formats/`);
-    if (!res.ok) return null;
+    const res = await fetch(`${restApiUrl}/querybuilder/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(postMsg),
+    });
 
-    const resp = await res.json();
-    const data = resp.data;
+    if (!res.ok) {
+      console.error("QueryBuilder request failed:", res.status, res.statusText);
+      return [];
+    }
 
-    return data;
+    const json = await res.json();
+    return json?.data || [];
   } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
+    console.error("Error fetching from QueryBuilder:", err);
+    return [];
   }
 }
 
 // --------------------------
-// standard api hits are here
+// NODE API HITS
 // --------------------------
 
-// get a simple printout of a node.
+// fetch a simple node by ID
 export async function fetchNodeById(restApiUrl, nodeId) {
   if (!nodeId) return null;
-
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}`
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
-  }
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}`;
+  return fetchGeneric(url);
 }
 
-// get the content of a node.
-// TODO - unify this and fetchFiles into a single method.
+// fetch common node contents (attributes, comments, extras, derived_properties)
 export async function fetchNodeContents(restApiUrl, nodeId) {
   if (!nodeId) return null;
 
@@ -64,88 +99,50 @@ export async function fetchNodeContents(restApiUrl, nodeId) {
   const results = {};
 
   for (const ep of endpoints) {
-    try {
-      const res = await fetch(
-        `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`
-      );
+    // build url from ep
+    const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/contents/${ep}`;
+    const data = await fetchGeneric(url, {}, {}); // if missing set to {}
 
-      if (!res.ok) {
-        if (res.status !== 404) {
-          console.warn(`Endpoint ${ep} failed for node ${nodeId}:`, res.status);
-        }
-        continue; // skip this endpoint if not found
-      }
-
-      const data = await res.json();
-      results[ep] = data?.data?.[ep] ?? data ?? {};
-    } catch (err) {
-      console.error(`Error fetching ${ep} for node ${nodeId}:`, err);
+    if (data) {
+      // Safely extract the nested property if it exists
+      results[ep] = data?.data?.[ep] ?? data;
+    } else {
+      results[ep] = {};
     }
   }
 
   return results;
 }
 
-// fetch node repo list
 export async function fetchNodeRepoList(restApiUrl, nodeId) {
   if (!nodeId) return [];
 
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`
-    );
-    if (!res.ok) return [];
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`;
+  const repoFiles = await fetchGeneric(url, {}, { data: { repo_list: [] } });
 
-    const repoFiles = await res.json();
+  if (!repoFiles?.data?.repo_list) return [];
 
-    // Transform each file into { name, downloadUrl }
-    const filesWithUrls = repoFiles.data.repo_list
-      .filter((f) => f.type === "FILE")
-      .map((file) => ({
-        name: file.name,
-        downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
-          nodeId
-        )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
-      }));
-
-    return filesWithUrls;
-  } catch (err) {
-    console.error("Error fetching node repo list:", err);
-    return [];
-  }
+  return repoFiles.data.repo_list
+    .filter((f) => f.type === "FILE")
+    .map((file) => ({
+      name: file.name,
+      downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
+        nodeId
+      )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
+    }));
 }
 
-// get the full_types of a root aiida API
-export async function fetchAPIFullTypes(restApiUrl) {
-  try {
-    const res = await fetch(`${restApiUrl}/nodes/full_types`);
-    if (!res.ok) return null;
-    return res.json();
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
-  }
-}
-
-// helper api hit that fetches the retrieved folder UUID for a specific node
+// helper: Gets the UUID of the Retrieved outgoing link...
 export async function fetchRetrievedUUID(restApiUrl, nodeId) {
   if (!nodeId) return null;
 
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`
-    );
-    if (!res.ok) return null;
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`;
+  const data = await fetchGeneric(url, {}, { data: { outgoing: [] } });
 
-    const data = await res.json();
-    const nodes = data?.data?.outgoing || [];
+  const nodes = data?.data?.outgoing || [];
+  const retrievedNode = nodes.find((n) => n.link_label === "retrieved");
 
-    const retrievedNode = nodes.find((n) => n.link_label === "retrieved");
-    return retrievedNode?.uuid || null;
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
-  }
+  return retrievedNode?.uuid || null;
 }
 
 // calcJobs have a special endpoint (input_files/output_files)
@@ -158,43 +155,28 @@ export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
   const results = {};
 
   for (const ep of endpoints) {
-    try {
-      const url = `${restApiUrl}/calcjobs/${encodeURIComponent(nodeId)}/${ep}`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        if (res.status !== 404) {
-          console.warn(`Endpoint ${ep} failed for node ${nodeId}:`, res.status);
-        }
-        continue;
-      }
+    const url = `${restApiUrl}/calcjobs/${encodeURIComponent(nodeId)}/${ep}`;
+    const json = await fetchGeneric(url, {}, { data: [] });
 
-      const json = await res.json();
+    // Safely extract the files array
+    const files = Array.isArray(json.data?.[ep])
+      ? json.data[ep]
+      : Array.isArray(json.data)
+        ? json.data
+        : [];
 
-      // Safely extract the files array
-      const files = Array.isArray(json.data?.[ep])
-        ? json.data[ep]
-        : Array.isArray(json.data)
-          ? json.data
-          : [];
+    const repoNodeId = ep === "input_files" ? nodeId : retrievedNodeId;
 
-      // Determine which node's repository to use
-      console.log(nodeId);
-      const repoNodeId = ep === "input_files" ? nodeId : retrievedNodeId;
+    const processedFiles = files
+      .filter((f) => f.type === "FILE")
+      .map((file) => ({
+        ...file,
+        downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
+          repoNodeId
+        )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
+      }));
 
-      // Filter files and add download URL
-      const processedFiles = files
-        .filter((f) => f.type === "FILE")
-        .map((file) => ({
-          ...file,
-          downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
-            repoNodeId
-          )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
-        }));
-
-      results[ep] = processedFiles;
-    } catch (err) {
-      console.error(`Error fetching ${ep} for node ${nodeId}:`, err);
-    }
+    results[ep] = processedFiles;
   }
 
   return results;
@@ -203,42 +185,27 @@ export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
 export async function fetchJson(restApiUrl, nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=json`
-    );
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/download?download_format=json`;
+  const json = await fetchGeneric(url, {}, { incoming: [], outgoing: [] });
 
-    if (!res.ok) return null;
-    return res.json();
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return null;
-  }
+  return json;
 }
 
 export async function fetchCif(restApiUrl, nodeId) {
   if (!nodeId) return { cifText: null };
 
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/download?download_format=cif&download=false`
-    );
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(
+    nodeId
+  )}/download?download_format=cif&download=false`;
 
-    if (!res.ok) return { cifText: null };
+  const result = await fetchGeneric(
+    url,
+    {},
+    { data: { download: { data: null } } }
+  );
+  const cifText = result?.data?.download?.data || null;
 
-    const result = await res.json();
-
-    const cifText = result.data.download.data || null;
-
-    return { cifText };
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return { cifText: null };
-  }
+  return { cifText };
 }
 
 // CalcJob Special endpoint...
@@ -260,43 +227,6 @@ export async function fetchSourceFile(restApiUrl, nodeId) {
   } catch (err) {
     console.error("Error fetching node:", err);
     return { sourceFile: null };
-  }
-}
-
-export async function fetchGroups(restApiUrl) {
-  try {
-    const res = await fetch(`${restApiUrl}/groups`);
-    if (!res.ok) return null;
-
-    const json = await res.json();
-    // Return only the array of groups
-    return json?.data?.groups || [];
-  } catch (err) {
-    console.error("Error fetching groups:", err);
-    return [];
-  }
-}
-
-/// -------------------------
-// query builder requires a POST
-export async function fetchFromQueryBuilder(restApiUrl, postMsg) {
-  try {
-    const res = await fetch(`${restApiUrl}/querybuilder/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(postMsg),
-    });
-
-    if (!res.ok) {
-      console.error("QueryBuilder request failed:", res.status, res.statusText);
-      return [];
-    }
-
-    const json = await res.json();
-    return json?.data || [];
-  } catch (err) {
-    console.error("Error fetching from QueryBuilder:", err);
-    return [];
   }
 }
 
@@ -366,7 +296,6 @@ export async function fetchLinkCounts(restApiUrl, nodes = []) {
 
 // wrapper function that determines what to fetch based on nodetype skipping if already fetched.
 // TODO - go to /api/v4/nodes/download_formats
-// + inspect the types of downloads rather than hardcoding?
 // + could do this on restApiUrl initialisation in main app?
 export async function smartFetchData(
   restApiUrl,
@@ -384,18 +313,20 @@ export async function smartFetchData(
   let updatedData = { ...node.data };
 
   // Lookup table for downloads
+  // NOW UNUSED - download based rendering is managed solely the subcomponent
+  // This means that we no longer cache potentially large data.
   const downloadFetchers = {
-    StructureData: fetchCif,
-    CifData: fetchCif,
+    // StructureData: fetchCif,
+    // CifData: fetchCif,
     // BandsData: fetchJson,
-    ArrayData: fetchJson,
-    CalcFunctionNode: fetchSourceFile,
+    // ArrayData: fetchJson,
+    // CalcFunctionNode: fetchSourceFile,
   };
 
-  // Always fetch repo_list for all node types
+  // Fetch Repolist (always)
   const fetchRepoList = async () => fetchNodeRepoList(restApiUrl, node.id);
 
-  // Fetch extras (always required)
+  // Fetch extras (always)
   const extraData = await fetchNodeContents(restApiUrl, node.id);
   updatedData = { ...updatedData, ...extraData };
 
@@ -404,9 +335,9 @@ export async function smartFetchData(
     ? downloadFetchers[node.data.label](restApiUrl, node.id)
     : null;
 
-  const repoPromise = fetchRepoList(); // always fetch
+  const repoPromise = fetchRepoList();
 
-  // Special case for CalcJobNode files
+  // Fetch Files (special calcjob)
   let filesPromise = null;
   if (node.data.label === "CalcJobNode") {
     filesPromise = (async () => {
@@ -497,7 +428,7 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
   ];
 
   // Remove duplicates by `id`
-  // TODO - for now i am just mapping IDs to remove duplicates.
+  // TODO - for now we just set{IDs} to remove duplicates.
   // THIS IS CATATROPHIC SINCE NODES CAN BE IN MULTIPLE GRAPHS MULTIPLE TIMES.
   const nodeMap = new Map();
   for (const node of allNodes) {
