@@ -22,7 +22,7 @@ import useRootNode from "./hooks/useRootNode";
 import TopControls from "./TopBar";
 import VisualiserPane from "./VisualiserPane";
 
-
+import "./theme.css";
 
 /**
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
