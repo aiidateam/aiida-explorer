@@ -80,9 +80,11 @@ npm install /path/to/aiida-explorer-x.y.z.tgz
 To make a new version and publish to npm via GitHub Actions:
 
 ```bash
-npm version <major/minor/patch>
+npm version [major|minor|patch]
 git push --follow-tags
 ```
+
+(Note: no need to write the version number manually!)
 
 ### Deploying the demo page to github-pages
 
