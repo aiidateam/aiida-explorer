@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import "./StructDownloadButton.css"; // updated styles below
+import "./StructDownloadButton.css";
 
 const defaultFormats = [
   { format: "cif", label: "CIF" },
@@ -7,6 +7,7 @@ const defaultFormats = [
   { format: "xyz", label: "XYZ" },
 ];
 
+// one to one copy of the MCXD StructDownloadButton (w/css in .css file)
 export function StructDownloadButton(props) {
   const dl_url = `${props.aiida_rest_url}/nodes/${props.uuid}/download`;
   const downloadFormats = props.download_formats || defaultFormats;

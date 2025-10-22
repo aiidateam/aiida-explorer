@@ -1,4 +1,4 @@
-import Plotly from "plotly.js-basic-dist";
+import Plotly from "plotly.js-basic-dist-min";
 import { useEffect, useRef, useMemo } from "react";
 
 export default function SimplePlot({

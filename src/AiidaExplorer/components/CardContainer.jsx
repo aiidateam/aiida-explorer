@@ -1,4 +1,6 @@
-// CardContainer.jsx
+// common CardContainer component that applies a nice border and the current theme around children.
+// Useful for giving visual seperation to many components.
+// tailwind classNames can be override using (example) !p-0
 export default function CardContainer({
   children,
   header,

@@ -1,4 +1,3 @@
-import Plotly from "plotly.js-basic-dist";
 import { useEffect, useState, useCallback, useMemo } from "react";
 
 import CardContainer from "../../components/CardContainer";

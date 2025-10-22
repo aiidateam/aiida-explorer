@@ -30,11 +30,11 @@
     }
   ],
   "dependencies": {
-    "bands-visualiser": "^0.0.1",
+    "bands-visualiser": "^0.0.2",
     "brillouinzone-visualizer": "^0.4.0",
     "js-yaml": "^4.1.0",
     "mc-react-structure-visualizer": "^0.8.2",
-    "plotly.js-basic-dist": "^3.1.1",
+    "plotly.js-basic-dist-min": "^3.1.2",
     "react-json-view-lite": "^2.5.0",
     "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^7.9.4",
