@@ -63,7 +63,7 @@ function CustomEdge({
       />
       <EdgeLabelRenderer>
         <div
-          className={`absolute bg-theme-200 border border-theme-300 rounded-sm px-1 py-0.5 text-theme-700 font-light ${fontSize} pointer-events-drag z-50`}
+          className={`absolute bg-slate-200 border border-slate-300 rounded-sm px-1 py-0.5 text-slate-700 font-light ${fontSize} pointer-events-drag z-50`}
           style={{
             left: `${labelX}px`,
             top: `${labelY}px`,

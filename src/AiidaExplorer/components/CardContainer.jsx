@@ -11,7 +11,7 @@ export default function CardContainer({
 }) {
   return (
     <div
-      className={`w-full max-w-full bg-theme-100 border border-theme-200 p-3 rounded-md shadow-md ${className}`}
+      className={`w-full max-w-full bg-slate-100 border border-slate-200 p-3 rounded-md shadow-md ${className}`}
       style={style}
     >
       {header && <div className="mb-2 font-semibold">{header}</div>}

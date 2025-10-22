@@ -62,7 +62,7 @@ export default function DataTable({
 
       <div className="overflow-x-auto shadow-md md:shadow bg-white">
         <table className="min-w-full text-xs md:text-sm text-left">
-          <thead className="bg-theme-100 text-theme-700">
+          <thead className="bg-slate-100 text-slate-700">
             <tr>
               {columns.map((col) => {
                 const sortable = Array.isArray(sortableCols)
@@ -91,7 +91,7 @@ export default function DataTable({
                         <SortIcon
                           direction={sortConfig.direction}
                           size={14}
-                          className="ml-1 text-theme-500"
+                          className="ml-1 text-slate-500"
                         />
                       )}
                     </div>
@@ -105,7 +105,7 @@ export default function DataTable({
             {sortedData.map((row, idx) => (
               <tr
                 key={row.id || idx}
-                className={idx % 2 === 0 ? "bg-theme-50" : "bg-theme-100"}
+                className={idx % 2 === 0 ? "bg-slate-50" : "bg-slate-100"}
               >
                 {columns.map((col) => {
                   const breakable = Array.isArray(breakableCols)
@@ -113,7 +113,7 @@ export default function DataTable({
                     : breakableCols;
 
                   const tdClasses = [
-                    "px-3 md:px-4 py-0.5 md:py-2 text-theme-900",
+                    "px-3 md:px-4 py-0.5 md:py-2 text-slate-900",
                     breakable
                       ? "whitespace-normal break-all"
                       : "whitespace-nowrap",

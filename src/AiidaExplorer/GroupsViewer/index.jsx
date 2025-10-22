@@ -79,7 +79,7 @@ function formatTableData(nodes, setRootNodeId, isSmallScreen = false) {
     newRow[""] = (
       <button
         onClick={() => setRootNodeId(row.uuid)}
-        className="px-2 py-1 bg-theme-500 text-white hover:bg-theme-700"
+        className="px-2 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700"
       >
         View
       </button>
@@ -179,13 +179,13 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   return (
     <div className="flex flex-col lg:flex-row gap-4 overflow-auto w-full items-start">
       {/* Left panel */}
-      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-theme-50 p-2 px-3 rounded">
+      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-3 rounded">
         {/* Top header + button */}
         <div className="flex gap-4 items-center mb-2">
           <h4 className="font-medium">Filter by Node Types</h4>
           <button
             onClick={() => fetchNodes(0)}
-            className="px-3 py-1 bg-theme-500 text-white hover:bg-theme-700"
+            className="px-3 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700"
           >
             Apply
           </button>
@@ -228,7 +228,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
             {tableData.length > 0 && (
               <button
                 onClick={() => fetchNodes(offset)}
-                className="px-3 py-1 bg-theme-500 text-white hover:bg-theme-700"
+                className="px-3 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700"
               >
                 Load next 200
               </button>
@@ -243,11 +243,11 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
               value={searchNode}
               onChange={(e) => setSearchNode(e.target.value)}
               placeholder="Enter a UUID"
-              className="flex-1 min-w-80 border-2 border-gray-300 focus:outline-none focus:border-theme-500 px-2 py-1"
+              className="flex-1 min-w-80 border-2 border-gray-300 focus:outline-none focus:border-slate-500 px-2 py-1"
             />
             <button
               onClick={handleNodeSearch}
-              className="px-2 py-1 bg-theme-500 text-white hover:bg-theme-700 font-medium"
+              className="px-2 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700 font-medium"
             >
               Go
             </button>

@@ -7,7 +7,7 @@ export default function FormattedMetaData({ nodeData, userData }) {
 
   if (!aiida) {
     return (
-      <div className="p-4 text-theme-500 italic">No metadata available</div>
+      <div className="p-4 text-slate-500 italic">No metadata available</div>
     );
   }
 

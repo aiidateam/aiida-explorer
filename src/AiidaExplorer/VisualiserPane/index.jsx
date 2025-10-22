@@ -69,17 +69,17 @@ export default function VisualiserPane({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Shortened Metadata */}
-      <div className="px-4 py-3 md:py-2 bg-theme-50">
+      <div className="px-4 py-3 md:py-2 bg-slate-50">
         <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-y bg-theme-100">
+      <div className="flex border-y bg-slate-100">
         <button
           disabled={richTabDisabled}
-          className={`px-4 py-2 !rounded-none ${
+          className={`px-4 py-2 transition ${
             activeTab === "rich"
-              ? "border-b-2 border-theme-500 font-semibold"
+              ? "border-b-2 border-slate-500 font-semibold"
               : richTabDisabled
                 ? "text-gray-400 cursor-not-allowed"
                 : ""
@@ -91,7 +91,7 @@ export default function VisualiserPane({
         <button
           className={`px-4 py-2 ${
             activeTab === "raw"
-              ? "border-b-2 border-theme-500 !rounded-none font-semibold"
+              ? "border-b-2 border-slate-500 transition font-semibold"
               : ""
           }`}
           onClick={() => setActiveTab("raw")}

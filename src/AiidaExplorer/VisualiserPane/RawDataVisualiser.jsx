@@ -154,7 +154,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
               </button>
             </div>
 
-            <div className="max-h-32 md:max-h-96 overflow-auto border border-theme-200 rounded p-1 bg-theme-100">
+            <div className="max-h-32 md:max-h-96 overflow-auto border border-slate-200 rounded p-1 bg-slate-100">
               <JsonView
                 data={safeData}
                 shouldExpandNode={(level) =>

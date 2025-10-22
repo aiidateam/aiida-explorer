@@ -119,7 +119,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
         className={`grid gap-4 ${isSmall ? "grid-cols-1" : "grid-cols-[1fr_auto]"}`}
       >
         {/* Left: Structure Viewer */}
-        <div className="w-full h-[500px] relative bg-theme-100 shadow-sm overflow-hidden">
+        <div className="w-full h-[500px] relative bg-slate-100 shadow-sm overflow-hidden">
           <div className="absolute top-4 right-4 z-50">
             <StructDownloadButton
               aiida_rest_url={restApiUrl}
