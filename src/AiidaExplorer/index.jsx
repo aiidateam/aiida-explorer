@@ -22,7 +22,7 @@ import useRootNode from "./hooks/useRootNode";
 import TopControls from "./TopBar";
 import VisualiserPane from "./VisualiserPane";
 
-import "./theme.css";
+import "./index.css";
 
 /**
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
@@ -42,7 +42,6 @@ function AiidaExplorerInner({
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
   debugMode = false,
-  theme = "default",
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
   // If parent specifies rootNode, that is used as the source of truth,
@@ -207,10 +206,10 @@ function AiidaExplorerInner({
   };
 
   return (
-    <div data-theme={theme} className="flex flex-col h-full">
+    <div className="ae:flex ae:flex-col ae:h-full">
       <OverlayProvider
         ref={overlayContainerRef}
-        className="flex flex-col relative h-full min-h-[300px] border bg-theme-50"
+        className="ae:flex ae:flex-col ae:relative ae:h-full ae:min-h-[300px] ae:border ae:bg-slate-100"
       >
         {/* Overlay */}
 
@@ -239,24 +238,24 @@ function AiidaExplorerInner({
 
         <PanelGroup
           direction={isWideScreen ? "horizontal" : "vertical"}
-          className="flex-1 min-h-0 overflow-hidden"
+          className="ae:flex-1 ae:min-h-0 ae:overflow-hidden"
         >
           {/* Left-hand pane */}
           <Panel
-            className="flex flex-col min-h-0 relative"
+            className="ae:flex ae:flex-col ae:min-h-0 ae:relative"
             defaultSize={50} // initial % width
             minSize={10} // min % width
           >
             {/* Loading spinner */}
             {loading && (
-              <div className="absolute bottom-2 right-2 z-50">
+              <div className="ae:absolute ae:bottom-2 ae:right-2 ae:z-50">
                 <Spinner />
               </div>
             )}
 
             {/* Error message */}
             {error && (
-              <div className="absolute bottom-2 right-2 z-50">
+              <div className="ae:absolute ae:bottom-2 ae:right-2 ae:z-50">
                 <ErrorDisplay
                   message={`Failed to find node UUID: ${rootNodeId}`}
                 />
@@ -281,9 +280,9 @@ function AiidaExplorerInner({
               disableGetCounts={nodes.length === 0}
             />
 
-            <div className="flex-1 min-h-0">
+            <div className="ae:flex-1 ae:min-h-0">
               <FlowChart
-                className="flex-1 min-h-0"
+                className="ae:flex-1 ae:min-h-0"
                 nodes={nodes}
                 edges={edges}
                 setNodes={setNodes}
@@ -300,29 +299,28 @@ function AiidaExplorerInner({
 
           {/* Resize handle */}
           <PanelResizeHandle
-            data-theme={theme}
-            className={`group flex items-center justify-center bg-theme-200 border-x ${
+            className={`ae:group ae:flex ae:items-center ae:justify-center ae:bg-slate-200 ae:border-x ${
               isWideScreen
-                ? "w-1.5 cursor-col-resize"
-                : "h-1.5 cursor-row-resize"
+                ? "ae:w-1.5 ae:cursor-col-resize"
+                : "ae:h-1.5 ae:cursor-row-resize"
             }`}
           >
             {/* Thumb indicator */}
             <div
-              className={`bg-theme-700 rounded group-hover:scale-125 ${
-                isWideScreen ? "w-0.5 h-6" : "w-6 h-0.5"
+              className={`ae:bg-slate-700 ae:rounded ae:group-hover:scale-125 ${
+                isWideScreen ? "ae:w-0.5 ae:h-6" : "ae:w-6 ae:h-0.5"
               }`}
             />
           </PanelResizeHandle>
 
           {/* Right-hand pane */}
-          <Panel className="flex-1 flex flex-col min-h-0">
+          <Panel className="ae:flex-1 ae:flex ae:flex-col ae:min-h-0">
             {debugMode && (
-              <div className="hidden md:flex h-1/4 border-b border-theme-300 overflow-y-auto">
+              <div className="ae:hidden ae:md:ae:flex ae:h-1/4 ae:border-b ae:border-slate-300 ae:overflow-y-auto">
                 <DebugPane selectedNode={selectedNode} />
               </div>
             )}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="ae:flex-1 ae:overflow-y-auto ae:min-h-0">
               <VisualiserPane
                 restApiUrl={restApiUrl}
                 selectedNode={selectedNode}
@@ -334,7 +332,7 @@ function AiidaExplorerInner({
         </PanelGroup>
 
         {/* Breadcrumbs */}
-        <div className="flex-none overflow-x-auto">
+        <div className="ae:flex-none ae:overflow-x-auto">
           <Breadcrumbs
             trail={breadcrumbs}
             onClick={handleBreadcrumbClick}

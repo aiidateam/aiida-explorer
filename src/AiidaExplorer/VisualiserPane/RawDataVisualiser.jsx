@@ -14,6 +14,10 @@ import {
 import Overlay from "../components/Overlay";
 
 function FileTable({ title, dataArray = [], onView }) {
+  const buttonLinkClassName = "ae:transition-colors ae:duration-75";
+  const buttonIconClassName =
+    "ae:hover:scale-105 ae:transition-all ae:duration-75 ae:hover:cursor-pointer";
+
   if (!Array.isArray(dataArray) || dataArray.length === 0) return null;
 
   const columns = ["File", "Download", "View"];
@@ -24,24 +28,18 @@ function FileTable({ title, dataArray = [], onView }) {
         href={file.downloadUrl || "#"}
         download={file.name || undefined}
         rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 transition-colors duration-75"
+        className={`ae:text-blue-600 ae:hover:text-blue-800 ${buttonLinkClassName}`}
       >
-        <DownloadIcon
-          size={18}
-          className="hover:scale-105 transition-all duration-75"
-        />
+        <DownloadIcon size={18} className={buttonIconClassName} />
       </a>
     ),
     View: (
       <button
         type="button"
         onClick={() => onView?.(file.name, file.downloadUrl)}
-        className="text-green-600 hover:text-green-800 transition-colors duration-75"
+        className={`ae:text-green-600 ae:hover:text-green-800 ${buttonLinkClassName}`}
       >
-        <ViewIcon
-          size={18}
-          className="hover:scale-105 transition-all duration-75"
-        />
+        <ViewIcon size={18} className={buttonIconClassName} />
       </button>
     ),
   }));
@@ -120,12 +118,11 @@ export default function RawDataVisualiser({ nodeData = {} }) {
   const customStyle = {
     ...defaultStyles,
     label: `${defaultStyles.label} custom-json-label`,
-    clickableLabel: `${defaultStyles.clickableLabel} custom-json-label`,
     container: `${defaultStyles.container} custom-json-container`,
   };
 
   return (
-    <div className="flex flex-col px-3 py-2 gap-2 lg:gap-4">
+    <div className="ae:flex ae:flex-col ae:px-3 ae:py-2 ae:gap-2 ae:lg:gap-4">
       {fileTables}
 
       {dataSections.map((section, index) => {
@@ -133,19 +130,19 @@ export default function RawDataVisualiser({ nodeData = {} }) {
         if (Object.keys(safeData).length === 0) return null;
 
         return (
-          <div key={index} className="py-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-md ml-2 font-semibold">{section.title}</h3>
+          <div key={index} className="ae:py-1 ae:px-2">
+            <div className="ae:flex ae:items-center ae:gap-2 ae:pb-2">
+              <div className="explorerHeading">{section.title}</div>
               <button
-                className="relative flex items-center gap-1 hover:text-blue-500"
+                className="ae:relative ae:flex ae:items-center ae:gap-1 ae:hover:text-blue-800"
                 onClick={() => copyToClipboard(safeData, index)}
               >
                 <ClipBoardIcon size={18} />
                 <div
-                  className={`absolute left-full ml-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-green-400 text-sm transition-all duration-400 transform ${
+                  className={`ae:absolute ae:left-full ae:ml-2 ae:top-1/2 ae:-translate-y-1/2 ae:flex ae:items-center ae:gap-1 ae:text-green-400 ae:text-sm ae:transition-all ae:duration-400 ae:transform ${
                     copiedIndex === index
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-2"
+                      ? "ae:opacity-100 ae:translate-x-0"
+                      : "ae:opacity-0 ae:-translate-x-2"
                   }`}
                 >
                   <ClipboardCopyIcon size={16} />
@@ -154,7 +151,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
               </button>
             </div>
 
-            <div className="max-h-32 md:max-h-96 overflow-auto border border-slate-200 rounded p-1 bg-slate-100">
+            <div className="ae:max-h-32 ae:md:max-h-96 ae:overflow-auto ae:border ae:border-slate-200 ae:rounded ae:p-1 ae:bg-slate-100">
               <JsonView
                 data={safeData}
                 shouldExpandNode={(level) =>
@@ -172,7 +169,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
         onClose={() => setIsOpen(false)}
         title={`Preview: ${previewName}`}
       >
-        <pre className="overflow-y-auto whitespace-pre-wrap text-sm flex-1">
+        <pre className="ae:overflow-y-auto ae:whitespace-pre-wrap ae:text-sm ae:flex-1">
           {previewContent}
         </pre>
       </Overlay>

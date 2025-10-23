@@ -1,14 +1,14 @@
 export default function Spinner({ size = 100, message = "Loading..." }) {
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="ae:flex ae:flex-col ae:items-center ae:justify-center">
       <svg
-        className="animate-spin origin-center"
+        className="ae:animate-spin ae:origin-center"
         xmlns="http://www.w3.org/2000/svg"
         width={size}
         height={size}
         viewBox="0 0 390 390"
       >
-        <g className="origin-center">
+        <g className="ae:origin-center">
           <path
             fill="#0096DE"
             d="M232 222c-8 11-11 18-14 32h56v-23l63 39-63 36v-23h-56c3 14 5 20 14 31s14 15 24 22c10 6 16 8 27 10 16 1 25 0 40-5 13-6 20-10 29-21 10-9 11-14 17-27 3-9 4-14 3-23 1-10-1-15-3-25-5-12-9-19-17-29-9-9-16-14-29-20-15-5-23-6-40-4-14 3-20 5-27 9-10 6-15 11-24 21Z"
@@ -23,7 +23,7 @@ export default function Spinner({ size = 100, message = "Loading..." }) {
           />
         </g>
       </svg>
-      <span className="text-md md:text-xl text-gray-500 animate-pulse">
+      <span className="ae:text-base ae:md:text-lg ae:text-gray-500 ae:animate-pulse">
         {message}
       </span>
     </div>

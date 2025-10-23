@@ -79,7 +79,7 @@ function formatTableData(nodes, setRootNodeId, isSmallScreen = false) {
     newRow[""] = (
       <button
         onClick={() => setRootNodeId(row.uuid)}
-        className="px-2 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700"
+        className="explorerButton ae:bg-slate-500 ae:hover:bg-slate-700 ae:text-white"
       >
         View
       </button>
@@ -177,15 +177,15 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 overflow-auto w-full items-start">
+    <div className="ae:flex ae:flex-col ae:lg:flex-row ae:gap-4 ae:overflow-auto ae:w-full ae:items-start">
       {/* Left panel */}
-      <div className="min-w-[250px] max-w-[400px] flex-shrink-0 bg-slate-50 p-2 px-3 rounded">
+      <div className="ae:min-w-[250px] ae:max-w-[400px] ae:flex-shrink-0 ae:bg-slate-50 ae:p-2 ae:px-3 ae:rounded">
         {/* Top header + button */}
-        <div className="flex gap-4 items-center mb-2">
-          <h4 className="font-medium">Filter by Node Types</h4>
+        <div className="ae:flex ae:gap-4 ae:items-center ae:mb-2">
+          <div className="ae:font-medium">Filter by Node Types</div>
           <button
             onClick={() => fetchNodes(0)}
-            className="px-3 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700"
+            className="explorerButton ae:bg-slate-500 ae:hover:bg-slate-700 ae:text-white"
           >
             Apply
           </button>
@@ -195,12 +195,17 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           selectedTypes={selectedTypes}
           setSelectedTypes={setSelectedTypes}
         />
-        <h4 className="font-medium my-2 mt-4">Filter by Defined Groups</h4>
+        <div className="ae:font-medium ae:my-2 ae:mt-4">
+          Filter by Defined Groups
+        </div>
         {sortGroups(groups).map((g) => (
-          <label key={g.label} className="flex items-start gap-2 mb-1">
+          <label
+            key={g.label}
+            className="ae:flex ae:items-start ae:gap-2 ae:mb-1"
+          >
             <input
               type="checkbox"
-              className="mt-1"
+              className="ae:mt-1"
               checked={selectedGroups.includes(g.label)}
               onChange={(e) =>
                 setSelectedGroups((prev) =>
@@ -210,7 +215,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
                 )
               }
             />
-            <span className="truncate block" title={g.label}>
+            <span className="ae:truncate ae:block" title={g.label}>
               {g.label}
             </span>
           </label>
@@ -218,17 +223,17 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
       </div>
 
       {/* Right table */}
-      <div className="flex-1 bg-white rounded gap-2">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-2">
+      <div className="ae:flex-1 ae:bg-white ae:rounded ae:gap-2">
+        <div className="ae:flex ae:flex-col ae:lg:flex-row ae:lg:items-center ae:gap-2">
           {/* Left side: node count + load more */}
-          <div className="flex-1 flex items-center gap-2 py-2">
-            <h4 className="text-xl font-semibold">
+          <div className="ae:flex-1 ae:flex ae:items-center ae:gap-2 ae:py-2">
+            <div className="ae:text-xl ae:font-medium">
               {tableData.length} nodes loaded
-            </h4>
+            </div>
             {tableData.length > 0 && (
               <button
                 onClick={() => fetchNodes(offset)}
-                className="px-3 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700"
+                className="explorerButton ae:bg-slate-500 ae:hover:bg-slate-700 ae:text-white"
               >
                 Load next 200
               </button>
@@ -236,18 +241,18 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           </div>
 
           {/* Right side: search with label */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 py-1 w-full lg:w-auto">
-            <span className="font-semibold">Navigate via UUID:</span>
+          <div className="ae:flex ae:flex-col ae:sm:flex-row ae:items-start ae:sm:items-center ae:gap-2 ae:py-1 ae:w-full ae:lg:w-auto">
+            <span className="ae:font-medium">Navigate via UUID:</span>
             <input
               type="text"
               value={searchNode}
               onChange={(e) => setSearchNode(e.target.value)}
               placeholder="Enter a UUID"
-              className="flex-1 min-w-80 border-2 border-gray-300 focus:outline-none focus:border-slate-500 px-2 py-1"
+              className="ae:flex-1 ae:min-w-80 ae:border-2 ae:border-gray-300 ae:focus:outline-none ae:focus:border-slate-500 ae:px-2 ae:py-1 ae:rounded"
             />
             <button
               onClick={handleNodeSearch}
-              className="px-2 py-1 bg-slate-500 text-white rounded transition hover:bg-slate-700 font-medium"
+              className="explorerButton ae:bg-slate-500 ae:hover:bg-slate-700 ae:text-white"
             >
               Go
             </button>
@@ -255,13 +260,13 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
         </div>
 
         {loading && (
-          <div className="w-full h-[400px] flex items-center justify-center">
+          <div className="ae:w-full ae:h-[400px] ae:flex ae:items-center ae:justify-center">
             <Spinner />
           </div>
         )}
 
         {error && !loading && (
-          <div className="w-full h-[400px] flex flex-col items-center justify-center">
+          <div className="ae:w-full ae:h-[400px] ae:flex ae:flex-col ae:items-center ae:justify-center">
             <ErrorDisplay message={error} onRetry={() => fetchNodes(offset)} />
           </div>
         )}
@@ -270,6 +275,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           <DataTable
             columns={columnsToRender}
             data={tableData}
+            maxWidth={"3000px"}
             sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
             renderIfMissing
             breakableCols={[

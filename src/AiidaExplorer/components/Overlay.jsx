@@ -53,24 +53,24 @@ export default function Overlay({
 
   return createPortal(
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/30"
+      className="ae:absolute ae:inset-0 ae:z-50 ae:flex ae:items-center ae:justify-center ae:bg-black/30"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full mx-4 h-5/6 rounded-md overflow-auto transform transition-all duration-800 ease-in-out"
+        className="ae:bg-white ae:w-full ae:mx-4 ae:h-5/6 ae:rounded-md ae:overflow-auto ae:transform ae:transition-all ae:duration-800 ae:ease-in-out"
         style={{ maxWidth, width: "100%" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center border-b px-3 py-1">
-          {title && <h2 className="text-lg font-semibold">{title}</h2>}
+        <div className="ae:flex ae:justify-between ae:items-center ae:border-b ae:px-3 ae:py-1">
+          {title && <div className="ae:text-lg ae:font-medium">{title}</div>}
           <button
             onClick={onClose}
-            className="text-gray-600 hover:text-black p-1"
+            className="ae:text-gray-600 ae:hover:text-black ae:p-1"
           >
             ✕
           </button>
         </div>
-        <div className="px-4 py-4">{children}</div>
+        <div className="ae:px-4 ae:py-4">{children}</div>
       </div>
     </div>,
     containerRef.current

@@ -21,12 +21,12 @@ export default function TreeDropdown({
     const isOpen = !!openNodes[node.full_type];
 
     return (
-      <div className="ml-2">
-        <div className="flex items-center gap-1">
+      <div className="ae:ml-2">
+        <div className="ae:flex ae:items-center ae:gap-1">
           {/* Arrow to toggle children */}
           {hasChildren && (
             <div
-              className="cursor-pointer"
+              className="ae:cursor-pointer"
               onClick={() => toggleNode(node.full_type)}
             >
               <svg
@@ -41,7 +41,7 @@ export default function TreeDropdown({
 
           {/* Label triggers callback */}
           <div
-            className="cursor-pointer text-gray-800 hover:bg-gray-100 p-1 rounded flex-1"
+            className="ae:cursor-pointer ae:text-gray-800 ae:hover:bg-gray-100 ae:p-1 ae:rounded ae:flex-1"
             onClick={() => onSelect && onSelect(node)}
           >
             {node.label}
@@ -51,7 +51,7 @@ export default function TreeDropdown({
         {/* Children */}
         {hasChildren && (
           <div
-            className="overflow-hidden transition-all duration-300 origin-top"
+            className="ae:overflow-hidden ae:transition-all ae:duration-300 ae:origin-top"
             style={{ maxHeight: isOpen ? "1000px" : "0" }}
           >
             {node.subspaces.map((child) => (
@@ -64,7 +64,7 @@ export default function TreeDropdown({
   };
 
   return (
-    <div className="border rounded p-2 bg-white shadow max-w-md">
+    <div className="ae:border ae:rounded ae:p-2 ae:bg-white ae:shadow ae:max-w-md">
       <TreeItem node={data} />
     </div>
   );

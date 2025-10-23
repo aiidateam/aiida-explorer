@@ -1,0 +1,22 @@
+@layer theme, base, components, utilities;
+
+/* Include ALL utilities, prefixed */
+@import "tailwindcss/utilities.css" layer(utilities) prefix(ae);
+
+/* Include theme variables */
+@import "tailwindcss/theme.css" layer(theme) prefix(ae);
+
+@layer components {
+  .explorerButton {
+    @apply ae:px-2 ae:py-1 ae:rounded ae:bg-slate-200 ae:hover:bg-slate-300 
+           ae:transition ae:hover:cursor-pointer ae:text-sm ae:flex ae:items-center ae:gap-1;
+  }
+
+  .explorerHeadingBig {
+    @apply ae:text-base ae:lg:text-lg ae:font-medium ae:text-slate-800;
+  }
+
+  .explorerHeading {
+    @apply ae:text-sm ae:md:text-base ae:font-medium ae:text-slate-800;
+  }
+}

@@ -100,52 +100,52 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
 
   if (loading)
     return (
-      <div className="w-full min-h-[450px] flex items-center justify-center">
+      <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <Spinner />
       </div>
     );
 
   if (error)
     return (
-      <div className="w-full min-h-[450px] flex items-center justify-center">
+      <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <ErrorDisplay message={error} onRetry={fetchData} />
       </div>
     );
 
   return (
-    <div className="w-full mx-auto p-4 space-y-6">
+    <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
       <div
         ref={ref}
-        className={`grid gap-4 ${isSmall ? "grid-cols-1" : "grid-cols-[1fr_auto]"}`}
+        className={`ae:grid ae:gap-4 ${isSmall ? "ae:grid-cols-1" : "ae:grid-cols-[1fr_auto]"}`}
       >
         {/* Left: Structure Viewer */}
-        <div className="w-full h-[500px] relative bg-slate-100 shadow-sm overflow-hidden">
-          <div className="absolute top-4 right-4 z-50">
+        <div className="ae:w-full ae:h-[500px] ae:relative ae:bg-slate-100 ae:shadow-sm ae:overflow-hidden">
+          <div className="ae:absolute ae:top-4 ae:right-4 ae:z-50">
             <StructDownloadButton
               aiida_rest_url={restApiUrl}
               uuid={nodeData.aiida.uuid}
               download_formats={dlFormats}
             />
           </div>
-          <div className="w-full h-full">
+          <div className="ae:w-full ae:h-full">
             <StructureVisualizer cifText={cifText} initSupercell={[2, 2, 2]} />
           </div>
         </div>
         {/* Right: Text Cards */}
-        <div className="flex flex-col space-y-4 max-w-xs">
+        <div className="ae:flex ae:flex-col ae:space-y-4 ae:max-w-xs">
           {hasDerived && (
             <>
               <CardContainer>
                 <p>
-                  <span className="font-medium">Cell Volume:</span>{" "}
+                  <span className="ae:font-medium">Cell Volume:</span>{" "}
                   {volume?.toFixed(4)} Å³
                 </p>
                 <p>
-                  <span className="font-medium">Formula:</span>{" "}
+                  <span className="ae:font-medium">Formula:</span>{" "}
                   {nodeData.derived_properties.formula}
                 </p>
                 <p>
-                  <span className="font-medium">Dimensionality:</span>{" "}
+                  <span className="ae:font-medium">Dimensionality:</span>{" "}
                   {nodeData.derived_properties.dimensionality?.description ||
                     "N/A"}
                 </p>
@@ -154,19 +154,19 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
               {lattice && (
                 <CardContainer>
                   <p>
-                    <span className="font-medium">Lattice a:</span>{" "}
+                    <span className="ae:font-medium">Lattice a:</span>{" "}
                     {lattice.a.toFixed(4)} Å
                   </p>
                   <p>
-                    <span className="font-medium">Lattice b:</span>{" "}
+                    <span className="ae:font-medium">Lattice b:</span>{" "}
                     {lattice.b.toFixed(4)} Å
                   </p>
                   <p>
-                    <span className="font-medium">Lattice c:</span>{" "}
+                    <span className="ae:font-medium">Lattice c:</span>{" "}
                     {lattice.c.toFixed(4)} Å
                   </p>
                   <p>
-                    <span className="font-medium">Number of Sites:</span>{" "}
+                    <span className="ae:font-medium">Number of Sites:</span>{" "}
                     {numSites}
                   </p>
                 </CardContainer>

@@ -73,7 +73,7 @@ export default function TypeCheckboxTree({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="ae:flex ae:flex-col">
       {types.map(({ label, children }) => {
         const isChecked = selectedTypes.includes(label);
         const isIndeterminate = children && someChildrenSelected(children);
@@ -81,7 +81,7 @@ export default function TypeCheckboxTree({
         return (
           <div key={label} style={{ marginLeft: `${level * 8}px` }}>
             <div
-              className="flex items-center gap-1 cursor-pointer"
+              className="ae:flex ae:items-center ae:gap-1 ae:cursor-pointer"
               onClick={() => toggleSelect(label, children)}
             >
               <input
@@ -90,7 +90,8 @@ export default function TypeCheckboxTree({
                 ref={(el) => {
                   if (el) el.indeterminate = isIndeterminate;
                 }}
-                onChange={(e) => e.stopPropagation()} // handled by parent div click
+                onChange={(e) => e.stopPropagation()}
+                className="ae:cursor-pointer"
               />
               {children && children.length > 0 && (
                 <button
@@ -99,7 +100,7 @@ export default function TypeCheckboxTree({
                     e.stopPropagation(); // prevent double toggle
                     setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
                   }}
-                  className="p-0.5 focus:outline-none"
+                  className="ae:p-0.5 ae:focus:outline-none"
                 >
                   {expanded[label] ? (
                     <DownDropDownIcon size={14} />

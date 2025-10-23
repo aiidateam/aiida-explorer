@@ -53,13 +53,13 @@ export default function BandsDataVisualiser({ nodeData }) {
   }, [bandsDataArray, yAxisUnits]);
 
   return (
-    <div className="w-full mx-auto p-4 space-y-6">
+    <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
       <CardContainer
         header="Bands Structure Plot"
-        className="!px-1.5 !pt-2"
-        childrenClassName="!p-0"
+        className="ae:!px-1.5 ae:!pt-2"
+        childrenClassName="ae:!p-0"
       >
-        <div className="w-full h-[450px] relative flex items-center justify-center">
+        <div className="ae:w-full ae:h-[450px] ae:relative ae:flex ae:items-center ae:justify-center">
           {loading && <Spinner />}
 
           {error && !loading && (
@@ -67,7 +67,7 @@ export default function BandsDataVisualiser({ nodeData }) {
           )}
 
           {!loading && !error && bandsDataArray && (
-            <div ref={containerRef} className="absolute inset-0 " />
+            <div ref={containerRef} className="ae:absolute ae:inset-0 " />
           )}
         </div>
       </CardContainer>

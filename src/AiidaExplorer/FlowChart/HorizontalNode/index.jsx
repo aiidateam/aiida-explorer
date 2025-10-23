@@ -14,25 +14,26 @@ import { getNodeDisplay } from "./nodeUtils";
  * appear slightly different (this would also fuck with edge logic.)
  */
 function getNodeColorClasses(type, selected = false) {
-  let bgClass = "bg-gray-200";
-  let textClass = "text-black";
-  let borderStyle = "transition-all";
+  let bgClass = "ae:bg-gray-200";
+  let textClass = "ae:text-black";
+  let borderStyle = "ae:transition-all";
 
   if (type?.startsWith("process.workflow")) {
-    bgClass = "bg-orange-300";
-    borderStyle = "border-orange-400 shadow-md";
+    bgClass = "ae:bg-orange-300";
+    borderStyle = "ae:border-orange-400 ae:shadow-md";
   } else if (type?.startsWith("process")) {
-    bgClass = "bg-red-300";
-    borderStyle = "border-red-400 shadow-md";
+    bgClass = "ae:bg-red-300";
+    borderStyle = "ae:border-red-400 ae:shadow-md";
   } else if (type?.startsWith("data")) {
-    bgClass = "bg-green-300";
-    borderStyle = "border-green-400 shadow-md";
+    bgClass = "ae:bg-green-300";
+    borderStyle = "ae:border-green-400 ae:shadow-md";
   }
 
   if (selected) {
-    borderStyle = "border-blue-600 shadow-md rounded transition duration-700";
-    bgClass = "bg-blue-100 glow-4";
-    textClass = "text-black font-semibold";
+    borderStyle =
+      "ae:border-blue-600 ae:shadow-md ae:rounded ae:transition ae:duration-700";
+    bgClass = "ae:bg-blue-100 ae:glow-4";
+    textClass = "ae:text-black ae:font-medium";
   }
 
   return { bgClass, textClass, borderStyle };
@@ -42,28 +43,28 @@ function getNodeColorClasses(type, selected = false) {
 function HorizontalNode({ data, selected }) {
   const { zoom } = useViewport();
 
-  const baseNodeStyle = `min-w-[150px] text-center py-1.5 rounded border-3`;
+  const baseNodeStyle = `ae:min-w-[150px] ae:text-center ae:py-1.5 ae:rounded ae:border-3`;
 
   // counts styling
   // ----------
   const showCounts = zoom > 1.2; // only show counts when zoomed in
-  const countSize = showCounts ? "text-[8px]" : "text-[10px]";
+  const countSize = showCounts ? "ae:text-[8px]" : "ae:text-[10px]";
 
   const baseCountStyle = `
-  absolute
-  top-1/3
-  bottom-1/3
-  flex
-  items-center
+  ae:absolute
+  ae:top-1/3
+  ae:bottom-1/3
+  ae:flex
+  ae:items-center
   ${countSize}
-  text-slate-600
-  font-light
-  ${showCounts ? "" : "hidden"}
+  ae:text-slate-600
+  ae:font-light
+  ${showCounts ? "" : "ae:hidden"}
 `;
 
-  const leftCountStyle = `${baseCountStyle} left-0 ml-0.5 pr-1 pl-0.5 bg-gray-400/50 rounded-r-sm`;
+  const leftCountStyle = `${baseCountStyle} ae:left-0 ae:ml-0.5 ae:pr-1 ae:pl-0.5 ae:bg-gray-400/50 ae:rounded-r-sm`;
 
-  const rightCountStyle = `${baseCountStyle} right-0 mr-0.5 pl-1 pr-0.5 bg-gray-400/50 rounded-l-sm`;
+  const rightCountStyle = `${baseCountStyle} ae:right-0 ae:mr-0.5 ae:pl-1 ae:pr-0.5 ae:bg-gray-400/50 ae:rounded-l-sm`;
 
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
@@ -77,7 +78,7 @@ function HorizontalNode({ data, selected }) {
   // ----------
   // Determine fontsize based on zoom
   // ----------
-  const fontSizeClass = zoom > 1.2 ? "text-[12px]" : "text-[14px]";
+  const fontSizeClass = zoom > 1.2 ? "ae:text-[12px]" : "ae:text-[14px]";
 
   // Main label content
   const textHtml = (
@@ -86,9 +87,9 @@ function HorizontalNode({ data, selected }) {
       {zoom > 1.2 && <br />}
       {zoom > 1.2 && (
         <div>
-          <div className="text-[8px] opacity-80">{`uuid: ${uuid}`}</div>
+          <div className="ae:text-[8px] ae:opacity-80">{`uuid: ${uuid}`}</div>
 
-          <div className="text-[8px] opacity-80 ">{`${extraData}`}</div>
+          <div className="ae:text-[8px] ae:opacity-80 ">{`${extraData}`}</div>
         </div>
       )}
     </div>

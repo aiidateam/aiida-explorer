@@ -128,16 +128,16 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
   );
 
   return (
-    <div className="w-full mx-auto p-4 space-y-2">
+    <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-2">
       {/* Metadata / summary card */}
 
       {/* Brillouin Zone visualizer card */}
       <CardContainer
         header="Brillouin Zone"
-        className="!px-1.5 !py-2"
-        childrenClassName="!p-0"
+        className="ae:!px-1.5 ae:!py-2"
+        childrenClassName="ae:!p-0"
       >
-        <div className="w-full">
+        <div className="ae:w-full">
           <BZVisualizer
             data={bzData}
             options={{

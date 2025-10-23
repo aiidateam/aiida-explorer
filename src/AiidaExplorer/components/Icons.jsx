@@ -87,7 +87,7 @@ export function DownloadIcon({
       type="button"
       onClick={handleDownload}
       title="Download"
-      className="p-1"
+      className="ae:p-1"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

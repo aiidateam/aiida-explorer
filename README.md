@@ -51,6 +51,8 @@ One can also manage the `rootNode` state outside the component (e.g. to sync wit
 
 ## Development
 
+We use the prefix ae to isolate tailwind classes (ae:bg-slate-50).
+
 ### Using the demo page
 
 For development, start the demo page by

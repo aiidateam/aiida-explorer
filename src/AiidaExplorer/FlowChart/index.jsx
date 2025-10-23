@@ -52,9 +52,9 @@ export default function FlowChart({
   }));
 
   return (
-    <div className="w-full h-full">
+    <div className="ae:w-full ae:h-full">
       <ReactFlow
-        className="bg-slate-50"
+        className="ae:bg-slate-50"
         nodes={mappedNodes}
         edges={edges}
         nodeTypes={nodeTypes}

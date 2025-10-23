@@ -1,9 +1,9 @@
 export default function DebugPane({ selectedNode }) {
   return (
-    <div className="w-full h-full p-4">
-      <h3 className="text-lg font-semibold mb-2">Node Info</h3>
+    <div className="ae:w-full ae:h-full ae:p-4">
+      <h3 className="ae:text-lg ae:font-medium ae:mb-2">Node Info</h3>
       {selectedNode ? (
-        <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
+        <pre className="ae:bg-slate-100 ae:p-2 ae:rounded ae:overflow-x-auto">
           {" "}
           {JSON.stringify(selectedNode.data, null, 2)}
         </pre>

@@ -5,7 +5,6 @@ import ErrorDisplay from "../../components/Error";
 import SimplePlot from "../../components/SimplePlot";
 import Spinner from "../../components/Spinner";
 
-
 // TODO extract a common config for all plots.
 // Probably a good enough reason to switch to react plotly for the bandstructure visualiser
 
@@ -145,14 +144,14 @@ export default function UpfDataVisualiser({ nodeData }) {
   // Display loading or error placeholders
   if (loading)
     return (
-      <div className="w-full min-h-[450px] flex items-center justify-center">
+      <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <Spinner />
       </div>
     );
 
   if (error)
     return (
-      <div className="w-full min-h-[450px] flex items-center justify-center">
+      <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <ErrorDisplay message={error} onRetry={fetchData} />
       </div>
     );
@@ -172,22 +171,22 @@ export default function UpfDataVisualiser({ nodeData }) {
   const commonMargin = { t: 20, b: 40, l: 50, r: 20 };
 
   return (
-    <div className="w-full mx-auto p-4 space-y-6">
+    <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
       <CardContainer header="Metadata">
         <p>
-          <span className="font-medium">Element:</span>{" "}
+          <span className="ae:font-medium">Element:</span>{" "}
           {header?.element || "N/A"}
         </p>
         <p>
-          <span className="font-medium">Valence Electrons:</span>{" "}
+          <span className="ae:font-medium">Valence Electrons:</span>{" "}
           {header?.z_valence ?? "N/A"}
         </p>
         <p>
-          <span className="font-medium">Pseudopotential Type:</span>{" "}
+          <span className="ae:font-medium">Pseudopotential Type:</span>{" "}
           {header?.pseudo_type || "N/A"}
         </p>
         <p>
-          <span className="font-medium">Functional:</span>{" "}
+          <span className="ae:font-medium">Functional:</span>{" "}
           {header?.functional || "N/A"}
         </p>
       </CardContainer>
@@ -195,8 +194,8 @@ export default function UpfDataVisualiser({ nodeData }) {
       {/* container that constrains width and uses box-sizing */}
       <CardContainer
         header="Orbital radial functions"
-        className="!px-1.5 !py-2"
-        childrenClassName="!p-0"
+        className="ae:!px-1.5 ae:!py-2"
+        childrenClassName="ae:!p-0"
       >
         <SimplePlot
           data={orbitalTraces}
@@ -216,8 +215,8 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       <CardContainer
         header="Beta projectors"
-        className="!px-1.5 !py-2"
-        childrenClassName="!p-0"
+        className="ae:!px-1.5 ae:!py-2"
+        childrenClassName="ae:!p-0"
       >
         <SimplePlot
           data={betaprojTraces}
@@ -235,8 +234,8 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       <CardContainer
         header="Charge densities"
-        className="!px-1.5 !py-2"
-        childrenClassName="!p-0"
+        className="ae:!px-1.5 ae:!py-2"
+        childrenClassName="ae:!p-0"
       >
         <SimplePlot
           data={chargeDensitiesTraces}

@@ -23,11 +23,11 @@ function FileTable({ title, dataArray = [], onView }) {
         href={file.downloadUrl || "#"}
         download={file.name || undefined}
         rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 transition-colors duration-75"
+        className="ae:text-blue-600 ae:hover:text-blue-800 ae:transition-colors ae:duration-75"
       >
         <DownloadIcon
           size={18}
-          className="hover:scale-105 transition-all duration-75"
+          className="ae:hover:scale-105 ae:transition-all ae:duration-75"
         />
       </a>
     ),
@@ -35,11 +35,11 @@ function FileTable({ title, dataArray = [], onView }) {
       <button
         type="button"
         onClick={() => onView?.(file.name, file.downloadUrl)}
-        className="text-green-600 hover:text-green-800 transition-colors duration-75"
+        className="ae:text-green-600 ae:hover:text-green-800 ae:transition-colors ae:duration-75"
       >
         <ViewIcon
           size={18}
-          className="hover:scale-105 transition-all duration-75"
+          className="ae:hover:scale-105 ae:transition-all ae:duration-75"
         />
       </button>
     ),
@@ -101,7 +101,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
   );
 
   return (
-    <div className="flex flex-col px-3 py-2 gap-2 lg:gap-4">
+    <div className="ae:flex ae:flex-col ae:px-3 ae:py-2 ae:gap-2 ae:lg:gap-4">
       {fileTables}
 
       <Overlay
@@ -109,7 +109,7 @@ export default function CalcJobVisualiser({ nodeData = {} }) {
         onClose={() => setIsOpen(false)}
         title={`Preview: ${previewName}`}
       >
-        <pre className="overflow-y-auto whitespace-pre-wrap text-sm flex-1">
+        <pre className="ae:overflow-y-auto ae:whitespace-pre-wrap ae:text-sm ae:flex-1">
           {previewContent}
         </pre>
       </Overlay>

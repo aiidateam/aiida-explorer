@@ -6,7 +6,7 @@
 .download-button {
   background: #2563eb;
   color: #fff;
-  font-size: 12px; /* matches Bootstrap btn-sm */
+  ae:font-size: 12px; /* matches Bootstrap btn-sm */
   padding: 4px 5px;
   border: none;
   border-radius: 4px;
@@ -35,14 +35,14 @@
   list-style: none;
   padding: 2px 0;
   z-index: 50;
-  font-size: 12px;
+  ae:font-size: 12px;
 }
 
 .download-menu li a {
   display: block;
   padding: 4px 10px;
   color: #111;
-  text-decoration: none;
+  ae:text-decoration: none;
   white-space: nowrap; /* prevents awkward wrapping for longer labels */
 }
 .download-menu li a:hover {

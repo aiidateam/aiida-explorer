@@ -55,7 +55,7 @@ export default function VisualiserPane({
 
   if (!selectedNode) {
     return (
-      <div className="w-full h-full p-4">
+      <div className="ae:w-full ae:h-full ae:p-4">
         <p>
           Click a node to see top level details. Double click to traverse the
           graph.
@@ -67,21 +67,21 @@ export default function VisualiserPane({
   const richTabDisabled = !richVisualiser;
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="ae:w-full ae:h-full ae:flex ae:flex-col ae:overflow-hidden">
       {/* Shortened Metadata */}
-      <div className="px-4 py-3 md:py-2 bg-slate-50">
+      <div className="ae:px-4 ae:py-3 ae:md:py-2 ae:bg-slate-50">
         <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-y bg-slate-100">
+      <div className="ae:flex ae:border-y ae:bg-slate-100">
         <button
           disabled={richTabDisabled}
-          className={`px-4 py-2 transition ${
+          className={`ae:px-4 ae:py-2 ${
             activeTab === "rich"
-              ? "border-b-2 border-slate-500 font-semibold"
+              ? "ae:border-b-2 ae:border-slate-500 ae:transition ae:font-medium"
               : richTabDisabled
-                ? "text-gray-400 cursor-not-allowed"
+                ? "ae:text-gray-400 ae:cursor-not-allowed"
                 : ""
           }`}
           onClick={() => !richTabDisabled && setActiveTab("rich")}
@@ -89,9 +89,9 @@ export default function VisualiserPane({
           Rich View
         </button>
         <button
-          className={`px-4 py-2 ${
+          className={`ae:px-4 ae:py-2 ${
             activeTab === "raw"
-              ? "border-b-2 border-slate-500 transition font-semibold"
+              ? "ae:border-b-2 ae:border-slate-500 ae:transition ae:font-medium"
               : ""
           }`}
           onClick={() => setActiveTab("raw")}
@@ -101,7 +101,7 @@ export default function VisualiserPane({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="ae:flex-1 ae:overflow-auto ae:bg-slate-50">
         {activeTab === "rich" && richVisualiser}
         {activeTab === "raw" && (
           <RawDataVisualiser

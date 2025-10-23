@@ -10,7 +10,7 @@ function SortIcon({ direction = "asc", size = 14, className = "" }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      className={`${className} transform ${
+      className={`${className} ae:transform ${
         direction === "asc" ? "rotate-180" : ""
       }`}
     >
@@ -27,7 +27,7 @@ function SortIcon({ direction = "asc", size = 14, className = "" }) {
 
 // Custom built table sorting feature - Since AGgrid basically has all the functionality of this should be switched to AGgrid...
 // TODO - investigate whether AGgrid is a better alternative.
-// TODO - add className flexibility aswell.
+// TODO - add className ae:flexibility aswell.
 export default function DataTable({
   title,
   columns,
@@ -57,12 +57,12 @@ export default function DataTable({
   if (!renderIfMissing && (!data || data.length === 0)) return null;
 
   return (
-    <div className="p-2" style={{ maxWidth }}>
-      <h2 className="text-md md:text-md font-semibold mb-2">{title}</h2>
+    <div className="ae:p-2" style={{ maxWidth }}>
+      <div className="explorerHeading ae:pb-2">{title}</div>
 
-      <div className="overflow-x-auto shadow-md md:shadow bg-white">
-        <table className="min-w-full text-xs md:text-sm text-left">
-          <thead className="bg-slate-100 text-slate-700">
+      <div className="ae:overflow-x-auto ae:shadow-md ae:md:shadow ae:bg-white">
+        <table className="ae:min-w-full ae:text-xs ae:md:text-sm ae:text-left">
+          <thead className="ae:bg-slate-100 ae:text-slate-700">
             <tr>
               {columns.map((col) => {
                 const sortable = Array.isArray(sortableCols)
@@ -71,8 +71,8 @@ export default function DataTable({
                 return (
                   <th
                     key={col}
-                    className={`px-3 md:px-4 py-0.5 md:py-1 font-medium ${
-                      sortable ? "cursor-pointer select-none" : ""
+                    className={`ae:px-3 ae:md:px-4 ae:py-0.5 ae:md:py-1 ae:font-medium ${
+                      sortable ? "ae:cursor-pointer ae:select-none" : ""
                     }`}
                     onClick={() =>
                       sortable &&
@@ -85,13 +85,13 @@ export default function DataTable({
                       }))
                     }
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="ae:flex ae:items-center ae:gap-1">
                       {col}
                       {sortable && sortConfig.key === col && (
                         <SortIcon
                           direction={sortConfig.direction}
                           size={14}
-                          className="ml-1 text-slate-500"
+                          className="ae:ml-1 ae:text-slate-500"
                         />
                       )}
                     </div>
@@ -105,7 +105,7 @@ export default function DataTable({
             {sortedData.map((row, idx) => (
               <tr
                 key={row.id || idx}
-                className={idx % 2 === 0 ? "bg-slate-50" : "bg-slate-100"}
+                className={idx % 2 === 0 ? "ae:bg-slate-50" : "ae:bg-slate-100"}
               >
                 {columns.map((col) => {
                   const breakable = Array.isArray(breakableCols)
@@ -113,10 +113,10 @@ export default function DataTable({
                     : breakableCols;
 
                   const tdClasses = [
-                    "px-3 md:px-4 py-0.5 md:py-2 text-slate-900",
+                    "ae:px-3 ae:md:px-4 ae:py-0.5 ae:md:py-2 ae:text-slate-900",
                     breakable
-                      ? "whitespace-normal break-all"
-                      : "whitespace-nowrap",
+                      ? "ae:whitespace-normal ae:break-all"
+                      : "ae:whitespace-nowrap",
                   ].join(" ");
 
                   return (

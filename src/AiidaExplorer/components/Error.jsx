@@ -1,15 +1,17 @@
 export default function ErrorDisplay({ message, onRetry }) {
   return (
-    <div className="flex flex-col items-center text-red-500 p-4">
+    <div className="ae:flex ae:flex-col ae:items-center ae:text-red-500 ae:p-4">
       {/* Error icon */}
-      <div className="text-5xl mb-2">⚠️</div>
-      <span className="text-sm font-semibold">Failed to load data</span>
-      {message && <span className="text-xs text-gray-400 mt-1">{message}</span>}
+      <div className="ae:text-5xl ae:mb-2">⚠️</div>
+      <span className="ae:text-sm ae:font-medium">Failed to load data</span>
+      {message && (
+        <span className="ae:text-xs ae:text-gray-400 ae:mt-1">{message}</span>
+      )}
 
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-3 px-3 py-1 bg-red-500 text-white hover:bg-red-600"
+          className="ae:mt-3 ae:px-3 ae:py-1 ae:bg-red-500 ae:text-white ae:hover:bg-red-600"
         >
           Retry
         </button>

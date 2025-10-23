@@ -21,6 +21,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check-size": "size-limit",
+    "check-prefix": "node check-prefix.js",
     "preview": "vite preview"
   },
   "size-limit": [

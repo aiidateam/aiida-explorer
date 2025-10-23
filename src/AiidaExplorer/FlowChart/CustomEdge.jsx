@@ -51,7 +51,7 @@ function CustomEdge({
   const labelY = sourceY + (targetY - sourceY) * t;
 
   // Adjust font size based on zoom
-  const fontSize = zoom > 1.1 ? "text-xs" : "text-sm";
+  const fontSize = zoom > 1.1 ? "ae:text-xs" : "ae:text-sm";
 
   return (
     <>
@@ -63,7 +63,9 @@ function CustomEdge({
       />
       <EdgeLabelRenderer>
         <div
-          className={`absolute bg-slate-200 border border-slate-300 rounded-sm px-1 py-0.5 text-slate-700 font-light ${fontSize} pointer-events-drag z-50`}
+          className={`ae:absolute ae:bg-slate-200 ae:border 
+          ae:border-slate-300 ae:rounded-sm ae:px-1 ae:py-0.5 
+          ae:text-slate-700 ae:font-light ${fontSize} ae:pointer-events-drag ae:z-50`}
           style={{
             left: `${labelX}px`,
             top: `${labelY}px`,

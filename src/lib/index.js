@@ -1,7 +1,3 @@
-// make sure tailwind styles get included in the library
-import "tailwindcss";
-import "../AiidaExplorer/theme.css";
-
 // Public API for the component library
 export { default as AiidaExplorer } from "../AiidaExplorer/index.jsx";
 export { default as RawDataVisualiser } from "../AiidaExplorer/VisualiserPane/RawDataVisualiser.jsx";
