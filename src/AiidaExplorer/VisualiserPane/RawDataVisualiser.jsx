@@ -117,6 +117,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
 
   const customStyle = {
     ...defaultStyles,
+    basicChildStyle: `${defaultStyles.basicChildStyle} custom-basic-childstyle`,
     label: `${defaultStyles.label} custom-json-label`,
     container: `${defaultStyles.container} custom-json-container`,
   };

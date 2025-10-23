@@ -1,10 +1,16 @@
 /* Make JSON keys blue and use a light font weight */
 .custom-json-label {
   font-size: 14px;
+  font-weight: 500;
+}
+
+.custom-basic-childstyle {
+  font-size: 14px;
 }
 
 /* Make BG BE TRANSPARENT */
-.custom-json-bg {
+.custom-json-container {
   background-color: transparent !important;
   font-size: 14px;
+  font-weight: 500;
 }
