@@ -37,9 +37,6 @@ export default function App() {
     setSp(next, { replace: true });
   };
 
-  // Theme seleciton
-  const [theme, setTheme] = useState("default");
-
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-4">
       {/* URL input with label and load button */}
@@ -65,33 +62,6 @@ export default function App() {
         >
           Load
         </button>
-
-        {/* Theme selector */}
-        <div className="flex items-center space-x-1">
-          <label htmlFor="theme" className="text-gray-800 font-medium">
-            Theme:
-          </label>
-          <select
-            id="theme"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="p-2 border border-gray-400 rounded bg-white cursor-pointer hover:border-blue-500 transition"
-          >
-            <option value="red">Red</option>
-            <option value="blue">Blue</option>
-            <option value="green">Green</option>
-            <option value="yellow">Yellow</option>
-            <option value="amber">Amber</option>
-            <option value="violet">Violet</option>
-            <option value="emerald">Emerald</option>
-            <option value="pink">Pink</option>
-            <option value="rose">Rose</option>
-            <option value="cyan">Cyan</option>
-            <option value="teal">Teal</option>
-
-            <option value="default">Slate (default)</option>
-          </select>
-        </div>
       </div>
 
       {/* Main Explorer container */}
@@ -100,7 +70,6 @@ export default function App() {
           restApiUrl={restUrl}
           rootNode={rootNode}
           onRootNodeChange={handleRootNodeChange}
-          theme={theme}
         />
       </div>
     </div>
