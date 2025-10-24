@@ -1,4 +1,4 @@
-// common CardContainer component that applies a nice border and the current theme around children.
+// common CardContainer component that applies a nice border around children.
 // Useful for giving visual seperation to many components.
 // tailwind classNames can be override using (example) ae:!p-0
 export default function CardContainer({

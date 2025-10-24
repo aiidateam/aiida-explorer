@@ -33,6 +33,7 @@ export default function DataTable({
   columns,
   data = [],
   maxWidth = "2000px",
+  maxHeight = null, // new prop
   sortableCols = true,
   breakableCols = false,
   renderIfMissing = false,
@@ -60,7 +61,10 @@ export default function DataTable({
     <div className="ae:p-2" style={{ maxWidth }}>
       <div className="explorerHeading ae:pb-2">{title}</div>
 
-      <div className="ae:overflow-x-auto ae:shadow-md ae:md:shadow ae:bg-white">
+      <div
+        className={`ae:overflow-x-auto ae:shadow-md ae:md:shadow ae:bg-white`}
+        style={maxHeight ? { maxHeight, overflowY: "auto" } : {}} // override if maxHeight is set.
+      >
         <table className="ae:min-w-full ae:text-xs ae:md:text-sm ae:text-left">
           <thead className="ae:bg-slate-100 ae:text-slate-700">
             <tr>

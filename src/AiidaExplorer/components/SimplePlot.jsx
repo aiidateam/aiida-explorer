@@ -47,5 +47,15 @@ export default function SimplePlot({
     });
   }, [memoData, memoLayout, memoConfig]);
 
+  // --- Resize observer ---
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      Plotly.Plots.resize(containerRef.current);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return <div ref={containerRef} style={style} />;
 }
