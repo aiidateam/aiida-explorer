@@ -9,21 +9,21 @@ const DEFAULT_REST_URL = "https://aiida.materialscloud.org/2dtopo/api/v4";
 export default function App() {
   const [sp, setSp] = useSearchParams();
 
-  // Read from URL: restApiUrl + rootNode
-  const restUrl = sp.get("restApiUrl") ?? DEFAULT_REST_URL;
-  const rootNode = sp.get("rootNode") ?? "";
+  // Read from URL: api_url, uuid
+  const apiUrl = sp.get("api_url") ?? DEFAULT_REST_URL;
+  const uuid = sp.get("uuid") ?? "";
 
   // Local input state for the textbox, kept in sync with the URL param
-  const [inputUrl, setInputUrl] = useState(restUrl);
+  const [inputUrl, setInputUrl] = useState(apiUrl);
   useEffect(() => {
-    setInputUrl(restUrl);
-  }, [restUrl]);
+    setInputUrl(apiUrl);
+  }, [apiUrl]);
 
   const handleRootNodeChange = useCallback(
     (uuid) => {
       const next = new URLSearchParams(sp);
-      if (uuid) next.set("rootNode", uuid);
-      else next.delete("rootNode");
+      if (uuid) next.set("uuid", uuid);
+      else next.delete("uuid");
       setSp(next, { replace: true });
     },
     [sp, setSp]
@@ -32,8 +32,8 @@ export default function App() {
   const handleLoadClick = () => {
     // Update URL params: set restApiUrl, clear rootNode
     const next = new URLSearchParams(sp);
-    next.set("restApiUrl", inputUrl.trim() || DEFAULT_REST_URL);
-    next.delete("rootNode");
+    next.set("api_url", apiUrl.trim() || DEFAULT_REST_URL);
+    next.delete("uuid");
     setSp(next, { replace: true });
   };
 
@@ -67,8 +67,8 @@ export default function App() {
       {/* Main Explorer container */}
       <div className="w-[95vw] h-[85vh] bg-amber-600">
         <AiidaExplorer
-          restApiUrl={restUrl}
-          rootNode={rootNode}
+          restApiUrl={apiUrl}
+          rootNode={uuid}
           onRootNodeChange={handleRootNodeChange}
         />
       </div>
