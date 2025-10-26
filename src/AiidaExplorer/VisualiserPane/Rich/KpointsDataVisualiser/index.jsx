@@ -174,7 +174,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
 
       {/* Tables in cards */}
       <div className="ae:@container">
-        {/* Small 1 col >xl 2 col */}
+        {/* <xl=1col, >xl=2col */}
         <div className="ae:grid ae:grid-cols-1 ae:@xl:grid-cols-2">
           {tables.map(({ title, columns, data }) => (
             <DataTable

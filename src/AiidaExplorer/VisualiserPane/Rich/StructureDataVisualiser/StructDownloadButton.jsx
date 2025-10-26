@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import "./StructDownloadButton.css";
 
 const defaultFormats = [
   { format: "cif", label: "CIF" },
@@ -7,7 +6,6 @@ const defaultFormats = [
   { format: "xyz", label: "XYZ" },
 ];
 
-// one to one copy of the MCXD StructDownloadButton (w/css in .css file)
 export function StructDownloadButton(props) {
   const dl_url = `${props.aiida_rest_url}/nodes/${props.uuid}/download`;
   const downloadFormats = props.download_formats || defaultFormats;
@@ -15,6 +13,7 @@ export function StructDownloadButton(props) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
+  // Close menu when clicking outside
   useEffect(() => {
     function handleClick(e) {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -26,12 +25,14 @@ export function StructDownloadButton(props) {
   }, []);
 
   return (
-    <div ref={ref} className="download-wrapper">
+    <div ref={ref} className="ae:relative ae:inline-block">
+      {/* Download button */}
       <button
         type="button"
-        className="download-button"
         title="Download"
         onClick={() => setOpen(!open)}
+        className="ae:bg-blue-600 ae:text-white ae:text-xs ae:px-1 ae:py-1 ae:rounded-md ae:cursor-pointer 
+                   ae:hover:bg-blue-800 ae:focus:bg-blue-700 ae:focus:ring-3 ae:focus:ring-[#2563eb4d]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -40,7 +41,7 @@ export function StructDownloadButton(props) {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1"
+          strokeWidth="1.25"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -50,16 +51,23 @@ export function StructDownloadButton(props) {
         </svg>
       </button>
 
+      {/* Dropdown menu */}
       {open && (
-        <div className="download-menu-container">
-          <ul className="download-menu">
-            {downloadFormats.map(({ format, label }) => (
-              <li key={format}>
-                <a href={`${dl_url}?download_format=${format}`}>{label}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul
+          className="ae:absolute ae:top-full ae:left-1/2 ae:-translate-x-1/2 ae:mt-1 ae:min-w-max 
+                       ae:border ae:border-gray-200 ae:rounded-md ae:shadow-md text-sm z-50"
+        >
+          {downloadFormats.map(({ format, label }) => (
+            <li key={format}>
+              <a
+                href={`${dl_url}?download_format=${format}`}
+                className="ae:block ae:px-3 ae:py-1 ae:text-gray-900 ae:hover:bg-gray-100 ae:whitespace-nowrap"
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
