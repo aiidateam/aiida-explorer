@@ -163,7 +163,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
       {attributes?.cell && bzData && (
         <CardContainer
           header={`Brillouin Zone${path ? ` (${path})` : ""}`}
-          className="ae:!px-1.5 ae:!py-2"
+          className="ae:px-1.5! ae:py-2!"
           childrenClassName="ae:!p-0"
         >
           <div className="ae:w-full">

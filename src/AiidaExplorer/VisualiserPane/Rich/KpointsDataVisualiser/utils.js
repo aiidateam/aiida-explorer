@@ -40,7 +40,7 @@ export function reciprocalLattice(cell) {
   return [b1, b2, b3];
 }
 
-// Static columns (won’t change between renders)
+// Static columns for tables.
 export const Columns = {
   recipColumns: ["", "x", "y", "z"],
   cellColumns: ["x", "y", "z"],

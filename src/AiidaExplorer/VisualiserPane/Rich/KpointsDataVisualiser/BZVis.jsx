@@ -2,55 +2,63 @@ import React, { useState, useEffect, useRef } from "react";
 import { createBZVisualizer } from "brillouinzone-visualizer";
 import useContainerBucket from "../../../hooks/useContainerBucket";
 
+import BZControls from "./BZControls";
+
 export default function BZVisualizer({ data }) {
   const containerRef = useRef(null);
+  const bzRef = useRef(null);
+  const cameraStateRef = useRef(null);
 
-  // ----- Local state for the checkbox -----
   const [showPathpoints, setShowPathpoints] = useState(false);
+  const [showBVectors, setShowBVectors] = useState(true);
+  const [showAxes, setShowAxes] = useState(true);
 
-  // ----- Options object -----
-  const options = {
-    showAxes: true,
-    showBVectors: true,
-    showPathpoints,
-    disableInteractOverlay: true,
-  };
-
-  // Reset the visualizer whenever the container width changes significantly
-  const widthBucket = useContainerBucket(containerRef, 100);
+  const widthBucket = useContainerBucket(containerRef, 50);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    containerRef.current.innerHTML = "";
-    createBZVisualizer(containerRef.current, data, options);
-  }, [data, showPathpoints, widthBucket]); // re-run if data, checkbox, or bucket changes
+    const timer = setTimeout(() => {
+      if (bzRef.current?.getCameraState) {
+        cameraStateRef.current = bzRef.current.getCameraState();
+      }
+
+      // clear the container.
+      containerRef.current.innerHTML = "";
+
+      bzRef.current = createBZVisualizer(
+        containerRef.current,
+        data,
+        {
+          showAxes,
+          showBVectors,
+          showPathpoints,
+          disableInteractOverlay: true,
+        },
+        (bzInstance) => {
+          // use the saved camera state to update the camera.
+          if (cameraStateRef.current) {
+            bzInstance.camera.position.copy(cameraStateRef.current.position);
+            bzInstance.controls.target.copy(cameraStateRef.current.target);
+            bzInstance.controls.update();
+          }
+        }
+      );
+    }, 100); //100ms debounce stops fastdrags from resetting view.
+
+    return () => clearTimeout(timer);
+  }, [data, showAxes, showBVectors, showPathpoints, widthBucket]);
 
   return (
-    <div className="relative w-full" style={{ height: "400px" }}>
-      {/* Overlayed checkbox */}
-      <label
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          zIndex: 10,
-          background: "rgba(255,255,255,0.8)",
-          padding: "4px 8px",
-          borderRadius: 4,
-          fontSize: 12,
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={showPathpoints}
-          onChange={(e) => setShowPathpoints(e.target.checked)}
-          style={{ marginRight: 4 }}
-        />
-        Overlay Kpoints
-      </label>
-
-      {/* Visualizer container */}
+    <div className="ae:relative ae:w-full" style={{ height: "400px" }}>
+      <BZControls
+        showPathpoints={showPathpoints}
+        setShowPathpoints={setShowPathpoints}
+        showBVectors={showBVectors}
+        setShowBVectors={setShowBVectors}
+        showAxes={showAxes}
+        setShowAxes={setShowAxes}
+      />
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
     </div>
   );

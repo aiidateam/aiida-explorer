@@ -65,7 +65,7 @@ export default function Overlay({
           {title && <div className="ae:text-lg ae:font-medium">{title}</div>}
           <button
             onClick={onClose}
-            className="ae:text-gray-600 ae:hover:text-black ae:p-1"
+            className="ae:text-gray-600 ae:hover:text-black ae:hover:bg-slate-50 ae:rounded-lg ae:hover:cursor-pointer ae:p-1"
           >
             ✕
           </button>
