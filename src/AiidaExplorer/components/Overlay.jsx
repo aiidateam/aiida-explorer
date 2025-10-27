@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 const OverlayContext = createContext(null);
 
-export function useOverlayContainer() {
+function useOverlayContainer() {
   const ref = useContext(OverlayContext);
   if (!ref) {
     throw new Error(

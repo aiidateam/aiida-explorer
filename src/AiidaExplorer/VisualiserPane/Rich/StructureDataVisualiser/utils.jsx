@@ -30,20 +30,6 @@ export function formatChemicalFormula(formula) {
     return v;
   });
 }
-const overlineStyle = {
-  display: "inline-block",
-  position: "relative",
-};
-
-const overlineAdjustmentStyle = {
-  position: "absolute",
-  top: "0.15em",
-  left: 0,
-  right: 0,
-  borderTop: "0.1em solid black",
-  height: 0,
-  zIndex: 1,
-};
 
 export function countNumberOfAtoms(hillFormula) {
   // split on capital letters to get element+number strings

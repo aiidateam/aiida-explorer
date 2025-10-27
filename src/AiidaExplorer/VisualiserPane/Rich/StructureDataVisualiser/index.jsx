@@ -1,19 +1,18 @@
 import StructureVisualizer from "mc-react-structure-visualizer";
 import { useEffect, useState, useCallback } from "react";
 
-import CardContainer from "../../../components/CardContainer";
-
-import ErrorDisplay from "../../../components/Error";
-import Spinner from "../../../components/Spinner";
-
 import { StructDownloadButton } from "./StructDownloadButton";
-
 import {
   formatLattice,
   getVol,
   formatChemicalFormula,
   calculateDensity,
 } from "./utils";
+import CardContainer from "../../../components/CardContainer";
+import ErrorDisplay from "../../../components/Error";
+import Spinner from "../../../components/Spinner";
+
+
 
 // StructureData has the 'derivedProps' key, cifData does not and we have to handle such case.
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case

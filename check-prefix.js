@@ -68,9 +68,10 @@ function walkDir(dir) {
 }
 
 // run the check from src
+// eslint-disable-next-line no-undef
 walkDir(path.join(process.cwd(), "src"));
 
 // summary
-console.log("\ae: tailwind prefix check completed!");
+console.log("ae: tailwind prefix check completed!");
 console.log(`Files scanned: ${filesScanned}`);
 console.log(`Warnings found: ${warningsFound}`);

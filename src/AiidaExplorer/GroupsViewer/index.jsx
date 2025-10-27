@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
-
 import TypeCheckboxTree from "./TypeCheckboxTree";
 import { getFlattenedNodeTypes, aiidaTypes, buildQuery } from "./utils";
-
 import DataTable from "../components/DataTable";
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";
@@ -21,14 +19,7 @@ const columnLabels = {
 };
 
 // desired column order
-export const columnOrder = [
-  "Unique ID",
-  "Label",
-  "Type",
-  "Created",
-  "Modified",
-  "",
-];
+const columnOrder = ["Unique ID", "Label", "Type", "Created", "Modified", ""];
 
 // format a single value based on label and screen size
 function formatValue(label, value, isSmallScreen = false) {
@@ -46,11 +37,12 @@ function formatValue(label, value, isSmallScreen = false) {
       return value;
 
     case "Created":
-    case "Modified":
+    case "Modified": {
       const date = new Date(value);
       return isSmallScreen
         ? date.toISOString().split("T")[0]
         : date.toLocaleString();
+    }
 
     case "Unique ID":
       if (isSmallScreen && typeof value === "string")

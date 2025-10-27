@@ -1,42 +1,37 @@
-import React, { useEffect, useRef, useMemo } from "react";
-
-import CardContainer from "../../../components/CardContainer";
-import DataTable from "../../../components/DataTable";
+import React, { useMemo } from "react";
 
 import BZVisualizer from "./BZVis";
-
 import { RoundVals, reciprocalLattice, Columns } from "./utils";
+import CardContainer from "../../../components/CardContainer";
+import DataTable from "../../../components/DataTable";
 
 // TODO - build a KPOINT converter that spits out VASP/QE formats
 // TODO - Dont render missing tables / better fallbacks
 // KpointsDataVisualiser.js
 export default function KpointsDataVisualiser({ nodeData = {} }) {
-  const attributes = nodeData.attributes || {};
-  const derivedProperties = nodeData.derived_properties || {};
-
-  // check if there is a k-path
-  let path = null;
-  if (attributes?.labels && attributes?.label_numbers) {
-    path = attributes.labels.join(" → ");
-    if (path.length > 20) {
-      path = path.slice(0, 17) + "...";
-    }
-  }
-
-  const hasData = useMemo(
-    () => !!attributes?.cell || !!derivedProperties,
-    [attributes, derivedProperties]
+  // Memoize attributes and derived_properties
+  const attributes = useMemo(
+    () => nodeData.attributes || {},
+    [nodeData.attributes]
   );
-  if (!hasData) return <div>No attributes available</div>;
+  const derivedProperties = useMemo(
+    () => nodeData.derived_properties || {},
+    [nodeData.derived_properties]
+  );
+
+  const hasData = !!attributes?.cell || !!derivedProperties;
+
+  // k-path string
+  const path =
+    attributes?.labels && attributes?.label_numbers
+      ? attributes.labels.join(" → ").slice(0, 20)
+      : null;
 
   // ----- Reciprocal lattice -----
   const [b1, b2, b3] = useMemo(() => {
     if (!attributes.cell) return [null, null, null];
     return reciprocalLattice(attributes.cell);
   }, [attributes.cell]);
-
-  if (attributes?.labelled_kpoints_abs) {
-  }
 
   // ----- Memoized BZ data -----
   const bzData = useMemo(() => {
@@ -49,7 +44,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
       kpoints: derivedProperties.labelled_kpoints_abs,
       path: derivedProperties.labelled_path,
     };
-  }, [b1, b2, b3, derivedProperties]);
+  }, [b1, b2, b3, derivedProperties, attributes.cell]);
 
   // ----- Reciprocal lattice table -----
   const recipData = useMemo(() => {
@@ -128,7 +123,7 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
     [derivedProperties.explicit_kpoints_rel]
   );
 
-  // Table configuration array for mapping
+  // ----- Tables -----
   const tables = useMemo(
     () => [
       {
@@ -157,6 +152,8 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
     [recipData, cellData, meshOffsetRows, pbcData, kpointData, kpointDataR]
   );
 
+  if (!hasData) return <div>No attributes available</div>;
+
   return (
     <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-2">
       {/* Brillouin Zone visualizer card */}
@@ -172,7 +169,6 @@ export default function KpointsDataVisualiser({ nodeData = {} }) {
         </CardContainer>
       )}
 
-      {/* Tables in cards */}
       <div className="ae:@container">
         {/* <xl=1col, >xl=2col */}
         <div className="ae:grid ae:grid-cols-1 ae:@xl:grid-cols-2">

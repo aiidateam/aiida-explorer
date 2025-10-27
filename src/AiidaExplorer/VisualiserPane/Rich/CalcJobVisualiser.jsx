@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import { JsonView, defaultStyles } from "react-json-view-lite";
-import "react-json-view-lite/dist/index.css";
 
 import DataTable from "../../components/DataTable";
-
 import {
   ClipBoardIcon,
   ClipboardCopyIcon,
@@ -13,8 +10,6 @@ import {
 import Overlay from "../../components/Overlay";
 
 function FileTable({ title, dataArray = [], onView }) {
-  if (!Array.isArray(dataArray) || dataArray.length === 0) return null;
-
   const columns = ["File", "Download", "View"];
   const rows = dataArray.map((file) => ({
     File: file.name,
@@ -58,16 +53,9 @@ function FileTable({ title, dataArray = [], onView }) {
 }
 
 export default function CalcJobVisualiser({ nodeData = {} }) {
-  const [copiedIndex, setCopiedIndex] = useState(null);
   const [previewContent, setPreviewContent] = useState(null);
   const [previewName, setPreviewName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-
-  const copyToClipboard = (data, index) => {
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 700);
-  };
 
   const handleViewFile = async (name, url) => {
     try {

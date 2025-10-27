@@ -158,7 +158,7 @@ export default function UpfDataVisualiser({ nodeData }) {
 
   if (!upfData) return null;
 
-  const { header, radial_grid } = upfData;
+  const { header } = upfData;
 
   const commonLegend = {
     x: 0.97,
@@ -194,7 +194,7 @@ export default function UpfDataVisualiser({ nodeData }) {
       {/* container that constrains width and uses box-sizing */}
       <CardContainer
         header="Orbital radial functions"
-        className="ae:!px-1.5 ae:!py-2"
+        className="ae:px-1.5! ae:py-2!"
         childrenClassName="ae:!p-0"
       >
         <SimplePlot
@@ -215,7 +215,7 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       <CardContainer
         header="Beta projectors"
-        className="ae:!px-1.5 ae:!py-2"
+        className="ae:px-1.5! ae:py-2!"
         childrenClassName="ae:!p-0"
       >
         <SimplePlot
@@ -234,7 +234,7 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       <CardContainer
         header="Charge densities"
-        className="ae:!px-1.5 ae:!py-2"
+        className="ae:px-1.5! ae:py-2!"
         childrenClassName="ae:!p-0"
       >
         <SimplePlot

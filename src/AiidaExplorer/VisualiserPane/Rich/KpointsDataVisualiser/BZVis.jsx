@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
 import { createBZVisualizer } from "brillouinzone-visualizer";
-import useContainerBucket from "../../../hooks/useContainerBucket";
+import React, { useState, useEffect, useRef } from "react";
 
 import BZControls from "./BZControls";
+import useContainerBucket from "../../../hooks/useContainerBucket";
 
 export default function BZVisualizer({ data }) {
   const containerRef = useRef(null);

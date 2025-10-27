@@ -10,9 +10,9 @@ export default function SimplePlot({
   const containerRef = useRef(null);
 
   // Memoize props to avoid unnecessary rerenders
-  const memoData = useMemo(() => data, [JSON.stringify(data)]);
-  const memoLayout = useMemo(() => layout, [JSON.stringify(layout)]);
-  const memoConfig = useMemo(() => config, [JSON.stringify(config)]);
+  const memoData = useMemo(() => data, [data]);
+  const memoLayout = useMemo(() => layout, [layout]);
+  const memoConfig = useMemo(() => config, [config]);
 
   useEffect(() => {
     const container = containerRef.current;
