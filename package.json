@@ -31,6 +31,7 @@
     }
   ],
   "dependencies": {
+    "@uiw/react-json-view": "^2.0.0-alpha.39",
     "bands-visualiser": "^0.0.2",
     "brillouinzone-visualizer": "^0.4.3",
     "mc-react-structure-visualizer": "^0.8.3",

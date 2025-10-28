@@ -1,8 +1,8 @@
+import JsonView from "@uiw/react-json-view";
 import React, { useState } from "react";
-import { JsonView, defaultStyles } from "react-json-view-lite";
-import "react-json-view-lite/dist/index.css";
 
-import "./jsonview.css";
+// import { JSONTree } from "react-json-tree";
+// import "./jsonview.css";
 
 import DataTable from "../components/DataTable";
 import {
@@ -57,16 +57,9 @@ function FileTable({ title, dataArray = [], onView }) {
 }
 
 export default function RawDataVisualiser({ nodeData = {} }) {
-  const [copiedIndex, setCopiedIndex] = useState(null);
   const [previewContent, setPreviewContent] = useState(null);
   const [previewName, setPreviewName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-
-  const copyToClipboard = (data, index) => {
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 700);
-  };
 
   const handleViewFile = async (name, url) => {
     try {
@@ -115,13 +108,6 @@ export default function RawDataVisualiser({ nodeData = {} }) {
     </>
   );
 
-  const customStyle = {
-    ...defaultStyles,
-    basicChildStyle: `${defaultStyles.basicChildStyle} custom-basic-childstyle`,
-    label: `${defaultStyles.label} custom-json-label`,
-    container: `${defaultStyles.container} custom-json-container`,
-  };
-
   return (
     <div className="ae:flex ae:flex-col ae:px-3 ae:py-2 ae:gap-2 ae:lg:gap-4">
       {fileTables}
@@ -134,32 +120,48 @@ export default function RawDataVisualiser({ nodeData = {} }) {
           <div key={index} className="ae:py-1 ae:px-2">
             <div className="ae:flex ae:items-center ae:gap-2 ae:pb-2">
               <div className="explorerHeading">{section.title}</div>
-              <button
-                className="ae:relative ae:flex ae:items-center ae:gap-1 ae:hover:text-blue-800"
-                onClick={() => copyToClipboard(safeData, index)}
-              >
-                <ClipBoardIcon size={18} />
-                <div
-                  className={`ae:absolute ae:left-full ae:ml-2 ae:top-1/2 ae:-translate-y-1/2 ae:flex ae:items-center ae:gap-1 ae:text-green-400 ae:text-sm ae:transition-all ae:duration-400 ae:transform ${
-                    copiedIndex === index
-                      ? "ae:opacity-100 ae:translate-x-0"
-                      : "ae:opacity-0 ae:-translate-x-2"
-                  }`}
-                >
-                  <ClipboardCopyIcon size={16} />
-                  <span>Copied</span>
-                </div>
-              </button>
             </div>
 
             <div className="ae:max-h-32 ae:md:max-h-96 ae:overflow-auto ae:border ae:border-slate-200 ae:rounded ae:p-1 ae:bg-slate-100">
               <JsonView
-                data={safeData}
-                shouldExpandNode={(level) =>
-                  level < (section.collapseLevel ?? 1)
-                }
-                style={customStyle}
-              />
+                value={safeData}
+                rootName={false}
+                collapsed={false}
+                shouldExpandNodeInitially={(isExpanded, { level }) => level < 2}
+                displayDataTypes={false}
+                enableClipboard={true}
+                quotesOnKeys={false}
+              >
+                {/* Remove quotes only for keys */}
+                <JsonView.Quote
+                  render={({ children, ...rest }, { type }) => {
+                    // Only remove quotes for object keys
+                    if (type === "key") return null;
+                    return <span {...rest}>{children}</span>;
+                  }}
+                />
+                <JsonView.Copied
+                  render={({ "data-copied": copied, onClick, ...props }) => (
+                    <button
+                      {...props}
+                      onClick={onClick}
+                      type="button"
+                      className="ae:flex ae:items-center ae:gap-1 ae:text-slate-700 ae:hover:text-blue-500"
+                    >
+                      {copied ? (
+                        <>
+                          <ClipboardCopyIcon
+                            size={16}
+                            className="ae:text-xs ae:text-green-400"
+                          />
+                        </>
+                      ) : (
+                        <ClipBoardIcon size={16} />
+                      )}
+                    </button>
+                  )}
+                />
+              </JsonView>
             </div>
           </div>
         );
