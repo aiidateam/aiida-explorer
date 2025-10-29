@@ -1,9 +1,6 @@
 import JsonView from "@uiw/react-json-view";
 import React, { useState } from "react";
 
-// import { JSONTree } from "react-json-tree";
-// import "./jsonview.css";
-
 import DataTable from "../components/DataTable";
 import {
   ClipBoardIcon,
