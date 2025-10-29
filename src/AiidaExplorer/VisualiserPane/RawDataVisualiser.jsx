@@ -125,12 +125,10 @@ export default function RawDataVisualiser({ nodeData = {} }) {
             <div className="ae:max-h-32 ae:md:max-h-96 ae:overflow-auto ae:border ae:border-slate-200 ae:rounded ae:p-1 ae:bg-slate-100">
               <JsonView
                 value={safeData}
-                rootName={false}
                 collapsed={false}
                 shouldExpandNodeInitially={(isExpanded, { level }) => level < 2}
                 displayDataTypes={false}
                 enableClipboard={true}
-                quotesOnKeys={false}
               >
                 {/* Remove quotes only for keys */}
                 <JsonView.Quote
