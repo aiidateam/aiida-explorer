@@ -12,8 +12,6 @@ import CardContainer from "../../../components/CardContainer";
 import ErrorDisplay from "../../../components/Error";
 import Spinner from "../../../components/Spinner";
 
-
-
 // StructureData has the 'derivedProps' key, cifData does not and we have to handle such case.
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case
 // TODO - alternatively could use discuss with adding download_formats endpoints here instead /
@@ -102,7 +100,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
 
   return (
     <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
-      <div className="@container">
+      <div className="ae:@container">
         {/* <xl=1col [lhs expands], >xl=2col */}
         <div className="ae:grid ae:grid-cols-1 ae:gap-4 ae:@xl:grid-cols-[1fr_auto]">
           {/* Left: Structure Visualizer */}
