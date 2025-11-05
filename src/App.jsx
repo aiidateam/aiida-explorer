@@ -30,9 +30,8 @@ export default function App() {
   );
 
   const handleLoadClick = () => {
-    // Update URL params: set restApiUrl, clear rootNode
     const next = new URLSearchParams(sp);
-    next.set("api_url", apiUrl.trim() || DEFAULT_REST_URL);
+    next.set("api_url", inputUrl.trim() || DEFAULT_REST_URL);
     next.delete("uuid");
     setSp(next, { replace: true });
   };
@@ -58,7 +57,7 @@ export default function App() {
         />
         <button
           onClick={handleLoadClick}
-          className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer"
         >
           Load
         </button>

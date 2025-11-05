@@ -26,8 +26,7 @@ export default function DebugViewer({ debugInfo }) {
             collapsed={false}
             displayDataTypes={false}
             enableClipboard={true}
-            highlightUpdates={false} // avoid console spam
-            theme="rjv-default"
+            highlightUpdates={false}
           />
         </div>
       </section>
