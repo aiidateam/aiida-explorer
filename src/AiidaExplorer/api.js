@@ -1,5 +1,13 @@
 import { layoutGraphDefault } from "./FlowChart/graphController";
 
+/**
+ * Strips the synthetic ID marker if present.
+ */
+export function stripSyntheticId(id) {
+  if (typeof id !== "string") return id;
+  return id.replace(/__inst__[a-z0-9]+$/i, "");
+}
+
 // --------------------------
 // Toplevel api hits (run and done)
 // --------------------------
@@ -13,6 +21,9 @@ import { layoutGraphDefault } from "./FlowChart/graphController";
  */
 export async function fetchGeneric(url, options = {}, defaultValue = null) {
   try {
+    // Strip synthetic ID marker if present in URL
+    url = url.replace(/__inst__[a-z0-9]+/i, "");
+
     const res = await fetch(url, options);
 
     if (!res.ok) {
@@ -116,8 +127,9 @@ export async function fetchNodeContents(restApiUrl, nodeId) {
 
 export async function fetchNodeRepoList(restApiUrl, nodeId) {
   if (!nodeId) return [];
+  const cleanId = stripSyntheticId(nodeId); // remove marker
 
-  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/repo/list`;
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(cleanId)}/repo/list`;
   const repoFiles = await fetchGeneric(url, {}, { data: { repo_list: [] } });
 
   if (!repoFiles?.data?.repo_list) return [];
@@ -127,7 +139,7 @@ export async function fetchNodeRepoList(restApiUrl, nodeId) {
     .map((file) => ({
       name: file.name,
       downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
-        nodeId
+        cleanId
       )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
     }));
 }
@@ -135,8 +147,9 @@ export async function fetchNodeRepoList(restApiUrl, nodeId) {
 // helper: Gets the UUID of the Retrieved outgoing link...
 export async function fetchRetrievedUUID(restApiUrl, nodeId) {
   if (!nodeId) return null;
+  const cleanId = stripSyntheticId(nodeId); // remove marker
 
-  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing/`;
+  const url = `${restApiUrl}/nodes/${encodeURIComponent(cleanId)}/links/outgoing/`;
   const data = await fetchGeneric(url, {}, { data: { outgoing: [] } });
 
   const nodes = data?.data?.outgoing || [];
@@ -150,12 +163,13 @@ export async function fetchRetrievedUUID(restApiUrl, nodeId) {
 // as a result this method relies on a retrievedNodeID...
 export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
   if (!nodeId) return null;
+  const cleanId = stripSyntheticId(nodeId); // remove marker
 
   const endpoints = ["input_files", "output_files"];
   const results = {};
 
   for (const ep of endpoints) {
-    const url = `${restApiUrl}/calcjobs/${encodeURIComponent(nodeId)}/${ep}`;
+    const url = `${restApiUrl}/calcjobs/${encodeURIComponent(cleanId)}/${ep}`;
     const json = await fetchGeneric(url, {}, { data: [] });
 
     // Safely extract the files array
@@ -166,13 +180,14 @@ export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
         : [];
 
     const repoNodeId = ep === "input_files" ? nodeId : retrievedNodeId;
+    const cleanRepoNodeId = stripSyntheticId(repoNodeId);
 
     const processedFiles = files
       .filter((f) => f.type === "FILE")
       .map((file) => ({
         ...file,
         downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
-          repoNodeId
+          cleanRepoNodeId
         )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
       }));
 
@@ -180,54 +195,6 @@ export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
   }
 
   return results;
-}
-
-export async function fetchJson(restApiUrl, nodeId) {
-  if (!nodeId) return { incoming: [], outgoing: [] };
-
-  const url = `${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/download?download_format=json`;
-  const json = await fetchGeneric(url, {}, { incoming: [], outgoing: [] });
-
-  return json;
-}
-
-export async function fetchCif(restApiUrl, nodeId) {
-  if (!nodeId) return { cifText: null };
-
-  const url = `${restApiUrl}/nodes/${encodeURIComponent(
-    nodeId
-  )}/download?download_format=cif&download=false`;
-
-  const result = await fetchGeneric(
-    url,
-    {},
-    { data: { download: { data: null } } }
-  );
-  const cifText = result?.data?.download?.data || null;
-
-  return { cifText };
-}
-
-// CalcJob Special endpoint...
-export async function fetchSourceFile(restApiUrl, nodeId) {
-  if (!nodeId) return { sourceFile: null };
-
-  try {
-    const res = await fetch(
-      `${restApiUrl}/nodes/${encodeURIComponent(
-        nodeId
-      )}/repo/contents?filename=source_file`
-    );
-
-    if (!res.ok) return { sourceFile: null };
-
-    const fileText = await res.text();
-
-    return { sourceFile: fileText };
-  } catch (err) {
-    console.error("Error fetching node:", err);
-    return { sourceFile: null };
-  }
 }
 
 // --------------------------
@@ -240,13 +207,14 @@ export async function fetchLinks(restApiUrl, nodeId) {
   if (!nodeId) return { incoming: [], outgoing: [] };
 
   try {
-    const [incomingRes, outgoingRes] = await Promise.all([
-      fetch(`${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/incoming`),
-      fetch(`${restApiUrl}/nodes/${encodeURIComponent(nodeId)}/links/outgoing`),
+    const encodedId = encodeURIComponent(nodeId);
+
+    const [incoming, outgoing] = await Promise.all([
+      fetchGeneric(`${restApiUrl}/nodes/${encodedId}/links/incoming`, {}, []),
+      fetchGeneric(`${restApiUrl}/nodes/${encodedId}/links/outgoing`, {}, []),
     ]);
 
-    const incoming = incomingRes.ok ? await incomingRes.json() : [];
-    const outgoing = outgoingRes.ok ? await outgoingRes.json() : [];
+    console.log("incoming", incoming);
 
     return { incoming, outgoing };
   } catch (err) {
@@ -351,17 +319,16 @@ export async function smartFetchData(
   }
 
   // Run all promises in parallel
-  const [download, repoResult, filesResult] = await Promise.all([
-    downloadPromise,
+  const [repoResult, filesResult] = await Promise.all([
     repoPromise,
     filesPromise,
   ]);
 
-  if (download) updatedData.download = download;
   if (repoResult) updatedData.repo_list = repoResult;
   if (filesResult) updatedData = { ...updatedData, ...filesResult };
 
   // Add downloadByFormat if downloadFormats provided
+  const cleanId = stripSyntheticId(node.id); // remove marker
   if (downloadFormats && node.data.node_type) {
     const typeKey = node.data.node_type.endsWith("|")
       ? node.data.node_type
@@ -369,13 +336,24 @@ export async function smartFetchData(
     const formats = downloadFormats[typeKey] || [];
     updatedData.downloadByFormat = formats.reduce((acc, fmt) => {
       acc[fmt] = `${restApiUrl}/nodes/${encodeURIComponent(
-        node.id
+        cleanId
       )}/download?download_format=${encodeURIComponent(fmt)}`;
       return acc;
     }, {});
   }
 
   return { ...node, data: updatedData };
+}
+
+/**
+ * * IMPORTANT - while the UUID may seem sufficient for ensuring unique keys,
+ * its possible to have duplicate nodes in the same graph, which breaks reactflow rendering
+ * This function solves this.
+ */
+function generateSyntheticId(uuid) {
+  const marker = "__inst__"; // easy to detect
+  const randomSuffix = Math.random().toString(36).substring(2, 6); // 4 chars
+  return `${uuid}${marker}${randomSuffix}`;
 }
 
 /**
@@ -394,7 +372,8 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
 
   const allNodes = [
     {
-      id: rootNode.uuid,
+      id: generateSyntheticId(rootNode.uuid),
+      aiidaUUID: rootNode.uuid,
       data: {
         label: rootNode.node_type.split(".").filter(Boolean).pop(),
         node_type: rootNode.node_type,
@@ -405,7 +384,8 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
       },
     },
     ...linksIn.map((l) => ({
-      id: l.uuid,
+      id: generateSyntheticId(l.uuid),
+      aiidaUUID: l.uuid,
       data: {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
@@ -415,7 +395,8 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
       },
     })),
     ...linksOut.map((l) => ({
-      id: l.uuid,
+      id: generateSyntheticId(l.uuid),
+      aiidaUUID: l.uuid,
       data: {
         label: l.node_type.split(".").filter(Boolean).pop(),
         node_type: l.node_type,
@@ -427,19 +408,11 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
     })),
   ];
 
-  // Remove duplicates by `id`
-  // TODO - for now we just set{IDs} to remove duplicates.
-  // THIS IS CATATROPHIC SINCE NODES CAN BE IN MULTIPLE GRAPHS MULTIPLE TIMES.
-  const nodeMap = new Map();
-  for (const node of allNodes) {
-    if (!nodeMap.has(node.id)) nodeMap.set(node.id, node);
-  }
-  const uniqueAllNodes = Array.from(nodeMap.values());
-
+  // No need to remove duplicates anymore — each node has a unique synthetic ID
   const { nodes, edges } = layoutGraphDefault(
-    uniqueAllNodes.find((n) => n.data.pos === 0),
-    uniqueAllNodes.filter((n) => n.data.pos === 1),
-    uniqueAllNodes.filter((n) => n.data.pos === -1)
+    allNodes.find((n) => n.data.pos === 0),
+    allNodes.filter((n) => n.data.pos === 1),
+    allNodes.filter((n) => n.data.pos === -1)
   );
 
   return { nodes, edges };

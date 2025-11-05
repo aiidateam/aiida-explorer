@@ -7,6 +7,7 @@ import {
   fetchLinkCounts,
   fetchUsers,
   fetchDownloadFormats,
+  stripSyntheticId,
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
 import ErrorDisplay from "./components/Error";
@@ -124,7 +125,9 @@ function AiidaExplorerInner({
           // zoom out
           instance.fitView({ padding: 1.5, duration: 300 });
 
-          const centralNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+          const centralNode = nodesWithExtras.find(
+            (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId)
+          );
           if (centralNode?.position) {
             // zoom back in
             setTimeout(() => {
@@ -137,13 +140,18 @@ function AiidaExplorerInner({
           }
         });
 
-        const rootNode = nodesWithExtras.find((n) => n.id === rootNodeId);
+        const rootNode = nodesWithExtras.find(
+          (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId)
+        );
         if (rootNode) {
           const enrichedNode = await ensureNodeData(rootNode);
           setSelectedNode(enrichedNode);
         }
 
-        if (breadcrumbs[breadcrumbs.length - 1]?.id !== rootNode?.id) {
+        if (
+          stripSyntheticId(breadcrumbs[breadcrumbs.length - 1]?.id) !==
+          stripSyntheticId(rootNode?.id)
+        ) {
           setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
         }
       } catch (err) {
@@ -170,7 +178,10 @@ function AiidaExplorerInner({
     );
     setExtraNodeData((prev) => ({
       ...prev,
-      [node.id]: { ...(prev[node.id] || {}), ...enrichedNode.data },
+      [stripSyntheticId(node.id)]: {
+        ...(prev[stripSyntheticId(node.id)] || {}),
+        ...enrichedNode.data,
+      },
     }));
     return enrichedNode;
   };
@@ -181,7 +192,7 @@ function AiidaExplorerInner({
     setSelectedNode(enrichedNode);
     setNodes((prev) =>
       prev.map((n) =>
-        n.id === node.id
+        stripSyntheticId(n.id) === stripSyntheticId(node.id)
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
           : n
       )
@@ -193,7 +204,7 @@ function AiidaExplorerInner({
     if (loading) return;
     setLoading(true);
     try {
-      setRootNodeId(node.id);
+      setRootNodeId(stripSyntheticId(node.id));
     } finally {
       setLoading(false);
     }
@@ -202,7 +213,7 @@ function AiidaExplorerInner({
   // --- Breadcrumb click ---
   const handleBreadcrumbClick = async (node, idx) => {
     setBreadcrumbs((prev) => prev.slice(0, idx + 1));
-    setRootNodeId(node.id);
+    setRootNodeId(stripSyntheticId(node.id));
   };
 
   return (
