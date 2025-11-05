@@ -11,10 +11,9 @@ import {
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
 import ErrorDisplay from "./components/Error";
-import { GroupIcon, LinksIcon, QuestionIcon } from "./components/Icons";
 import Overlay, { OverlayProvider } from "./components/Overlay";
 import Spinner from "./components/Spinner";
-import DebugPane from "./DebugPane";
+import DebugViewer from "./DebugViewer";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
@@ -52,6 +51,16 @@ function AiidaExplorerInner({
     defaultRootNode,
     onRootNodeChange
   );
+
+  const [debugInfo, setDebugInfo] = useState({
+    lastNodeFetchTime: null,
+    lastGraphFetchTime: null,
+    cacheHits: 0,
+    cacheMisses: 0,
+    nodesCount: 0,
+    edgesCount: 0,
+    breadcrumbsCount: 0,
+  });
 
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
@@ -100,6 +109,7 @@ function AiidaExplorerInner({
     let mounted = true;
 
     async function loadGraph() {
+      const start = performance.now();
       setLoading(true);
       setError(null);
 
@@ -108,6 +118,15 @@ function AiidaExplorerInner({
           await fetchGraphByNodeId(restApiUrl, rootNodeId);
 
         if (!mounted) return;
+
+        const fetchTime = performance.now() - start;
+        setDebugInfo((prev) => ({
+          ...prev,
+          lastGraphFetchTime: fetchTime.toFixed(2) + "ms",
+          nodesCount: fetchedNodes.length,
+          edgesCount: fetchedEdges.length,
+          breadcrumbsCount: breadcrumbs.length,
+        }));
 
         const nodesWithExtras = fetchedNodes.map((n) => ({
           ...n,
@@ -170,6 +189,15 @@ function AiidaExplorerInner({
 
   // --- Cache + merge ---
   const ensureNodeData = async (node) => {
+    const nodeId = stripSyntheticId(node.id);
+    const isCached = !!extraNodeData[nodeId];
+
+    setDebugInfo((prev) => ({
+      ...prev,
+      cacheHits: prev.cacheHits + (isCached ? 1 : 0),
+      cacheMisses: prev.cacheMisses + (!isCached ? 1 : 0),
+    }));
+
     const enrichedNode = await smartFetchData(
       restApiUrl,
       node,
@@ -188,7 +216,15 @@ function AiidaExplorerInner({
 
   // --- Single click on a node ---
   const handleNodeSelect = async (node) => {
+    const start = performance.now();
     const enrichedNode = await ensureNodeData(node);
+    const duration = performance.now() - start;
+
+    setDebugInfo((prev) => ({
+      ...prev,
+      lastNodeFetchTime: duration.toFixed(2) + "ms",
+    }));
+
     setSelectedNode(enrichedNode);
     setNodes((prev) =>
       prev.map((n) =>
@@ -245,6 +281,10 @@ function AiidaExplorerInner({
             />
           )}
           {activeOverlay === "helpview" && <HelpViewer />}
+
+          {activeOverlay === "debugview" && (
+            <DebugViewer debugInfo={debugInfo} />
+          )}
         </Overlay>
 
         <PanelGroup
@@ -287,8 +327,10 @@ function AiidaExplorerInner({
                 }
               }}
               onHelp={() => setActiveOverlay("helpview")}
+              onDebug={() => setActiveOverlay("debugview")}
               isLoading={loading}
               disableGetCounts={nodes.length === 0}
+              debugMode={debugMode}
             />
 
             <div className="ae:flex-1 ae:min-h-0">
@@ -326,19 +368,12 @@ function AiidaExplorerInner({
 
           {/* Right-hand pane */}
           <Panel className="ae:flex-1 ae:flex ae:flex-col ae:min-h-0">
-            {debugMode && (
-              <div className="ae:hidden ae:md:ae:flex ae:h-1/4 ae:border-b ae:border-slate-300 ae:overflow-y-auto">
-                <DebugPane selectedNode={selectedNode} />
-              </div>
-            )}
-            <div className="ae:flex-1 ae:overflow-y-auto ae:min-h-0">
-              <VisualiserPane
-                restApiUrl={restApiUrl}
-                selectedNode={selectedNode}
-                userData={users}
-                downloadFormats={downloadFormats}
-              />
-            </div>
+            <VisualiserPane
+              restApiUrl={restApiUrl}
+              selectedNode={selectedNode}
+              userData={users}
+              downloadFormats={downloadFormats}
+            />
           </Panel>
         </PanelGroup>
 
