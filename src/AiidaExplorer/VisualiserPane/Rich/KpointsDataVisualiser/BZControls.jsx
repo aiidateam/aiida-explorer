@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 
-const labelStyle = "ae:flex ae:items-center ae:gap-1 ae:text-xs";
+import { SettingsIcon } from "../../../components/Icons";
+
+const labelStyle = "ae:flex ae:items-center ae:pt-1 ae:text-xs";
 
 // Control div rendered above teh BZVis component.
 export default function BZControls({
@@ -38,20 +40,22 @@ export default function BZControls({
   return (
     <div
       ref={panelRef}
-      className={`ae:absolute ae:top-1 ae:right-1 ae:z-10 ae:overflow-hidden ae:rounded-md ae:bg-slate-50  ae:transition-all ae:duration-300 ${
-        expanded ? "ae:w-22" : "ae:w-6"
+      className={`ae:absolute  ae:top-1.5 ae:right-1.5 ae:z-10 ae:overflow-hidden ae:rounded-sm ae:border ae:bg-slate-50  ae:transition-all ae:duration-300 ${
+        expanded ? "ae:w-22" : "ae:w-8.5" // closed size needed for animation
       }`}
     >
       <button
+        className={`explorerButton ae:flex ae:items-center ae:gap-2 ae:w-full ${
+          expanded ? "ae:justify-end ae:border-b" : "ae:justify-end"
+        }`}
         onClick={() => setExpanded((e) => !e)}
-        className="ae:text-xl ae:w-full ae:flex ae:justify-end ae:rounded-md ae:hover:cursor-pointer ae:hover:bg-slate-100"
         aria-expanded={expanded}
       >
-        ⚙️
+        <SettingsIcon className="ae:w-4 ae:h-4" />
       </button>
 
       {expanded && (
-        <div className="ae:flex ae:flex-col ae:gap-1 ae:pb-2 ae:pl-2">
+        <div className="ae:flex ae:flex-col  ae:pb-2 ae:pl-2">
           <label className={`${labelStyle}`}>
             <input
               type="checkbox"

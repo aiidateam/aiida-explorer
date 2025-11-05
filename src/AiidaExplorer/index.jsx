@@ -35,14 +35,13 @@ export default function AiidaExplorer(props) {
 // full component handler for aiidaexplorer.
 // this manages all states and data to the subcomponents.
 
-// TODO cleanuplogic and compartmentalise the overlay buttons (if we are happy them being there...)
 // TODO add loading and timings of steps...
 function AiidaExplorerInner({
   restApiUrl,
   rootNode, // controlled value
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
-  debugMode = false,
+  debugMode = true,
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
   // If parent specifies rootNode, that is used as the source of truth,
