@@ -272,9 +272,11 @@ export async function smartFetchData(
   downloadFormats = null
 ) {
   // Check cache first
-  const cached = cachedExtras[node.id];
+  const key = stripSyntheticId(node.id);
+  const cached = cachedExtras[key];
+
   if (cached) {
-    console.debug(`${node.id} data is already cached`);
+    console.debug(`${node.id} data is already cached - ${key}`);
     return { ...node, data: { ...node.data, ...cached } };
   }
 
