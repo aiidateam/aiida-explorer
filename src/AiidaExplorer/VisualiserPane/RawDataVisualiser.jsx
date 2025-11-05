@@ -126,6 +126,7 @@ export default function RawDataVisualiser({ nodeData = {} }) {
                 shouldExpandNodeInitially={(isExpanded, { level }) => level < 2}
                 displayDataTypes={false}
                 enableClipboard={true}
+                shortenTextAfterLength={38} // uuids are 37.
               >
                 {/* Remove quotes only for keys */}
                 <JsonView.Quote
