@@ -60,7 +60,8 @@ function AiidaExplorerInner({
 
   // dynamic container media querying.
   const sizeCategory = useContainerMediaQuery(appRef, [
-    { name: "small", predicate: (w) => w < 700 },
+    { name: "tiny", predicate: (w) => w < 400 },
+    { name: "small", predicate: (w) => w >= 400 && w < 700 },
     { name: "medium", predicate: (w) => w >= 700 && w < 1200 },
     { name: "large", predicate: (w) => w >= 1200 },
   ]);
@@ -371,10 +372,10 @@ function AiidaExplorerInner({
 
           {/* Resize handle */}
           <PanelResizeHandle
-            className={`ae:group ae:flex ae:items-center ae:justify-center ae:bg-slate-200 ae:border-x ${
+            className={`ae:group ae:flex ae:items-center ae:justify-center ae:bg-slate-200 ${
               isWideScreen
-                ? "ae:w-1.5 ae:cursor-col-resize"
-                : "ae:h-1.5 ae:cursor-row-resize"
+                ? "ae:w-1.5 ae:cursor-col-resize ae:border-x"
+                : "ae:h-1.5 ae:cursor-row-resize ae:border-y"
             }`}
           >
             {/* Thumb indicator */}
