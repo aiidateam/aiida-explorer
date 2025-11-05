@@ -16,15 +16,15 @@ export function generateSyntheticId(uuid) {
 }
 
 /**
- * Strips the synthetic marker from an ID, returning the original UUID.
+ * Strips the synthetic marker from a string, returning the string without.
  *
  * @param {string} id - The synthetic ID
  * @returns {string} Original UUID (or input if no marker)
  */
-export function stripSyntheticId(id) {
-  if (typeof id !== "string") return id;
-  const regex = new RegExp(`${SYNTHETIC_MARKER}[a-z0-9]+$`, "i");
-  return id.replace(regex, "");
+export function stripSyntheticId(input) {
+  if (typeof input !== "string") return input;
+  const regex = new RegExp(`(${SYNTHETIC_MARKER}[a-z0-9]+)`, "gi");
+  return input.replace(regex, "");
 }
 
 // --------------------------
@@ -33,26 +33,26 @@ export function stripSyntheticId(id) {
 
 /**
  * Generic fetch runner with logging
- * @param {string} url - The full endpoint URL
+ * @param {string} url - endpoint URL with or without SyntheticID
  * @param {object} [options] - Fetch options (method, headers, body, etc.)
  * @param {*} [defaultValue=null] - Value to return if fetch fails
  * @returns {Promise<*>} - Resolves to the JSON response or defaultValue
  */
 export async function fetchGeneric(url, options = {}, defaultValue = null) {
+  const cleanedUrl = stripSyntheticId(url);
   try {
     // Strip synthetic ID marker if present in URL
-    url = url.replace(/__inst__[a-z0-9]+/i, "");
 
-    const res = await fetch(url, options);
+    const res = await fetch(cleanedUrl, options);
 
     if (!res.ok) {
-      console.warn(`Fetch failed for ${url} with status ${res.status}`);
+      console.warn(`Fetch failed for ${cleanedUrl} with status ${res.status}`);
       return defaultValue;
     }
 
     return await res.json();
   } catch (err) {
-    console.error(`Error fetching ${url}:`, err);
+    console.error(`Error fetching ${cleanedUrl} - `, err);
     return defaultValue;
   }
 }
