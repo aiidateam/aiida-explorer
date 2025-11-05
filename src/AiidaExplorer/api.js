@@ -1,11 +1,30 @@
 import { layoutGraphDefault } from "./FlowChart/graphController";
 
+const SYNTHETIC_MARKER = "_ae_";
+
 /**
- * Strips the synthetic ID marker if present.
+ * Generates a unique synthetic ID by appending a random suffix to the UUID.
+ * This ensures React Flow can handle duplicate nodes in the same graph.
+ *
+ * @param {string} uuid - The original node UUID
+ * @returns {string} Synthetic unique ID
+ */
+export function generateSyntheticId(uuid) {
+  if (typeof uuid !== "string") return uuid;
+  const randomSuffix = Math.random().toString(36).substring(2, 6); // 4 chars
+  return `${uuid}${SYNTHETIC_MARKER}${randomSuffix}`;
+}
+
+/**
+ * Strips the synthetic marker from an ID, returning the original UUID.
+ *
+ * @param {string} id - The synthetic ID
+ * @returns {string} Original UUID (or input if no marker)
  */
 export function stripSyntheticId(id) {
   if (typeof id !== "string") return id;
-  return id.replace(/__inst__[a-z0-9]+$/i, "");
+  const regex = new RegExp(`${SYNTHETIC_MARKER}[a-z0-9]+$`, "i");
+  return id.replace(regex, "");
 }
 
 // --------------------------
@@ -282,28 +301,12 @@ export async function smartFetchData(
 
   let updatedData = { ...node.data };
 
-  // Lookup table for downloads
-  // NOW UNUSED - download based rendering is managed solely the subcomponent
-  // This means that we no longer cache potentially large data.
-  const downloadFetchers = {
-    // StructureData: fetchCif,
-    // CifData: fetchCif,
-    // BandsData: fetchJson,
-    // ArrayData: fetchJson,
-    // CalcFunctionNode: fetchSourceFile,
-  };
-
   // Fetch Repolist (always)
   const fetchRepoList = async () => fetchNodeRepoList(restApiUrl, node.id);
 
   // Fetch extras (always)
   const extraData = await fetchNodeContents(restApiUrl, node.id);
   updatedData = { ...updatedData, ...extraData };
-
-  // Prepare promises
-  const downloadPromise = downloadFetchers[node.data.label]
-    ? downloadFetchers[node.data.label](restApiUrl, node.id)
-    : null;
 
   const repoPromise = fetchRepoList();
 
@@ -345,17 +348,6 @@ export async function smartFetchData(
   }
 
   return { ...node, data: updatedData };
-}
-
-/**
- * * IMPORTANT - while the UUID may seem sufficient for ensuring unique keys,
- * its possible to have duplicate nodes in the same graph, which breaks reactflow rendering
- * This function solves this.
- */
-function generateSyntheticId(uuid) {
-  const marker = "__inst__"; // easy to detect
-  const randomSuffix = Math.random().toString(36).substring(2, 6); // 4 chars
-  return `${uuid}${marker}${randomSuffix}`;
 }
 
 /**
