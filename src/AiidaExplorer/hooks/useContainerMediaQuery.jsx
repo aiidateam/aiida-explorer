@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export function useContainerMediaQuery(ref, queries) {
+export default function useContainerMediaQuery(ref, queries) {
   // queries: array of { name: string, predicate: (width, height) => boolean }
   const [active, setActive] = useState(null);
 

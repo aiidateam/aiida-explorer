@@ -18,6 +18,7 @@ import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
 import useMediaQuery from "./hooks/useMediaQuery";
+import useContainerMediaQuery from "./hooks/useContainerMediaQuery";
 import useRootNode from "./hooks/useRootNode";
 import TopControls from "./TopBar";
 import VisualiserPane from "./VisualiserPane";
@@ -52,6 +53,18 @@ function AiidaExplorerInner({
     onRootNodeChange
   );
 
+  const appRef = useRef(null);
+  const overlayContainerRef = useRef(null);
+  const reactFlowInstanceRef = useRef(null);
+  const isWideScreen = useMediaQuery("(min-width: 1000px)");
+
+  // dynamic container media querying.
+  const sizeCategory = useContainerMediaQuery(appRef, [
+    { name: "small", predicate: (w) => w < 700 },
+    { name: "medium", predicate: (w) => w >= 700 && w < 1200 },
+    { name: "large", predicate: (w) => w >= 1200 },
+  ]);
+
   const [debugInfo, setDebugInfo] = useState({
     lastNodeFetchTime: null,
     lastGraphFetchTime: null,
@@ -61,10 +74,6 @@ function AiidaExplorerInner({
     edgesCount: 0,
     breadcrumbsCount: 0,
   });
-
-  const overlayContainerRef = useRef(null);
-  const reactFlowInstanceRef = useRef(null);
-  const isWideScreen = useMediaQuery("(min-width: 1000px)");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -148,12 +157,22 @@ function AiidaExplorerInner({
             (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId)
           );
           if (centralNode?.position) {
+            let zoom = 1.22;
+            if (sizeCategory === "small") zoom = 0.5;
+            else if (sizeCategory === "medium") zoom = 0.8;
+            else if (sizeCategory === "large") zoom = 1.22;
+
+            instance.setCenter(
+              centralNode.position.x + 70,
+              centralNode.position.y,
+              { zoom, duration: 500 }
+            );
             // zoom back in
             setTimeout(() => {
               instance.setCenter(
                 centralNode.position.x + 70,
                 centralNode.position.y + 0,
-                { zoom: 1.22, duration: 500 }
+                { zoom: zoom, duration: 500 }
               );
             }, 400); // a bit more than fitView's duration
           }
@@ -253,7 +272,7 @@ function AiidaExplorerInner({
   };
 
   return (
-    <div className="ae:flex ae:flex-col ae:h-full">
+    <div ref={appRef} className="ae:flex ae:flex-col ae:h-full">
       <OverlayProvider
         ref={overlayContainerRef}
         className="ae:flex ae:flex-col ae:relative ae:h-full ae:min-h-[300px] ae:border ae:bg-slate-100"
