@@ -26,6 +26,16 @@ jobs:
       - name: Build the dist folder including only the library
         run: npm run build:lib
 
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^)
+          echo "PREV_TAG=$PREV_TAG" >> $GITHUB_ENV
+          NOTES=$(git log $PREV_TAG..HEAD --pretty=format:'- %s (%an)')
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -34,6 +44,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
+          body: ${{ env.RELEASE_NOTES }}
           draft: false
           prerelease: false
 
