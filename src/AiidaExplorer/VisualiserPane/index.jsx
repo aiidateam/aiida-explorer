@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import FormattedMetaData from "./FormattedMetaData";
 import RawDataVisualiser from "./RawDataVisualiser";
@@ -41,8 +41,11 @@ export default function VisualiserPane({
   userData, // fetched for user if
   downloadFormats, // fetched for download formats.
 }) {
-  let richVisualiser = geRichVisualiser(restApiUrl, selectedNode);
-
+  // memo the richVisualiser to only update if state changes - perf ++
+  const richVisualiser = useMemo(
+    () => geRichVisualiser(restApiUrl, selectedNode),
+    [restApiUrl, selectedNode?.data?.label, selectedNode?.data?.aiida?.uuid]
+  );
   const [activeTab, setActiveTab] = useState(richVisualiser ? "rich" : "raw");
 
   useEffect(() => {

@@ -151,7 +151,7 @@ function AiidaExplorerInner({
           if (!instance) return;
 
           // zoom out
-          instance.fitView({ padding: 1.5, duration: 300 });
+          instance.fitView({ padding: 2.0 });
 
           const centralNode = nodesWithExtras.find(
             (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId)

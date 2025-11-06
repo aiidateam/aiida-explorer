@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import { SettingsIcon } from "../../../components/Icons";
 
-const labelStyle = "ae:flex ae:items-center ae:pt-1 ae:text-xs";
+const labelStyle = "ae:flex ae:items-center ae:gap-1 ae:pt-1 ae:text-xs";
 
 // Control div rendered above teh BZVis component.
 export default function BZControls({
@@ -55,7 +55,7 @@ export default function BZControls({
       </button>
 
       {expanded && (
-        <div className="ae:flex ae:flex-col  ae:pb-2 ae:pl-2">
+        <div className="ae:flex ae:flex-col ae:pb-2 ae:pl-2">
           <label className={`${labelStyle}`}>
             <input
               type="checkbox"
