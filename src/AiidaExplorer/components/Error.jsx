@@ -11,7 +11,7 @@ export default function ErrorDisplay({ message, onRetry }) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="ae:mt-3 ae:px-3 ae:py-1 ae:rounded-md ae:bg-red-500 ae:text-white ae:hover:bg-red-600"
+          className="ae:mt-3 ae:px-3 ae:py-1 ae:rounded-md ae:bg-red-500 ae:text-white ae:hover:bg-red-600 ae:hover:cursor-pointer"
         >
           Retry
         </button>
