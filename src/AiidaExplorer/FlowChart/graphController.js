@@ -6,6 +6,7 @@ export function layoutGraphDefault(
   centerNode,
   inputNodes,
   outputNodes,
+  lastNode = null,
   options = {}
 ) {
   const {
@@ -18,7 +19,7 @@ export function layoutGraphDefault(
   } = options;
 
   const nodes = [];
-  const edges = [];
+  let edges = [];
 
   const inputs = categorizeNodes(inputNodes);
   const outputs = categorizeNodes(outputNodes);
@@ -121,6 +122,39 @@ export function layoutGraphDefault(
     const startYSecondary = startYPrimary - groupGapY;
     layoutGroup(secondaryInput, startYSecondary, -1, false);
     layoutGroup(secondaryOutput, startYSecondary, +1, false);
+  }
+
+  // TODO - move this above, so that the coloring happens on synthesis.
+  // also could change the edge
+  // update the array list to render last node - next node nicely.
+  // this is currently bad - it rechecks the whole array.
+  if (lastNode) {
+    const highlightedEdges = [];
+    const normalEdges = [];
+
+    edges.forEach((edge) => {
+      const connectsLastAndCenter =
+        (edge.source.startsWith(lastNode.aiidaUUID) &&
+          edge.target.startsWith(centerNode.aiidaUUID)) ||
+        (edge.source.startsWith(centerNode.aiidaUUID) &&
+          edge.target.startsWith(lastNode.aiidaUUID));
+
+      if (connectsLastAndCenter) {
+        edge.data.labelOverride = true;
+
+        edge.style = {
+          stroke: "blue",
+          strokeWidth: 2.5,
+          strokeDasharray: "",
+        };
+        highlightedEdges.push(edge);
+      } else {
+        normalEdges.push(edge);
+      }
+    });
+
+    // highlight last for better appearance.
+    edges = [...normalEdges, ...highlightedEdges];
   }
 
   return { nodes, edges };

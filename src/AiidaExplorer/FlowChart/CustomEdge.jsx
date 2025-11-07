@@ -63,9 +63,14 @@ function CustomEdge({
       />
       <EdgeLabelRenderer>
         <div
-          className={`ae:absolute ae:bg-slate-200 ae:border 
-          ae:border-slate-300 ae:rounded-sm ae:px-1 ae:py-0.5 
-          ae:text-slate-700 ae:font-light ${fontSize} ae:pointer-events-drag ae:z-50`}
+          className={`ae:absolute ae:bg-slate-200  
+          ae:rounded-sm ae:px-1 ae:py-0.5 
+          ${fontSize} ae:pointer-events-drag ae:z-50
+            ${
+              data.labelOverride
+                ? "ae:border-blue-700 ae:font-medium ae:text-blue-700 ae:border-2"
+                : "ae:border-slate-300 ae:font-light ae:text-slate-700 ae:border"
+            }`}
           style={{
             left: `${labelX}px`,
             top: `${labelY}px`,

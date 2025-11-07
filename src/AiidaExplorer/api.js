@@ -354,7 +354,7 @@ export async function smartFetchData(
  * Fetch a node and all its immediate input nodes, returning
  * nodes and edges suitable for React Flow.
  */
-export async function fetchGraphByNodeId(restApiUrl, nodeId) {
+export async function fetchGraphByNodeId(restApiUrl, nodeId, lastNode) {
   const rootNodeRaw = await fetchNodeById(restApiUrl, nodeId);
   const rootNode = rootNodeRaw.data.nodes[0];
   if (!rootNode) return { nodes: [], edges: [] };
@@ -396,7 +396,6 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
         node_type: l.node_type,
         pos: -1,
         link_label: l.link_label,
-
         aiida: l,
       },
     })),
@@ -406,7 +405,8 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId) {
   const { nodes, edges } = layoutGraphDefault(
     allNodes.find((n) => n.data.pos === 0),
     allNodes.filter((n) => n.data.pos === 1),
-    allNodes.filter((n) => n.data.pos === -1)
+    allNodes.filter((n) => n.data.pos === -1),
+    lastNode
   );
 
   return { nodes, edges };

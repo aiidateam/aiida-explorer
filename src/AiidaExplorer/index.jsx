@@ -17,8 +17,8 @@ import DebugViewer from "./DebugViewer";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
-import useMediaQuery from "./hooks/useMediaQuery";
 import useContainerMediaQuery from "./hooks/useContainerMediaQuery";
+import useMediaQuery from "./hooks/useMediaQuery";
 import useRootNode from "./hooks/useRootNode";
 import TopControls from "./TopBar";
 import VisualiserPane from "./VisualiserPane";
@@ -124,7 +124,7 @@ function AiidaExplorerInner({
 
       try {
         const { nodes: fetchedNodes, edges: fetchedEdges } =
-          await fetchGraphByNodeId(restApiUrl, rootNodeId);
+          await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
 
         if (!mounted) return;
 
@@ -174,7 +174,7 @@ function AiidaExplorerInner({
                 centralNode.position.y + 0,
                 { zoom: zoom, duration: 500 }
               );
-            }, 400); // a bit more than fitView's duration
+            }, 400);
           }
         });
 
