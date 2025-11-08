@@ -13,8 +13,13 @@ import * as packageJson from "./package.json";
 // read it from an env variable to allow the various different deploy destinations.
 
 export default defineConfig(({ mode }) => {
+  const common = {
+    assetsInclude: ["**/*.wasm"],
+  };
+
   if (mode === "lib") {
     return {
+      ...common,
       plugins: [react(), libInjectCss(), tailwindcss()],
       build: {
         lib: {
@@ -34,6 +39,7 @@ export default defineConfig(({ mode }) => {
     };
   }
   return {
+    ...common,
     plugins: [react(), tailwindcss()],
     base: process.env.VITE_BASE_PATH || "/",
     build: {

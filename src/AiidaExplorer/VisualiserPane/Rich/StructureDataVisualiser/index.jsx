@@ -1,5 +1,7 @@
+import { useMemo, useEffect, useState, useCallback } from "react";
+
+import { inv, multiply } from "mathjs"; // or any matrix library
 import StructureVisualizer from "mc-react-structure-visualizer";
-import { useEffect, useState, useCallback } from "react";
 
 import { StructDownloadButton } from "./StructDownloadButton";
 import {
@@ -9,8 +11,12 @@ import {
   calculateDensity,
 } from "./utils";
 import CardContainer from "../../../components/CardContainer";
+import DataTable from "../../../components/DataTable";
 import ErrorDisplay from "../../../components/Error";
 import Spinner from "../../../components/Spinner";
+import { analyzeCrystal } from "../../../spglib";
+
+import { DownloadIcon } from "../../../components/Icons";
 
 // StructureData has the 'derivedProps' key, cifData does not and we have to handle such case.
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case
@@ -22,18 +28,17 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const [cifText, setCifText] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [spgLib, setSpgLib] = useState(null);
 
-  // Local fetchData function
+  // --- Fetch CIF text ---
   const fetchData = useCallback(async () => {
     if (!aiidaCifPath) {
       setError("No CIF file available");
       setLoading(false);
       return;
     }
-
     setLoading(true);
     setError(null);
-
     try {
       const res = await fetch(aiidaCifPath);
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
@@ -50,58 +55,117 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
     fetchData();
   }, [fetchData]);
 
-  const dlFormats =
-    nodeData.label === "CifData"
-      ? [{ format: "cif", label: "CIF" }]
-      : [
-          { format: "cif", label: "CIF" },
-          { format: "xsf", label: "XSF" },
-          { format: "xyz", label: "XYZ" },
-        ];
-
   const hasDerived =
     nodeData.derived_properties &&
     Object.keys(nodeData.derived_properties).length > 0;
-
-  const lattice = nodeData.attributes?.cell ? formatLattice(nodeData) : null;
+  const lattice = nodeData.attributes?.cell || null;
+  const latticeLengths = lattice ? formatLattice(nodeData) : null;
   const volume = hasDerived
     ? nodeData.derived_properties.dimensionality?.value
-    : lattice
+    : latticeLengths
       ? getVol(nodeData)
       : null;
+  const sites = nodeData.attributes?.sites || [];
+  const kinds = nodeData.attributes?.kinds || [];
+  const numSites = sites.length;
+  const dimensionality =
+    nodeData.derived_properties?.dimensionality?.dim || null;
 
-  const numSites = nodeData.attributes?.sites?.length || 0;
-  const dimensionality = nodeData.derived_properties.dimensionality.dim || null;
+  // --- Assign incremental atomic numbers ---
+  const kindMap = useMemo(() => {
+    const map = {};
+    let nextNumber = 1;
+    sites.forEach((s) => {
+      const key = s.kind_name?.trim();
+      if (key && !(key in map)) map[key] = nextNumber++;
+    });
+    return map;
+  }, [sites]);
 
-  let density;
-  if (dimensionality === 3) {
-    const volume = nodeData.derived_properties.dimensionality.value;
-    const kinds = nodeData.attributes.kinds;
-    const sites = nodeData.attributes.sites;
+  // --- Reverse mapping for rendering ---
+  const reverseKindMap = useMemo(
+    () => Object.fromEntries(Object.entries(kindMap).map(([k, v]) => [v, k])),
+    [kindMap]
+  );
 
-    density = calculateDensity(sites, volume, kinds);
-  }
+  // --- Prepare atomic sites table (Å positions) ---
+  const atomicSites = useMemo(
+    () =>
+      sites.map((site) => {
+        const [x, y, z] = site.position;
+        return {
+          "Kind label": site.kind_name,
+          "x [Å]": x.toFixed(4),
+          "y [Å]": y.toFixed(4),
+          "z [Å]": z.toFixed(4),
+        };
+      }),
+    [sites]
+  );
 
-  if (loading) {
+  // --- Density calculation ---
+  const density = useMemo(() => {
+    if (dimensionality !== 3) return null;
+    return calculateDensity(sites, volume, kinds);
+  }, [dimensionality, sites, volume, kinds]);
+
+  // --- spglib analysis ---
+  useEffect(() => {
+    if (!lattice || sites.length === 0 || kinds.length === 0) return;
+
+    // Convert positions to fractional coordinates
+    const latticeMatrix = inv(lattice);
+    const fracPositions = sites.map((s) => multiply(latticeMatrix, s.position));
+    const numbers = sites.map((s) => kindMap[s.kind_name.trim()]);
+
+    analyzeCrystal(lattice, fracPositions, numbers)
+      .then(setSpgLib)
+      .catch(console.error);
+  }, [lattice, sites, kinds, kindMap]);
+
+  console.log(spgLib);
+
+  // --- Prepare standard cell table (fractional coordinates) ---
+  const stdCellData = useMemo(() => {
+    if (!spgLib?.std_cell) return [];
+    return spgLib.std_cell.positions.map((pos, i) => ({
+      "#": i + 1,
+      "Kind Name": reverseKindMap[spgLib.std_cell.numbers[i]] || "Unknown",
+      "x [frac]": pos[0].toFixed(4),
+      "y [frac]": pos[1].toFixed(4),
+      "z [frac]": pos[2].toFixed(4),
+    }));
+  }, [spgLib, reverseKindMap]);
+
+  // --- Prepare standard cell table (fractional coordinates) ---
+  const primCellData = useMemo(() => {
+    if (!spgLib?.prim_std_cell) return [];
+    return spgLib.prim_std_cell.positions.map((pos, i) => ({
+      "#": i + 1,
+      "Kind Name": reverseKindMap[spgLib.prim_std_cell.numbers[i]] || "Unknown",
+      "x [frac]": pos[0].toFixed(4),
+      "y [frac]": pos[1].toFixed(4),
+      "z [frac]": pos[2].toFixed(4),
+    }));
+  }, [spgLib, reverseKindMap]);
+
+  if (loading)
     return (
       <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <Spinner />
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <ErrorDisplay message={error} onRetry={fetchData} />
       </div>
     );
-  }
 
   return (
     <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
       <div className="ae:@container">
-        {/* <xl=1col [lhs expands], >xl=2col */}
         <div className="ae:grid ae:grid-cols-1 ae:gap-4 ae:@xl:grid-cols-[1fr_auto]">
           {/* Left: Structure Visualizer */}
           <div className="ae:w-full ae:h-[400px] ae:relative ae:bg-slate-100 ae:shadow-sm ae:overflow-hidden">
@@ -109,7 +173,15 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
               <StructDownloadButton
                 aiida_rest_url={restApiUrl}
                 uuid={nodeData.aiida.uuid}
-                download_formats={dlFormats}
+                download_formats={
+                  nodeData.label === "CifData"
+                    ? [{ format: "cif", label: "CIF" }]
+                    : [
+                        { format: "cif", label: "CIF" },
+                        { format: "xsf", label: "XSF" },
+                        { format: "xyz", label: "XYZ" },
+                      ]
+                }
               />
             </div>
             <div className="ae:w-full ae:h-full">
@@ -120,7 +192,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
             </div>
           </div>
 
-          {/* Right: Cards in a flex-col*/}
+          {/* Right: Cards */}
           <div className="ae:flex ae:flex-col ae:space-y-4 ae:max-w-xs">
             {hasDerived && (
               <>
@@ -133,10 +205,9 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
                     <span className="ae:font-medium">Cell Volume:</span>{" "}
                     {volume?.toFixed(4)} Å³
                   </p>
-
                   <p>
                     <span className="ae:font-medium">Dimensionality:</span>{" "}
-                    {nodeData.derived_properties.dimensionality?.dim || "N/A"}
+                    {dimensionality || "N/A"}
                   </p>
                   <p>
                     <span className="ae:font-medium">Density:</span>{" "}
@@ -144,19 +215,19 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
                   </p>
                 </CardContainer>
 
-                {lattice && (
+                {latticeLengths && (
                   <CardContainer>
                     <p>
                       <span className="ae:font-medium">Lattice a:</span>{" "}
-                      {lattice.a.toFixed(4)} Å
+                      {latticeLengths.a.toFixed(4)} Å
                     </p>
                     <p>
                       <span className="ae:font-medium">Lattice b:</span>{" "}
-                      {lattice.b.toFixed(4)} Å
+                      {latticeLengths.b.toFixed(4)} Å
                     </p>
                     <p>
                       <span className="ae:font-medium">Lattice c:</span>{" "}
-                      {lattice.c.toFixed(4)} Å
+                      {latticeLengths.c.toFixed(4)} Å
                     </p>
                     <p>
                       <span className="ae:font-medium">Number of Sites:</span>{" "}
@@ -168,6 +239,83 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
             )}
           </div>
         </div>
+
+        {/* Atomic positions table */}
+        <div className="pt-1">
+          <DataTable
+            title="Atomic Positions (from AiiDA)"
+            columns={["Kind label", "x [Å]", "y [Å]", "z [Å]"]}
+            data={atomicSites}
+            sortableCols={false}
+          />
+        </div>
+
+        {/* Crystal symmetry info */}
+        {spgLib && (
+          <div className="space-y-3">
+            <div className="explorerHeading ae:flex ae:items-center ae:pt-4 ae:font-lg">
+              <span>Symmetry information (spglib)</span>
+              <DownloadIcon
+                data={spgLib}
+                filename="spglib.json"
+                size={20}
+                className="ae:text-blue-600 ae:hover:text-blue-800 ae:hover:cursor-pointer"
+              />
+            </div>
+            <CardContainer>
+              <p>
+                <span className="ae:font-medium">Space group:</span>{" "}
+                {spgLib.hm_symbol.replace(/\s+/g, "")} (#
+                {spgLib.number})
+              </p>
+              <p>
+                <span className="ae:font-medium">Hall number:</span>{" "}
+                {spgLib.hall_number}
+              </p>
+              <p>
+                <span className="ae:font-medium">Pearson symbol:</span>{" "}
+                {spgLib.pearson_symbol}
+              </p>
+              <p>
+                <span className="ae:font-medium">
+                  Number of symmetry operations:
+                </span>{" "}
+                {spgLib.operations.length}
+              </p>
+            </CardContainer>
+
+            {spgLib.wyckoffs && spgLib.site_symmetry_symbols && (
+              <DataTable
+                title="Wyckoff Positions & Site Symmetry"
+                columns={["Site #", "Wyckoff", "Site Symmetry"]}
+                data={spgLib.wyckoffs.map((wyckoff, i) => ({
+                  "Site #": i + 1,
+                  Wyckoff: wyckoff,
+                  "Site Symmetry": spgLib.site_symmetry_symbols[i],
+                }))}
+                sortableCols={false}
+              />
+            )}
+
+            {primCellData.length > 0 && (
+              <DataTable
+                title="Primitive cell Atomic Positions"
+                columns={["#", "Kind Name", "x [frac]", "y [frac]", "z [frac]"]}
+                data={primCellData}
+                sortableCols={false}
+              />
+            )}
+
+            {stdCellData.length > 0 && (
+              <DataTable
+                title="Standard Cell Atomic Positions"
+                columns={["#", "Kind Name", "x [frac]", "y [frac]", "z [frac]"]}
+                data={stdCellData}
+                sortableCols={false}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

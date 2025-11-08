@@ -31,9 +31,11 @@
     }
   ],
   "dependencies": {
+    "@spglib/moyo-wasm": "^0.7.1",
     "@uiw/react-json-view": "^2.0.0-alpha.39",
     "bands-visualiser": "^0.0.2",
     "brillouinzone-visualizer": "^0.4.3",
+    "mathjs": "^15.1.0",
     "mc-react-structure-visualizer": "^0.8.3",
     "plotly.js-basic-dist-min": "^3.1.2",
     "react-json-view-lite": "^2.5.0",

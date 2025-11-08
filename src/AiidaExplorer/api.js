@@ -74,6 +74,8 @@ export async function fetchDownloadFormats(restApiUrl) {
 }
 
 // Unused as hard-coded for now...
+// TODO - add this to the groupsviewer
+// can hopefully fetch fully async and update the recursive data structure when ready.
 export async function fetchAPIFullTypes(restApiUrl) {
   const url = `${restApiUrl}/nodes/full_types`;
   return fetchGeneric(url, {}, { data: null });
@@ -232,8 +234,6 @@ export async function fetchLinks(restApiUrl, nodeId) {
       fetchGeneric(`${restApiUrl}/nodes/${encodedId}/links/incoming`, {}, []),
       fetchGeneric(`${restApiUrl}/nodes/${encodedId}/links/outgoing`, {}, []),
     ]);
-
-    console.log("incoming", incoming);
 
     return { incoming, outgoing };
   } catch (err) {
