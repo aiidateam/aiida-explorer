@@ -22,6 +22,7 @@ import { DownloadIcon } from "../../../components/Icons";
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case
 // TODO - alternatively could use discuss with adding download_formats endpoints here instead /
 // TODO - add the download button as a built in inside of StructureVisualizer (mc-react-strucutre-vis) with the js logic embedded inside the component...
+// TODO - move spglib rendering and calc into its own component and make this more of a wrapper/layout component.
 export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const aiidaCifPath = nodeData.downloadByFormat?.cif;
 
@@ -162,6 +163,8 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
         <ErrorDisplay message={error} onRetry={fetchData} />
       </div>
     );
+
+  console.log(spgLib);
 
   return (
     <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
