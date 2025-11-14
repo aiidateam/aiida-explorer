@@ -257,7 +257,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
         {spgLib && (
           <div className="space-y-3">
             <div className="explorerHeading ae:flex ae:items-center ae:pt-4 ae:font-lg">
-              <span>Symmetry information (spglib)</span>
+              <span>Symmetry information (from moyo)</span>
               <DownloadIcon
                 data={spgLib}
                 filename="spglib.json"
