@@ -253,8 +253,11 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
           <div className="space-y-3">
             <div className="explorerHeading ae:flex ae:items-center ae:pt-4 ae:font-lg">
               <span>
-                Symmetry information calculated on-the-fly using moyo (symtol:
-                5×10⁻⁴)
+                Symmetry information calculated on-the-fly using{" "}
+                <a href="https://github.com/spglib/moyo" target="_blank">
+                  spglib/moyo
+                </a>{" "}
+                (symprec: 1×10⁻⁴)
               </span>
               <DownloadIcon
                 data={spgLib}
