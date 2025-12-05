@@ -13,5 +13,5 @@ export async function analyzeCrystal(lattice, positions, numbers) {
     numbers,
   };
 
-  return analyze_cell(JSON.stringify(cell), 1e-4, "Standard");
+  return analyze_cell(JSON.stringify(cell), 5e-4, "Standard");
 }

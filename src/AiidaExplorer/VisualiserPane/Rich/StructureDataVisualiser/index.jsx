@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
 
-import { inv, multiply } from "mathjs"; // or any matrix library
+import { inv, multiply } from "mathjs";
 import StructureVisualizer from "mc-react-structure-visualizer";
 
 import { StructDownloadButton } from "./StructDownloadButton";
@@ -13,10 +13,9 @@ import {
 import CardContainer from "../../../components/CardContainer";
 import DataTable from "../../../components/DataTable";
 import ErrorDisplay from "../../../components/Error";
+import { DownloadIcon } from "../../../components/Icons";
 import Spinner from "../../../components/Spinner";
 import { analyzeCrystal } from "../../../spglib";
-
-import { DownloadIcon } from "../../../components/Icons";
 
 // StructureData has the 'derivedProps' key, cifData does not and we have to handle such case.
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case
@@ -116,15 +115,13 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
 
     // Convert positions to fractional coordinates
     const latticeMatrix = inv(lattice);
-    const fracPositions = sites.map((s) => multiply(latticeMatrix, s.position));
+    const fracPositions = sites.map((s) => multiply(s.position, latticeMatrix));
     const numbers = sites.map((s) => kindMap[s.kind_name.trim()]);
 
     analyzeCrystal(lattice, fracPositions, numbers)
       .then(setSpgLib)
       .catch(console.error);
   }, [lattice, sites, kinds, kindMap]);
-
-  console.log(spgLib);
 
   // --- Prepare standard cell table (fractional coordinates) ---
   const stdCellData = useMemo(() => {
@@ -163,8 +160,6 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
         <ErrorDisplay message={error} onRetry={fetchData} />
       </div>
     );
-
-  console.log(spgLib);
 
   return (
     <div className="ae:w-full ae:mx-auto ae:p-4 ae:space-y-6">
@@ -257,7 +252,10 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
         {spgLib && (
           <div className="space-y-3">
             <div className="explorerHeading ae:flex ae:items-center ae:pt-4 ae:font-lg">
-              <span>Symmetry information (from moyo)</span>
+              <span>
+                Symmetry information calculated on-the-fly using moyo (symtol:
+                5×10⁻⁴)
+              </span>
               <DownloadIcon
                 data={spgLib}
                 filename="spglib.json"
