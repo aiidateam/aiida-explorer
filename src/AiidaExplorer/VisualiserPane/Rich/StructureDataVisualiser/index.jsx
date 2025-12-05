@@ -257,7 +257,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
                 <a href="https://github.com/spglib/moyo" target="_blank">
                   spglib/moyo
                 </a>{" "}
-                (symprec: 1×10⁻⁴)
+                (symprec: 5×10⁻³)
               </span>
               <DownloadIcon
                 data={spgLib}
