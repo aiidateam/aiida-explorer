@@ -13,7 +13,7 @@ export default function FormattedMetaData({ nodeData, userData }) {
     );
   }
 
-  const owner = Array.isArray(users)
+  const creator = Array.isArray(users)
     ? users.find((u) => u.id === aiida.user_id)
     : null;
 
@@ -56,12 +56,15 @@ export default function FormattedMetaData({ nodeData, userData }) {
               {aiida.node_type}
             </div>
           )}
-          {owner && (
+          {creator && (
             <div>
-              <span className="ae:font-medium">Owner:</span> {owner.first_name}{" "}
-              {owner.last_name || ""}
-              {owner.institution && (
-                <span className="ae:text-gray-500"> ({owner.institution})</span>
+              <span className="ae:font-medium">Creator:</span>{" "}
+              {creator.first_name} {creator.last_name || ""}
+              {creator.institution && (
+                <span className="ae:text-gray-500">
+                  {" "}
+                  ({creator.institution})
+                </span>
               )}
             </div>
           )}

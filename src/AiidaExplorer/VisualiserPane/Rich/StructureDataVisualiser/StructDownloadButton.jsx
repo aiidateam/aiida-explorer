@@ -54,8 +54,24 @@ export function StructDownloadButton(props) {
       {/* Dropdown menu */}
       {open && (
         <ul
-          className="ae:absolute ae:top-full ae:left-1/2 ae:-translate-x-1/2 ae:mt-1 ae:min-w-max 
-                       ae:border ae:border-gray-200 ae:rounded-md ae:shadow-md text-sm z-50"
+          className="
+            ae:absolute
+            ae:top-full
+            ae:left-1/2
+            ae:-translate-x-1/2
+            ae:mt-1
+            ae:w-max
+            ae:list-none
+            ae:m-0
+            ae:p-0
+            ae:border
+            ae:border-gray-200
+            ae:rounded-md
+            ae:shadow-md
+            ae:bg-white
+            ae:text-sm
+            ae:z-50
+          "
         >
           {downloadFormats.map(({ format, label }) => (
             <li key={format}>
