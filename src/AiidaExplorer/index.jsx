@@ -25,6 +25,15 @@ import VisualiserPane from "./VisualiserPane";
 
 import "./index.css";
 
+// potential full screen toggle switch.
+function toggleFullScreen(el) {
+  if (!document.fullscreenElement) {
+    el.requestFullscreen().catch((err) => console.error(err));
+  } else {
+    document.exitFullscreen();
+  }
+}
+
 /**
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
  */
@@ -41,7 +50,8 @@ function AiidaExplorerInner({
   rootNode, // controlled value
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
-  debugMode = true,
+  debugMode = false,
+  fullscreenToggle = false,
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
   // If parent specifies rootNode, that is used as the source of truth,
@@ -347,9 +357,11 @@ function AiidaExplorerInner({
               }}
               onHelp={() => setActiveOverlay("helpview")}
               onDebug={() => setActiveOverlay("debugview")}
+              onFullscreen={() => toggleFullScreen(appRef.current)}
               isLoading={loading}
               disableGetCounts={nodes.length === 0}
               debugMode={debugMode}
+              fullscreenToggle={fullscreenToggle}
             />
 
             <div className="ae:flex-1 ae:min-h-0">

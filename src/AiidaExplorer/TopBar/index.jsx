@@ -3,6 +3,7 @@ import {
   LinksIcon,
   QuestionIcon,
   BugIcon,
+  FullscreenIcon,
 } from "../components/Icons";
 
 export default function TopControls({
@@ -10,9 +11,11 @@ export default function TopControls({
   onGetLinkCounts,
   onHelp,
   onDebug,
+  onFullscreen,
   isLoading,
   disableGetCounts = false,
   debugMode = false,
+  fullscreenToggle = false,
 }) {
   const textStyle = "ae:hidden ae:@sm:inline";
 
@@ -56,6 +59,16 @@ export default function TopControls({
           >
             <BugIcon className="ae:w-5 ae:h-5" />
             <span className={textStyle}>Debug</span>
+          </button>
+        )}
+
+        {fullscreenToggle && onFullscreen && (
+          <button
+            className="explorerButton ae:flex ae:items-center ae:gap-1"
+            onClick={onFullscreen}
+          >
+            <FullscreenIcon className="ae:w-5 ae:h-5" />
+            <span className={textStyle}>Fullscreen</span>
           </button>
         )}
       </div>
