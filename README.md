@@ -19,6 +19,18 @@ Main features include:
 - **Breadcrumb trail** tracks visited nodes, clickable for quick navigation.
 - Nodes styled by type (process, data, etc.) with clear selection highlighting.
 
+## Explore your own AiiDA database
+
+The demo page can be used to explore your own AiiDA database. To do this, start the REST API locally:
+
+```bash
+verdi -p <profile-name> restapi
+```
+
+and explore it at https://aiidateam.github.io/aiida-explorer/?api_url=http://127.0.0.1:5000/api/v4.
+
+(Note that some browser extensions might block access to localhost, and should be disabled for this to work).
+
 ## Installation and usage
 
 Install via
