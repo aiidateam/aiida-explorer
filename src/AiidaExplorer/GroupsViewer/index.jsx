@@ -61,7 +61,7 @@ function formatTableData(nodes, setRootNodeId, isSmallScreen = false) {
 
     columnOrder.forEach((label) => {
       const key = Object.keys(columnLabels).find(
-        (k) => columnLabels[k] === label
+        (k) => columnLabels[k] === label,
       );
       if (key && row[key] !== undefined) {
         newRow[label] = formatValue(label, row[key], isSmallScreen);
@@ -135,7 +135,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
         const nodes = result.node || [];
 
         setRawTableData((prev) =>
-          offsetValue === 0 ? nodes : [...prev, ...nodes]
+          offsetValue === 0 ? nodes : [...prev, ...nodes],
         );
         setOffset(offsetValue + nodes.length);
       } catch (err) {
@@ -145,12 +145,12 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
         setLoading(false);
       }
     },
-    [restApiUrl, selectedGroups, selectedTypes]
+    [restApiUrl, selectedGroups, selectedTypes],
   );
 
   // auto-fetch initial nodes
   useEffect(() => {
-    if (groups.length > 0 && rawTableData.length === 0) {
+    if (rawTableData.length === 0) {
       fetchNodes(0, 1000);
     }
   }, [groups, rawTableData.length, fetchNodes]);
@@ -203,7 +203,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
                 setSelectedGroups((prev) =>
                   e.target.checked
                     ? [...prev, g.label]
-                    : prev.filter((x) => x !== g.label)
+                    : prev.filter((x) => x !== g.label),
                 )
               }
             />
