@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import {
@@ -59,7 +59,7 @@ function AiidaExplorerInner({
   const [rootNodeId, setRootNodeId] = useRootNode(
     rootNode,
     defaultRootNode,
-    onRootNodeChange
+    onRootNodeChange,
   );
 
   const appRef = useRef(null);
@@ -164,7 +164,7 @@ function AiidaExplorerInner({
           instance.fitView({ padding: 2.0 });
 
           const centralNode = nodesWithExtras.find(
-            (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId)
+            (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
           );
           if (centralNode?.position) {
             let zoom = 1.22;
@@ -175,21 +175,21 @@ function AiidaExplorerInner({
             instance.setCenter(
               centralNode.position.x + 70,
               centralNode.position.y,
-              { zoom, duration: 500 }
+              { zoom, duration: 500 },
             );
             // zoom back in
             setTimeout(() => {
               instance.setCenter(
                 centralNode.position.x + 70,
                 centralNode.position.y + 0,
-                { zoom: zoom, duration: 500 }
+                { zoom: zoom, duration: 500 },
               );
             }, 400);
           }
         });
 
         const rootNode = nodesWithExtras.find(
-          (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId)
+          (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
         );
         if (rootNode) {
           const enrichedNode = await ensureNodeData(rootNode);
@@ -231,7 +231,7 @@ function AiidaExplorerInner({
       restApiUrl,
       node,
       extraNodeData,
-      downloadFormats
+      downloadFormats,
     );
     setExtraNodeData((prev) => ({
       ...prev,
@@ -259,8 +259,8 @@ function AiidaExplorerInner({
       prev.map((n) =>
         stripSyntheticId(n.id) === stripSyntheticId(node.id)
           ? { ...n, data: { ...n.data, ...enrichedNode.data } }
-          : n
-      )
+          : n,
+      ),
     );
   };
 
@@ -280,6 +280,15 @@ function AiidaExplorerInner({
     setBreadcrumbs((prev) => prev.slice(0, idx + 1));
     setRootNodeId(stripSyntheticId(node.id));
   };
+
+  // --- Navigation from modals --- //
+  const navigateFromOverlay = useCallback(
+    (nodeId) => {
+      setActiveOverlay(null);
+      setRootNodeId(nodeId);
+    },
+    [setRootNodeId],
+  );
 
   return (
     <div ref={appRef} className="ae:flex ae:flex-col ae:h-full">
@@ -306,7 +315,7 @@ function AiidaExplorerInner({
           {activeOverlay === "groupsview" && (
             <GroupsViewer
               restApiUrl={restApiUrl}
-              setRootNodeId={setRootNodeId}
+              setRootNodeId={navigateFromOverlay}
             />
           )}
           {activeOverlay === "helpview" && <HelpViewer />}
