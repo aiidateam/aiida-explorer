@@ -2,6 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import {
+  useQuery,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
+import {
   fetchGraphByNodeId,
   smartFetchData,
   fetchLinkCounts,
@@ -38,7 +44,13 @@ function toggleFullScreen(el) {
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
  */
 export default function AiidaExplorer(props) {
-  return <AiidaExplorerInner key={props.restApiUrl} {...props} />;
+  const queryClient = new QueryClient();
+
+  return (
+    <QueryClientProvider key={props.restApiUrl} client={queryClient}>
+      <AiidaExplorerInner key={props.restApiUrl} {...props} />
+    </QueryClientProvider>
+  );
 }
 
 // full component handler for aiidaexplorer.
@@ -88,8 +100,6 @@ function AiidaExplorerInner({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [users, setUsers] = useState(null);
-  const [downloadFormats, setDownloadFormats] = useState(null);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -114,13 +124,23 @@ function AiidaExplorerInner({
     }
   }, [rootNodeId]);
 
-  useEffect(() => {
-    fetchUsers(restApiUrl).then(setUsers);
-  }, [restApiUrl]);
+  const {
+    data: users,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["users", restApiUrl],
+    queryFn: () => fetchUsers(restApiUrl),
+  });
 
-  useEffect(() => {
-    fetchDownloadFormats(restApiUrl).then(setDownloadFormats);
-  }, [restApiUrl]);
+  const {
+    data: downloadFormats,
+    isLoading: formatsLoading,
+    isError: formatsError,
+  } = useQuery({
+    queryKey: ["downloadFormats", restApiUrl],
+    queryFn: () => fetchDownloadFormats(restApiUrl),
+  });
 
   // --- Load graph whenever rootNodeId changes ---
   useEffect(() => {
