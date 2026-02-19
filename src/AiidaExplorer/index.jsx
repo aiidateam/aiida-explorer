@@ -18,9 +18,9 @@ import {
   fetchAPIFullTypes,
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
-import ErrorDisplay from "./components/Error";
 import Overlay, { OverlayProvider } from "./components/Overlay";
-import Spinner from "./components/Spinner";
+// import Spinner from "./components/Spinner";
+// import ErrorDisplay from "./components/Error";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
@@ -139,9 +139,6 @@ function AiidaExplorerInner({
     cacheTime: Infinity,
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
@@ -172,75 +169,65 @@ function AiidaExplorerInner({
     let mounted = true;
 
     async function loadGraph() {
-      setLoading(true);
-      setError(null);
+      const { nodes: fetchedNodes, edges: fetchedEdges } =
+        await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
 
-      try {
-        const { nodes: fetchedNodes, edges: fetchedEdges } =
-          await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
+      if (!mounted) return;
 
-        if (!mounted) return;
+      const nodesWithExtras = fetchedNodes.map((n) => ({
+        ...n,
+        data: { ...n.data, ...(extraNodeData[n.id] || {}) },
+      }));
 
-        const nodesWithExtras = fetchedNodes.map((n) => ({
-          ...n,
-          data: { ...n.data, ...(extraNodeData[n.id] || {}) },
-        }));
+      setNodes(nodesWithExtras);
+      setEdges(fetchedEdges);
 
-        setNodes(nodesWithExtras);
-        setEdges(fetchedEdges);
+      // Wait until next React render to ensure nodes are placed
+      requestAnimationFrame(() => {
+        const instance = reactFlowInstanceRef.current;
+        if (!instance) return;
 
-        // Wait until next React render to ensure nodes are placed
-        requestAnimationFrame(() => {
-          const instance = reactFlowInstanceRef.current;
-          if (!instance) return;
+        // zoom out
+        instance.fitView({ padding: 2.0 });
 
-          // zoom out
-          instance.fitView({ padding: 2.0 });
-
-          const centralNode = nodesWithExtras.find(
-            (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
-          );
-          if (centralNode?.position) {
-            let zoom = 1.22;
-            if (sizeCategory === "small") zoom = 0.5;
-            else if (sizeCategory === "medium") zoom = 0.8;
-            else if (sizeCategory === "large") zoom = 1.22;
-
-            instance.setCenter(
-              centralNode.position.x + 70,
-              centralNode.position.y,
-              { zoom, duration: 500 },
-            );
-            // zoom back in
-            setTimeout(() => {
-              instance.setCenter(
-                centralNode.position.x + 70,
-                centralNode.position.y + 0,
-                { zoom: zoom, duration: 500 },
-              );
-            }, 400);
-          }
-        });
-
-        const rootNode = nodesWithExtras.find(
+        const centralNode = nodesWithExtras.find(
           (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
         );
-        if (rootNode) {
-          const enrichedNode = await ensureNodeData(rootNode);
-          setSelectedNode(enrichedNode);
-        }
+        if (centralNode?.position) {
+          let zoom = 1.22;
+          if (sizeCategory === "small") zoom = 0.5;
+          else if (sizeCategory === "medium") zoom = 0.8;
+          else if (sizeCategory === "large") zoom = 1.22;
 
-        if (
-          stripSyntheticId(breadcrumbs[breadcrumbs.length - 1]?.id) !==
-          stripSyntheticId(rootNode?.id)
-        ) {
-          setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
+          instance.setCenter(
+            centralNode.position.x + 70,
+            centralNode.position.y,
+            { zoom, duration: 500 },
+          );
+          // zoom back in
+          setTimeout(() => {
+            instance.setCenter(
+              centralNode.position.x + 70,
+              centralNode.position.y + 0,
+              { zoom: zoom, duration: 500 },
+            );
+          }, 400);
         }
-      } catch (err) {
-        console.error("Failed to load graph:", err);
-        if (mounted) setError(err.message || "Failed to load node data");
-      } finally {
-        if (mounted) setLoading(false);
+      });
+
+      const rootNode = nodesWithExtras.find(
+        (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
+      );
+      if (rootNode) {
+        const enrichedNode = await ensureNodeData(rootNode);
+        setSelectedNode(enrichedNode);
+      }
+
+      if (
+        stripSyntheticId(breadcrumbs[breadcrumbs.length - 1]?.id) !==
+        stripSyntheticId(rootNode?.id)
+      ) {
+        setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
       }
     }
 
@@ -287,13 +274,7 @@ function AiidaExplorerInner({
 
   // --- Double click ---
   const handleDoubleClick = async (node) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      setRootNodeId(stripSyntheticId(node.id));
-    } finally {
-      setLoading(false);
-    }
+    setRootNodeId(stripSyntheticId(node.id));
   };
 
   // --- Breadcrumb click ---
@@ -353,37 +334,30 @@ function AiidaExplorerInner({
             minSize={10} // min % width
           >
             {/* Loading spinner */}
-            {loading && (
+            {/* {loading && (
               <div className="ae:absolute ae:bottom-2 ae:right-2 ae:z-50">
                 <Spinner />
               </div>
-            )}
+            )} */}
 
             {/* Error message */}
-            {error && (
+            {/* {error && (
               <div className="ae:absolute ae:bottom-2 ae:right-2 ae:z-50">
                 <ErrorDisplay
                   message={`Failed to find node UUID: ${rootNodeId}`}
                 />
               </div>
-            )}
+            )} */}
 
             {/* controls pane at the top. */}
             <TopControls
               onFindNode={() => setActiveOverlay("groupsview")}
               onGetLinkCounts={async () => {
-                if (loading || nodes.length === 0) return;
-                setLoading(true);
-                try {
-                  const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
-                  setNodes(updatedNodes);
-                } finally {
-                  setLoading(false);
-                }
+                const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
+                setNodes(updatedNodes);
               }}
               onHelp={() => setActiveOverlay("helpview")}
               onFullscreen={() => toggleFullScreen(appRef.current)}
-              isLoading={loading}
               disableGetCounts={nodes.length === 0}
               fullscreenToggle={fullscreenToggle}
             />
