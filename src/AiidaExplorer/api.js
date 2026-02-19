@@ -282,23 +282,7 @@ export async function fetchLinkCounts(restApiUrl, nodes = []) {
 }
 
 // wrapper function that determines what to fetch based on nodetype skipping if already fetched.
-// TODO - go to /api/v4/nodes/download_formats
-// + could do this on restApiUrl initialisation in main app?
-export async function smartFetchData(
-  restApiUrl,
-  node,
-  cachedExtras = {},
-  downloadFormats = null,
-) {
-  // Check cache first
-  const key = stripSyntheticId(node.id);
-  const cached = cachedExtras[key];
-
-  if (cached) {
-    console.debug(`${node.id} data is already cached - ${key}`);
-    return { ...node, data: { ...node.data, ...cached } };
-  }
-
+export async function smartFetchData(restApiUrl, node, downloadFormats = null) {
   let updatedData = { ...node.data };
 
   // Fetch Repolist (always)

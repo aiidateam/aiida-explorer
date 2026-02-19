@@ -143,7 +143,6 @@ function AiidaExplorerInner({
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [extraNodeData, setExtraNodeData] = useState({});
 
   const [activeOverlay, setActiveOverlay] = useState("groupsview");
 
@@ -176,7 +175,7 @@ function AiidaExplorerInner({
 
       const nodesWithExtras = fetchedNodes.map((n) => ({
         ...n,
-        data: { ...n.data, ...(extraNodeData[n.id] || {}) },
+        data: { ...n.data },
       }));
 
       setNodes(nodesWithExtras);
@@ -237,39 +236,27 @@ function AiidaExplorerInner({
     };
   }, [rootNodeId, restApiUrl, downloadFormats, users]);
 
-  // --- Cache + merge ---
   const ensureNodeData = async (node) => {
     const nodeId = stripSyntheticId(node.id);
-    const isCached = !!extraNodeData[nodeId];
-
-    const enrichedNode = await smartFetchData(
-      restApiUrl,
-      node,
-      extraNodeData,
-      downloadFormats,
-    );
-    setExtraNodeData((prev) => ({
-      ...prev,
-      [stripSyntheticId(node.id)]: {
-        ...(prev[stripSyntheticId(node.id)] || {}),
-        ...enrichedNode.data,
-      },
-    }));
-    return enrichedNode;
+    const enrichedData = await queryClient.fetchQuery({
+      queryKey: ["nodeDetails", restApiUrl, nodeId],
+      queryFn: () => smartFetchData(restApiUrl, node, downloadFormats),
+    });
+    return enrichedData;
   };
 
   // --- Single click on a node ---
   const handleNodeSelect = async (node) => {
     const enrichedNode = await ensureNodeData(node);
 
-    setSelectedNode(enrichedNode);
     setNodes((prev) =>
       prev.map((n) =>
         stripSyntheticId(n.id) === stripSyntheticId(node.id)
-          ? { ...n, data: { ...n.data, ...enrichedNode.data } }
+          ? { ...n, data: { ...enrichedNode.data } }
           : n,
       ),
     );
+    setSelectedNode(enrichedNode);
   };
 
   // --- Double click ---
