@@ -160,7 +160,7 @@ export async function fetchNodeRepoList(restApiUrl, nodeId) {
     .map((file) => ({
       name: file.name,
       downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
-        cleanId
+        cleanId,
       )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
     }));
 }
@@ -208,7 +208,7 @@ export async function fetchFiles(restApiUrl, nodeId, retrievedNodeId) {
       .map((file) => ({
         ...file,
         downloadUrl: `${restApiUrl}/nodes/${encodeURIComponent(
-          cleanRepoNodeId
+          cleanRepoNodeId,
         )}/repo/contents?filename="${encodeURIComponent(file.name)}"`,
       }));
 
@@ -271,7 +271,7 @@ export async function fetchLinkCounts(restApiUrl, nodes = []) {
             childCount,
           },
         };
-      })
+      }),
     );
 
     return updatedNodes;
@@ -288,7 +288,7 @@ export async function smartFetchData(
   restApiUrl,
   node,
   cachedExtras = {},
-  downloadFormats = null
+  downloadFormats = null,
 ) {
   // Check cache first
   const key = stripSyntheticId(node.id);
@@ -341,7 +341,7 @@ export async function smartFetchData(
     const formats = downloadFormats[typeKey] || [];
     updatedData.downloadByFormat = formats.reduce((acc, fmt) => {
       acc[fmt] = `${restApiUrl}/nodes/${encodeURIComponent(
-        cleanId
+        cleanId,
       )}/download?download_format=${encodeURIComponent(fmt)}`;
       return acc;
     }, {});
@@ -406,7 +406,7 @@ export async function fetchGraphByNodeId(restApiUrl, nodeId, lastNode) {
     allNodes.find((n) => n.data.pos === 0),
     allNodes.filter((n) => n.data.pos === 1),
     allNodes.filter((n) => n.data.pos === -1),
-    lastNode
+    lastNode,
   );
 
   return { nodes, edges };

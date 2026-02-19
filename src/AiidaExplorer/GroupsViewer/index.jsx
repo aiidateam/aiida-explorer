@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import TypeCheckboxTree from "./TypeCheckboxTree";
@@ -93,7 +94,6 @@ function sortGroups(groups) {
 // TODO - refactor, this is very messy atm.
 // TODO check the search feature - maybe wire into full_types api...?
 export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
-  const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [rawTableData, setRawTableData] = useState([]);
@@ -111,10 +111,14 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
     ? columnOrder.filter((c) => c !== "Created")
     : columnOrder;
 
-  // fetch groups once
-  useEffect(() => {
-    fetchGroups(restApiUrl).then(setGroups).catch(console.error);
-  }, [restApiUrl]);
+  const {
+    data: groups,
+    isLoading: groupsLoading,
+    isError: groupsError,
+  } = useQuery({
+    queryKey: ["groups", restApiUrl],
+    queryFn: () => fetchGroups(restApiUrl),
+  });
 
   // fetch nodes
   const fetchNodes = useCallback(
@@ -190,7 +194,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
         <div className="ae:font-medium ae:my-2 ae:mt-4">
           Filter by Defined Groups
         </div>
-        {sortGroups(groups).map((g) => (
+        {sortGroups(groups || []).map((g) => (
           <label
             key={g.label}
             className="ae:flex ae:items-start ae:gap-2 ae:mb-1"

@@ -3,6 +3,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import {
   useQuery,
+  useQueryClient,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import {
   fetchUsers,
   fetchDownloadFormats,
   stripSyntheticId,
+  fetchAPIFullTypes,
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
 import ErrorDisplay from "./components/Error";
@@ -44,7 +46,17 @@ function toggleFullScreen(el) {
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
  */
 export default function AiidaExplorer(props) {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        retryDelay: 1000,
+        staleTime: 1000 * 60 * 5, // 5 minute
+        cacheTime: 1000 * 60 * 60, // 1 hour
+        refetchOnWindowFocus: true,
+      },
+    },
+  });
 
   return (
     <QueryClientProvider key={props.restApiUrl} client={queryClient}>
@@ -78,6 +90,7 @@ function AiidaExplorerInner({
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
   const isWideScreen = useMediaQuery("(min-width: 1000px)");
+  const queryClient = useQueryClient();
 
   // dynamic container media querying.
   const sizeCategory = useContainerMediaQuery(appRef, [
@@ -86,6 +99,47 @@ function AiidaExplorerInner({
     { name: "medium", predicate: (w) => w >= 700 && w < 1200 },
     { name: "large", predicate: (w) => w >= 1200 },
   ]);
+
+  // Prefetching important hits
+  // --- Prefetch users and downloadFormats on mount ---
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["users"],
+      queryFn: () => fetchUsers(restApiUrl),
+    });
+
+    queryClient.prefetchQuery({
+      queryKey: ["downloadFormats"],
+      queryFn: () => fetchDownloadFormats(restApiUrl),
+    });
+
+    queryClient.prefetchQuery({
+      queryKey: ["nodeFullTypes"],
+      queryFn: () => fetchAPIFullTypes(restApiUrl),
+    });
+  }, [queryClient, restApiUrl]);
+
+  // --- Access cached data with useQuery ---
+  const { data: users } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => fetchUsers(restApiUrl),
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
+
+  const { data: downloadFormats } = useQuery({
+    queryKey: ["downloadFormats"],
+    queryFn: () => fetchDownloadFormats(restApiUrl),
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
+
+  const { data: fullTypes } = useQuery({
+    queryKey: ["nodeFullTypes"],
+    queryFn: () => fetchAPIFullTypes(restApiUrl),
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
 
   const [debugInfo, setDebugInfo] = useState({
     lastNodeFetchTime: null,
@@ -123,24 +177,6 @@ function AiidaExplorerInner({
       setActiveOverlay("groupsview");
     }
   }, [rootNodeId]);
-
-  const {
-    data: users,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["users", restApiUrl],
-    queryFn: () => fetchUsers(restApiUrl),
-  });
-
-  const {
-    data: downloadFormats,
-    isLoading: formatsLoading,
-    isError: formatsError,
-  } = useQuery({
-    queryKey: ["downloadFormats", restApiUrl],
-    queryFn: () => fetchDownloadFormats(restApiUrl),
-  });
 
   // --- Load graph whenever rootNodeId changes ---
   useEffect(() => {
