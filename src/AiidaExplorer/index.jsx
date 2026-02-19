@@ -21,7 +21,6 @@ import Breadcrumbs from "./Breadcrumbs";
 import ErrorDisplay from "./components/Error";
 import Overlay, { OverlayProvider } from "./components/Overlay";
 import Spinner from "./components/Spinner";
-import DebugViewer from "./DebugViewer";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
@@ -74,7 +73,6 @@ function AiidaExplorerInner({
   rootNode, // controlled value
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
-  debugMode = false,
   fullscreenToggle = false,
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
@@ -141,16 +139,6 @@ function AiidaExplorerInner({
     cacheTime: Infinity,
   });
 
-  const [debugInfo, setDebugInfo] = useState({
-    lastNodeFetchTime: null,
-    lastGraphFetchTime: null,
-    cacheHits: 0,
-    cacheMisses: 0,
-    nodesCount: 0,
-    edgesCount: 0,
-    breadcrumbsCount: 0,
-  });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -184,7 +172,6 @@ function AiidaExplorerInner({
     let mounted = true;
 
     async function loadGraph() {
-      const start = performance.now();
       setLoading(true);
       setError(null);
 
@@ -193,15 +180,6 @@ function AiidaExplorerInner({
           await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
 
         if (!mounted) return;
-
-        const fetchTime = performance.now() - start;
-        setDebugInfo((prev) => ({
-          ...prev,
-          lastGraphFetchTime: fetchTime.toFixed(2) + "ms",
-          nodesCount: fetchedNodes.length,
-          edgesCount: fetchedEdges.length,
-          breadcrumbsCount: breadcrumbs.length,
-        }));
 
         const nodesWithExtras = fetchedNodes.map((n) => ({
           ...n,
@@ -277,12 +255,6 @@ function AiidaExplorerInner({
     const nodeId = stripSyntheticId(node.id);
     const isCached = !!extraNodeData[nodeId];
 
-    setDebugInfo((prev) => ({
-      ...prev,
-      cacheHits: prev.cacheHits + (isCached ? 1 : 0),
-      cacheMisses: prev.cacheMisses + (!isCached ? 1 : 0),
-    }));
-
     const enrichedNode = await smartFetchData(
       restApiUrl,
       node,
@@ -301,14 +273,7 @@ function AiidaExplorerInner({
 
   // --- Single click on a node ---
   const handleNodeSelect = async (node) => {
-    const start = performance.now();
     const enrichedNode = await ensureNodeData(node);
-    const duration = performance.now() - start;
-
-    setDebugInfo((prev) => ({
-      ...prev,
-      lastNodeFetchTime: duration.toFixed(2) + "ms",
-    }));
 
     setSelectedNode(enrichedNode);
     setNodes((prev) =>
@@ -375,10 +340,6 @@ function AiidaExplorerInner({
             />
           )}
           {activeOverlay === "helpview" && <HelpViewer />}
-
-          {activeOverlay === "debugview" && (
-            <DebugViewer debugInfo={debugInfo} />
-          )}
         </Overlay>
 
         <PanelGroup
@@ -421,11 +382,9 @@ function AiidaExplorerInner({
                 }
               }}
               onHelp={() => setActiveOverlay("helpview")}
-              onDebug={() => setActiveOverlay("debugview")}
               onFullscreen={() => toggleFullScreen(appRef.current)}
               isLoading={loading}
               disableGetCounts={nodes.length === 0}
-              debugMode={debugMode}
               fullscreenToggle={fullscreenToggle}
             />
 
