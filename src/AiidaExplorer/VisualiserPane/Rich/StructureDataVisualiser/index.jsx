@@ -3,6 +3,8 @@ import { useMemo, useEffect, useState, useCallback } from "react";
 import { inv, multiply } from "mathjs";
 import StructureVisualizer from "mc-react-structure-visualizer";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { StructDownloadButton } from "./StructDownloadButton";
 import {
   formatLattice,
@@ -24,40 +26,32 @@ import { analyzeCrystal } from "../../../spglib";
 // TODO - move spglib rendering and calc into its own component and make this more of a wrapper/layout component.
 export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const aiidaCifPath = nodeData.downloadByFormat?.cif;
-
-  const [cifText, setCifText] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [spgLib, setSpgLib] = useState(null);
 
   // --- Fetch CIF text ---
-  const fetchData = useCallback(async () => {
-    if (!aiidaCifPath) {
-      setError("No CIF file available");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
+  const {
+    data: cifText,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["cifText", aiidaCifPath],
+    queryFn: async () => {
+      if (!aiidaCifPath) throw new Error("No CIF file available");
       const res = await fetch(aiidaCifPath);
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-      const text = await res.text();
-      setCifText(text);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [aiidaCifPath]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+      return res.text();
+    },
+    enabled: !!aiidaCifPath,
+    staleTime: 1000 * 60 * 10, // 10 min cache.
+    retry: 1,
+  });
 
   const hasDerived =
     nodeData.derived_properties &&
     Object.keys(nodeData.derived_properties).length > 0;
+
   const lattice = nodeData.attributes?.cell || null;
   const latticeLengths = lattice ? formatLattice(nodeData) : null;
   const volume = hasDerived
@@ -85,7 +79,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   // --- Reverse mapping for rendering ---
   const reverseKindMap = useMemo(
     () => Object.fromEntries(Object.entries(kindMap).map(([k, v]) => [v, k])),
-    [kindMap]
+    [kindMap],
   );
 
   // --- Prepare atomic sites table (Å positions) ---
@@ -100,7 +94,7 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
           "z [Å]": z.toFixed(4),
         };
       }),
-    [sites]
+    [sites],
   );
 
   // --- Density calculation ---
@@ -147,17 +141,17 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
     }));
   }, [spgLib, reverseKindMap]);
 
-  if (loading)
+  if (isLoading)
     return (
       <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
         <Spinner />
       </div>
     );
 
-  if (error)
+  if (isError)
     return (
       <div className="ae:w-full ae:min-h-[450px] ae:flex ae:items-center ae:justify-center">
-        <ErrorDisplay message={error} onRetry={fetchData} />
+        <ErrorDisplay message={isError} onRetry={refetch} />
       </div>
     );
 

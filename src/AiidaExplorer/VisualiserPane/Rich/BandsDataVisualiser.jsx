@@ -1,5 +1,6 @@
 import { BandsVisualiser } from "bands-visualiser";
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import CardContainer from "../../components/CardContainer";
 import ErrorDisplay from "../../components/Error";
@@ -7,36 +8,38 @@ import Spinner from "../../components/Spinner";
 
 export default function BandsDataVisualiser({ nodeData }) {
   const containerRef = useRef(null);
-  const [bandsDataArray, setBandsDataArray] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const aiidaBandsPath = nodeData.downloadByFormat?.json;
   const yAxisUnits = nodeData?.attributes?.units || "N/A";
 
-  useEffect(() => {
-    if (!aiidaBandsPath) return;
-
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const res = await fetch(aiidaBandsPath);
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-
-        const json = await res.json();
-        setBandsDataArray([{ bandsData: json }]);
-      } catch (err) {
-        console.error("Failed to fetch bands JSON:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const {
+    data: bandsDataArray,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["bandsJson", aiidaBandsPath],
+    queryFn: async () => {
+      if (!aiidaBandsPath) {
+        throw new Error("No bands JSON path available");
       }
-    };
 
-    fetchData();
-  }, [aiidaBandsPath]); // no warnings, safe
+      const res = await fetch(aiidaBandsPath);
+      if (!res.ok) {
+        throw new Error(`HTTP error: ${res.status}`);
+      }
+
+      const json = await res.json();
+
+      // match your original structure
+      return [{ bandsData: json }];
+    },
+    enabled: !!aiidaBandsPath,
+    staleTime: 5 * 60 * 1000, // 5 minutes fresh
+    gcTime: 5 * 60 * 1000, // cache lifetime (v5)
+    retry: 1,
+  });
 
   useEffect(() => {
     if (!containerRef.current || !bandsDataArray) return;
@@ -60,13 +63,13 @@ export default function BandsDataVisualiser({ nodeData }) {
         childrenClassName="ae:!p-0"
       >
         <div className="ae:w-full ae:h-[450px] ae:relative ae:flex ae:items-center ae:justify-center">
-          {loading && <Spinner />}
+          {isLoading && <Spinner />}
 
-          {error && !loading && (
-            <ErrorDisplay message={error} onRetry={() => {}} />
+          {error && !isLoading && (
+            <ErrorDisplay message={error} onRetry={refetch} />
           )}
 
-          {!loading && !error && bandsDataArray && (
+          {!isLoading && !error && bandsDataArray && (
             <div ref={containerRef} className="ae:absolute ae:inset-0 " />
           )}
         </div>
