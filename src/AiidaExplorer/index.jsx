@@ -111,10 +111,10 @@ function AiidaExplorerInner({
       queryFn: () => fetchDownloadFormats(restApiUrl),
     });
 
-    queryClient.prefetchQuery({
-      queryKey: ["nodeFullTypes"],
-      queryFn: () => fetchAPIFullTypes(restApiUrl),
-    });
+    // queryClient.prefetchQuery({
+    //   queryKey: ["nodeFullTypes"],
+    //   queryFn: () => fetchAPIFullTypes(restApiUrl),
+    // });
   }, [queryClient, restApiUrl]);
 
   // --- Access cached data with useQuery ---
@@ -132,12 +132,12 @@ function AiidaExplorerInner({
     cacheTime: Infinity,
   });
 
-  const { data: fullTypes } = useQuery({
-    queryKey: ["nodeFullTypes"],
-    queryFn: () => fetchAPIFullTypes(restApiUrl),
-    staleTime: Infinity,
-    cacheTime: Infinity,
-  });
+  // const { data: fullTypes } = useQuery({
+  //   queryKey: ["nodeFullTypes"],
+  //   queryFn: () => fetchAPIFullTypes(restApiUrl),
+  //   staleTime: Infinity,
+  //   cacheTime: Infinity,
+  // });
 
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
