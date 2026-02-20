@@ -2,18 +2,25 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import {
+  useQuery,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
+import {
   fetchGraphByNodeId,
   smartFetchData,
   fetchLinkCounts,
   fetchUsers,
   fetchDownloadFormats,
   stripSyntheticId,
+  fetchAPIFullTypes,
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
-import ErrorDisplay from "./components/Error";
 import Overlay, { OverlayProvider } from "./components/Overlay";
 import Spinner from "./components/Spinner";
-import DebugViewer from "./DebugViewer";
+import ErrorDisplay from "./components/Error";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
@@ -38,7 +45,23 @@ function toggleFullScreen(el) {
  * AiidaExplorer wrapper to reset internal state when restApiUrl changes
  */
 export default function AiidaExplorer(props) {
-  return <AiidaExplorerInner key={props.restApiUrl} {...props} />;
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        retryDelay: 1000,
+        staleTime: 1000 * 60 * 5, // 5 minute
+        cacheTime: 1000 * 60 * 60, // 1 hour
+        refetchOnWindowFocus: true,
+      },
+    },
+  });
+
+  return (
+    <QueryClientProvider key={props.restApiUrl} client={queryClient}>
+      <AiidaExplorerInner key={props.restApiUrl} {...props} />
+    </QueryClientProvider>
+  );
 }
 
 // full component handler for aiidaexplorer.
@@ -50,7 +73,6 @@ function AiidaExplorerInner({
   rootNode, // controlled value
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
-  debugMode = false,
   fullscreenToggle = false,
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
@@ -66,6 +88,7 @@ function AiidaExplorerInner({
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
   const isWideScreen = useMediaQuery("(min-width: 1000px)");
+  const queryClient = useQueryClient();
 
   // dynamic container media querying.
   const sizeCategory = useContainerMediaQuery(appRef, [
@@ -75,26 +98,51 @@ function AiidaExplorerInner({
     { name: "large", predicate: (w) => w >= 1200 },
   ]);
 
-  const [debugInfo, setDebugInfo] = useState({
-    lastNodeFetchTime: null,
-    lastGraphFetchTime: null,
-    cacheHits: 0,
-    cacheMisses: 0,
-    nodesCount: 0,
-    edgesCount: 0,
-    breadcrumbsCount: 0,
+  // Prefetching important hits
+  // --- Prefetch users and downloadFormats on mount ---
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["users"],
+      queryFn: () => fetchUsers(restApiUrl),
+    });
+
+    queryClient.prefetchQuery({
+      queryKey: ["downloadFormats"],
+      queryFn: () => fetchDownloadFormats(restApiUrl),
+    });
+
+    queryClient.prefetchQuery({
+      queryKey: ["nodeFullTypes"],
+      queryFn: () => fetchAPIFullTypes(restApiUrl),
+    });
+  }, [queryClient, restApiUrl]);
+
+  // --- Access cached data with useQuery ---
+  const { data: users } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => fetchUsers(restApiUrl),
+    staleTime: Infinity,
+    cacheTime: Infinity,
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { data: downloadFormats } = useQuery({
+    queryKey: ["downloadFormats"],
+    queryFn: () => fetchDownloadFormats(restApiUrl),
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
 
-  const [users, setUsers] = useState(null);
-  const [downloadFormats, setDownloadFormats] = useState(null);
+  const { data: fullTypes } = useQuery({
+    queryKey: ["nodeFullTypes"],
+    queryFn: () => fetchAPIFullTypes(restApiUrl),
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
+
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [extraNodeData, setExtraNodeData] = useState({});
 
   const [activeOverlay, setActiveOverlay] = useState("groupsview");
 
@@ -114,100 +162,78 @@ function AiidaExplorerInner({
     }
   }, [rootNodeId]);
 
-  useEffect(() => {
-    fetchUsers(restApiUrl).then(setUsers);
-  }, [restApiUrl]);
-
-  useEffect(() => {
-    fetchDownloadFormats(restApiUrl).then(setDownloadFormats);
-  }, [restApiUrl]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   // --- Load graph whenever rootNodeId changes ---
   useEffect(() => {
     if (!rootNodeId) return;
     let mounted = true;
 
+    setLoading(true);
+
     async function loadGraph() {
-      const start = performance.now();
-      setLoading(true);
-      setError(null);
+      const { nodes: fetchedNodes, edges: fetchedEdges } =
+        await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
 
-      try {
-        const { nodes: fetchedNodes, edges: fetchedEdges } =
-          await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
+      if (!mounted) return;
 
-        if (!mounted) return;
+      const nodesWithExtras = fetchedNodes.map((n) => ({
+        ...n,
+        data: { ...n.data },
+      }));
 
-        const fetchTime = performance.now() - start;
-        setDebugInfo((prev) => ({
-          ...prev,
-          lastGraphFetchTime: fetchTime.toFixed(2) + "ms",
-          nodesCount: fetchedNodes.length,
-          edgesCount: fetchedEdges.length,
-          breadcrumbsCount: breadcrumbs.length,
-        }));
+      setNodes(nodesWithExtras);
+      setEdges(fetchedEdges);
 
-        const nodesWithExtras = fetchedNodes.map((n) => ({
-          ...n,
-          data: { ...n.data, ...(extraNodeData[n.id] || {}) },
-        }));
+      // Wait until next React render to ensure nodes are placed
+      requestAnimationFrame(() => {
+        const instance = reactFlowInstanceRef.current;
+        if (!instance) return;
 
-        setNodes(nodesWithExtras);
-        setEdges(fetchedEdges);
+        // zoom out
+        instance.fitView({ padding: 2.0 });
 
-        // Wait until next React render to ensure nodes are placed
-        requestAnimationFrame(() => {
-          const instance = reactFlowInstanceRef.current;
-          if (!instance) return;
-
-          // zoom out
-          instance.fitView({ padding: 2.0 });
-
-          const centralNode = nodesWithExtras.find(
-            (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
-          );
-          if (centralNode?.position) {
-            let zoom = 1.22;
-            if (sizeCategory === "small") zoom = 0.5;
-            else if (sizeCategory === "medium") zoom = 0.8;
-            else if (sizeCategory === "large") zoom = 1.22;
-
-            instance.setCenter(
-              centralNode.position.x + 70,
-              centralNode.position.y,
-              { zoom, duration: 500 },
-            );
-            // zoom back in
-            setTimeout(() => {
-              instance.setCenter(
-                centralNode.position.x + 70,
-                centralNode.position.y + 0,
-                { zoom: zoom, duration: 500 },
-              );
-            }, 400);
-          }
-        });
-
-        const rootNode = nodesWithExtras.find(
+        const centralNode = nodesWithExtras.find(
           (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
         );
-        if (rootNode) {
-          const enrichedNode = await ensureNodeData(rootNode);
-          setSelectedNode(enrichedNode);
-        }
+        if (centralNode?.position) {
+          let zoom = 1.22;
+          if (sizeCategory === "small") zoom = 0.5;
+          else if (sizeCategory === "medium") zoom = 0.8;
+          else if (sizeCategory === "large") zoom = 1.22;
 
-        if (
-          stripSyntheticId(breadcrumbs[breadcrumbs.length - 1]?.id) !==
-          stripSyntheticId(rootNode?.id)
-        ) {
-          setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
+          instance.setCenter(
+            centralNode.position.x + 70,
+            centralNode.position.y,
+            { zoom, duration: 500 },
+          );
+          // zoom back in
+          setTimeout(() => {
+            instance.setCenter(
+              centralNode.position.x + 70,
+              centralNode.position.y + 0,
+              { zoom: zoom, duration: 500 },
+            );
+          }, 400);
         }
-      } catch (err) {
-        console.error("Failed to load graph:", err);
-        if (mounted) setError(err.message || "Failed to load node data");
-      } finally {
-        if (mounted) setLoading(false);
+      });
+
+      const rootNode = nodesWithExtras.find(
+        (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
+      );
+      if (rootNode) {
+        const enrichedNode = await ensureNodeData(rootNode);
+        setSelectedNode(enrichedNode);
       }
+
+      if (
+        stripSyntheticId(breadcrumbs[breadcrumbs.length - 1]?.id) !==
+        stripSyntheticId(rootNode?.id)
+      ) {
+        setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
+      }
+      setLoading(false);
     }
 
     loadGraph();
@@ -216,63 +242,32 @@ function AiidaExplorerInner({
     };
   }, [rootNodeId, restApiUrl, downloadFormats, users]);
 
-  // --- Cache + merge ---
   const ensureNodeData = async (node) => {
     const nodeId = stripSyntheticId(node.id);
-    const isCached = !!extraNodeData[nodeId];
-
-    setDebugInfo((prev) => ({
-      ...prev,
-      cacheHits: prev.cacheHits + (isCached ? 1 : 0),
-      cacheMisses: prev.cacheMisses + (!isCached ? 1 : 0),
-    }));
-
-    const enrichedNode = await smartFetchData(
-      restApiUrl,
-      node,
-      extraNodeData,
-      downloadFormats,
-    );
-    setExtraNodeData((prev) => ({
-      ...prev,
-      [stripSyntheticId(node.id)]: {
-        ...(prev[stripSyntheticId(node.id)] || {}),
-        ...enrichedNode.data,
-      },
-    }));
-    return enrichedNode;
+    const enrichedData = await queryClient.fetchQuery({
+      queryKey: ["nodeDetails", restApiUrl, nodeId],
+      queryFn: () => smartFetchData(restApiUrl, node, downloadFormats),
+    });
+    return enrichedData;
   };
 
   // --- Single click on a node ---
   const handleNodeSelect = async (node) => {
-    const start = performance.now();
     const enrichedNode = await ensureNodeData(node);
-    const duration = performance.now() - start;
 
-    setDebugInfo((prev) => ({
-      ...prev,
-      lastNodeFetchTime: duration.toFixed(2) + "ms",
-    }));
-
-    setSelectedNode(enrichedNode);
     setNodes((prev) =>
       prev.map((n) =>
         stripSyntheticId(n.id) === stripSyntheticId(node.id)
-          ? { ...n, data: { ...n.data, ...enrichedNode.data } }
+          ? { ...n, data: { ...enrichedNode.data } }
           : n,
       ),
     );
+    setSelectedNode(enrichedNode);
   };
 
   // --- Double click ---
   const handleDoubleClick = async (node) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      setRootNodeId(stripSyntheticId(node.id));
-    } finally {
-      setLoading(false);
-    }
+    setRootNodeId(stripSyntheticId(node.id));
   };
 
   // --- Breadcrumb click ---
@@ -319,10 +314,6 @@ function AiidaExplorerInner({
             />
           )}
           {activeOverlay === "helpview" && <HelpViewer />}
-
-          {activeOverlay === "debugview" && (
-            <DebugViewer debugInfo={debugInfo} />
-          )}
         </Overlay>
 
         <PanelGroup
@@ -355,21 +346,12 @@ function AiidaExplorerInner({
             <TopControls
               onFindNode={() => setActiveOverlay("groupsview")}
               onGetLinkCounts={async () => {
-                if (loading || nodes.length === 0) return;
-                setLoading(true);
-                try {
-                  const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
-                  setNodes(updatedNodes);
-                } finally {
-                  setLoading(false);
-                }
+                const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
+                setNodes(updatedNodes);
               }}
               onHelp={() => setActiveOverlay("helpview")}
-              onDebug={() => setActiveOverlay("debugview")}
               onFullscreen={() => toggleFullScreen(appRef.current)}
-              isLoading={loading}
               disableGetCounts={nodes.length === 0}
-              debugMode={debugMode}
               fullscreenToggle={fullscreenToggle}
             />
 

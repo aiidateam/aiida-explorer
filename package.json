@@ -32,6 +32,7 @@
   ],
   "dependencies": {
     "@spglib/moyo-wasm": "^0.7.1",
+    "@tanstack/react-query": "^5.90.21",
     "@uiw/react-json-view": "^2.0.0-alpha.39",
     "bands-visualiser": "^0.0.2",
     "brillouinzone-visualizer": "^0.4.3",
