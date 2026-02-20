@@ -19,8 +19,8 @@ import {
 } from "./api";
 import Breadcrumbs from "./Breadcrumbs";
 import Overlay, { OverlayProvider } from "./components/Overlay";
-// import Spinner from "./components/Spinner";
-// import ErrorDisplay from "./components/Error";
+import Spinner from "./components/Spinner";
+import ErrorDisplay from "./components/Error";
 import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
@@ -162,10 +162,15 @@ function AiidaExplorerInner({
     }
   }, [rootNodeId]);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
   // --- Load graph whenever rootNodeId changes ---
   useEffect(() => {
     if (!rootNodeId) return;
     let mounted = true;
+
+    setLoading(true);
 
     async function loadGraph() {
       const { nodes: fetchedNodes, edges: fetchedEdges } =
@@ -228,6 +233,7 @@ function AiidaExplorerInner({
       ) {
         setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
       }
+      setLoading(false);
     }
 
     loadGraph();
@@ -321,20 +327,20 @@ function AiidaExplorerInner({
             minSize={10} // min % width
           >
             {/* Loading spinner */}
-            {/* {loading && (
+            {loading && (
               <div className="ae:absolute ae:bottom-2 ae:right-2 ae:z-50">
                 <Spinner />
               </div>
-            )} */}
+            )}
 
             {/* Error message */}
-            {/* {error && (
+            {error && (
               <div className="ae:absolute ae:bottom-2 ae:right-2 ae:z-50">
                 <ErrorDisplay
                   message={`Failed to find node UUID: ${rootNodeId}`}
                 />
               </div>
-            )} */}
+            )}
 
             {/* controls pane at the top. */}
             <TopControls
