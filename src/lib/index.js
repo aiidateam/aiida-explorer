@@ -9,4 +9,5 @@ export { default as StructureDataVisualiser } from "../AiidaExplorer/VisualiserP
 export { default as KpointsDataVisualiser } from "../AiidaExplorer/VisualiserPane/Rich/KpointsDataVisualiser";
 export { default as BandsDataVisualiser } from "../AiidaExplorer/VisualiserPane/Rich/BandsDataVisualiser.jsx";
 export { default as CalcJobVisualiser } from "../AiidaExplorer/VisualiserPane/Rich/CalcJobVisualiser.jsx";
-export { default as UpfDataVisualiser } from "../AiidaExplorer/VisualiserPane/Rich/UpfDataVisualiser.jsx";
+
+export { default as UpfDataVisualiser} from "../AiidaExplorer/VisualiserPane/Rich/UpfDataVisualiser"
