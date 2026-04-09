@@ -17,11 +17,24 @@ const RICH_TYPES = {
   CalcJobNode: CalcJobVisualiser,
 };
 
+/**
+ * Returns the appropriate visualiser component for a node.
+ *
+ * Selection priority:
+ * 1. Exact match via RICH_TYPES
+ * 2. Fallback pattern matching (e.g. labels ending with "StructureData")
+ *
+ * @param {string} restApiUrl
+ * @param {Object} selectedNode
+ * @returns {JSX.Element|null}
+ */
 function geRichVisualiser(restApiUrl, selectedNode) {
-  if (!selectedNode) return null;
-  if (!selectedNode.data) return null;
+  if (!selectedNode?.data) return null;
   const { label, aiida } = selectedNode.data;
-  const VisualiserComponent = RICH_TYPES[label];
+  let VisualiserComponent = RICH_TYPES[label];
+  if (!VisualiserComponent && label?.endsWith("StructureData")) {
+    VisualiserComponent = StructureDataVisualiser;
+  }
   if (VisualiserComponent) {
     return (
       <VisualiserComponent
@@ -44,7 +57,7 @@ export default function VisualiserPane({
   // memo the richVisualiser to only update if state changes - perf ++
   const richVisualiser = useMemo(
     () => geRichVisualiser(restApiUrl, selectedNode),
-    [restApiUrl, selectedNode?.data?.label, selectedNode?.data?.aiida?.uuid]
+    [restApiUrl, selectedNode?.data?.label, selectedNode?.data?.aiida?.uuid],
   );
   const [activeTab, setActiveTab] = useState(richVisualiser ? "rich" : "raw");
 
