@@ -3,8 +3,9 @@
 import { spawn, spawnSync } from "child_process";
 import { select } from "@inquirer/prompts";
 import open from "open";
+import net from "net";
 
-const REST_PORT = 5000;
+const REST_PORT = await findFreePort(5000);
 const FRONTEND_URL = "https://aiidateam.github.io/aiida-explorer/";
 
 function fail(msg) {
@@ -30,6 +31,28 @@ function checkRestApiDeps() {
   if (res.status !== 0) {
     fail("Missing AiiDA REST API dependencies.");
   }
+}
+
+function isPortFree(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+
+    server.once("error", () => resolve(false));
+
+    server.once("listening", () => {
+      server.close();
+      resolve(true);
+    });
+
+    server.listen(port, "127.0.0.1");
+  });
+}
+
+async function findFreePort(start = 5000, max = 5100) {
+  for (let p = start; p <= max; p++) {
+    if (await isPortFree(p)) return p;
+  }
+  throw new Error("No free ports found");
 }
 
 /* ---------------------------
@@ -77,11 +100,17 @@ async function selectProfile(profiles, active) {
 ---------------------------- */
 
 function startRestApi(profile) {
-  console.log(`Starting REST API (${profile})...`);
+  console.log(`Starting REST API (${profile}) on ${REST_PORT}...`);
 
-  return spawn("verdi", ["-p", profile, "restapi", "--port", REST_PORT], {
-    stdio: "inherit",
-  });
+  return spawn("verdi", [
+    "-p",
+    profile,
+    "restapi",
+    "--port",
+    REST_PORT,
+    "--verbosity",
+    "error",
+  ]);
 }
 
 /* ---------------------------
