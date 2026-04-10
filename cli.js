@@ -1,58 +1,39 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "child_process";
-import open from "open";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
 import { select } from "@inquirer/prompts";
+import open from "open";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const FRONTEND_PORT = 4173;
 const REST_PORT = 5000;
-
-/* ---------------------------
-   PRE-FLIGHT CHECKS
----------------------------- */
+const FRONTEND_URL = "https://aiidateam.github.io/aiida-explorer/";
 
 function fail(msg) {
   console.error(`\n${msg}\n`);
   process.exit(1);
 }
 
-function checkVerdi() {
-  const res = spawnSync("verdi", ["--help"], { encoding: "utf-8" });
+/* ---------------------------
+   CHECKS
+---------------------------- */
 
-  if (res.error) {
-    fail('"verdi" not found. Is AiiDA installed and activated?');
-  }
+function checkVerdi() {
+  const res = spawnSync("verdi", ["--help"]);
+  if (res.error) fail('"verdi" not found.');
 }
 
 function checkRestApiDeps() {
-  const res = spawnSync(
-    "python",
-    ["-c", "from aiida.restapi.run_api import run_api"],
-    { encoding: "utf-8" },
-  );
+  const res = spawnSync("python", [
+    "-c",
+    "from aiida.restapi.run_api import run_api",
+  ]);
 
   if (res.status !== 0) {
-    fail(
-      "Missing AiiDA REST API dependencies.\n\nFix:\n pip install aiida-core[rest-api]",
-    );
-  }
-}
-
-function checkFrontend() {
-  const distPath = path.join(__dirname, "dist");
-
-  if (!fs.existsSync(distPath)) {
-    fail('Frontend build missing. Expected "dist/" in package.');
+    fail("Missing AiiDA REST API dependencies.");
   }
 }
 
 /* ---------------------------
-   PROFILE SELECTION
+   PROFILES
 ---------------------------- */
 
 function getProfiles() {
@@ -60,31 +41,27 @@ function getProfiles() {
     encoding: "utf-8",
   });
 
-  if (res.status !== 0) {
-    fail("Failed to fetch AiiDA profiles");
-  }
-
-  const lines = res.stdout.split("\n");
+  if (res.status !== 0) fail("Failed to list profiles.");
 
   let active = null;
 
-  const profiles = lines
+  const profiles = res.stdout
+    .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith("Report"))
+    .filter(Boolean)
     .map((l) => {
       if (l.startsWith("*")) {
         active = l.replace(/^\*\s*/, "");
         return active;
       }
-      return l.replace(/^\*\s*/, "");
-    })
-    .filter(Boolean);
+      return l;
+    });
 
   return { profiles, active };
 }
 
 async function selectProfile(profiles, active) {
-  return await select({
+  return select({
     message: "Select AiiDA profile",
     choices: profiles.map((p) => ({
       name: p,
@@ -96,41 +73,34 @@ async function selectProfile(profiles, active) {
 }
 
 /* ---------------------------
-   STARTUP
+   REST API
 ---------------------------- */
 
-let restProc = null;
-let frontendProc = null;
-
 function startRestApi(profile) {
-  console.log(`Starting AiiDA REST API (profile: ${profile})...`);
+  console.log(`Starting REST API (${profile})...`);
 
-  const proc = spawn("verdi", ["-p", profile, "restapi", "--port", REST_PORT], {
+  return spawn("verdi", ["-p", profile, "restapi", "--port", REST_PORT], {
     stdio: "inherit",
   });
-
-  proc.on("exit", (code) => {
-    console.log(`\nREST API exited with code ${code}`);
-  });
-
-  return proc;
 }
 
-function startFrontend() {
-  console.log("🌐 Starting frontend (Vite preview)...");
+/* ---------------------------
+   WAIT FOR API
+---------------------------- */
 
-  const viteBin = path.join(__dirname, "node_modules", ".bin", "vite");
+async function waitForApi() {
+  const url = `http://localhost:${REST_PORT}/api/v4`;
 
-  const proc = spawn(viteBin, ["preview", "--port", FRONTEND_PORT], {
-    cwd: __dirname,
-    stdio: "inherit",
-  });
+  for (let i = 0; i < 30; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return url;
+    } catch {}
 
-  proc.on("exit", (code) => {
-    console.log(`\nFrontend exited with code ${code}`);
-  });
+    await new Promise((r) => setTimeout(r, 1000));
+  }
 
-  return proc;
+  fail("REST API did not start in time.");
 }
 
 /* ---------------------------
@@ -140,31 +110,22 @@ function startFrontend() {
 async function main() {
   checkVerdi();
   checkRestApiDeps();
-  checkFrontend();
 
   const { profiles, active } = getProfiles();
   const selectedProfile = await selectProfile(profiles, active);
 
-  restProc = startRestApi(selectedProfile);
-  frontendProc = startFrontend();
+  const restProc = startRestApi(selectedProfile);
 
-  setTimeout(() => {
-    const apiUrl = `http://localhost:${REST_PORT}/api/v4`;
+  const apiUrl = await waitForApi();
 
-    const url =
-      `http://localhost:${FRONTEND_PORT}/` +
-      `?api_url=${encodeURIComponent(apiUrl)}`;
+  const frontend = FRONTEND_URL + `?api_url=${encodeURIComponent(apiUrl)}`;
 
-    console.log("\nOpening browser...\n");
-    open(url);
-  }, 5000);
+  console.log("\nOpening browser...");
+  await open(frontend);
 
   function shutdown() {
     console.log("\nShutting down...");
-
-    if (restProc) restProc.kill("SIGTERM");
-    if (frontendProc) frontendProc.kill("SIGTERM");
-
+    restProc.kill("SIGTERM");
     process.exit(0);
   }
 

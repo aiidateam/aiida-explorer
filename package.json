@@ -1,6 +1,6 @@
 {
   "name": "aiida-explorer",
-  "version": "0.3.11",
+  "version": "0.4.3",
   "homepage": "https://aiidateam.github.io/aiida-explorer",
   "repository": {
     "type": "git",
@@ -44,6 +44,7 @@
     "inquirer": "^13.4.1",
     "mathjs": "^15.1.0",
     "mc-react-structure-visualizer": "^0.8.3",
+    "open": "^11.0.0",
     "plotly.js-basic-dist-min": "^3.1.2",
     "react-json-view-lite": "^2.5.0",
     "react-resizable-panels": "^3.0.6",
@@ -68,7 +69,7 @@
     "rollup-plugin-visualizer": "^6.0.4",
     "size-limit": "^11.2.0",
     "tailwindcss": "^4.2.2",
-    "vite": "^8.0.5",
+    "vite": "^8.0.8",
     "vite-plugin-lib-inject-css": "^2.2.2"
   }
 }
