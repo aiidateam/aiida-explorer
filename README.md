@@ -31,6 +31,12 @@ and explore it at https://aiidateam.github.io/aiida-explorer/?api_url=http://127
 
 (Note that some browser extensions might block access to localhost, and should be disabled for this to work).
 
+Alternatively a cli tool is avaible that allows provides a interface to select the profile to explore.
+
+```bash
+npx aiida-explorer # requires node https://nodejs.org/en/download
+```
+
 ## Installation and usage
 
 Install via
