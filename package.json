@@ -44,6 +44,7 @@
     "inquirer": "^13.4.1",
     "mathjs": "^15.1.0",
     "mc-react-structure-visualizer": "^0.8.3",
+    "open": "^11.0.0",
     "plotly.js-basic-dist-min": "^3.1.2",
     "react-json-view-lite": "^2.5.0",
     "react-resizable-panels": "^3.0.6",

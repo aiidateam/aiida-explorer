@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "child_process";
-import open from "open";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { select } from "@inquirer/prompts";
+
+let open;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -138,6 +139,8 @@ function startFrontend() {
 ---------------------------- */
 
 async function main() {
+  open = (await import("open")).default;
+
   checkVerdi();
   checkRestApiDeps();
   checkFrontend();
