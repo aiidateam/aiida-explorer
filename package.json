@@ -50,7 +50,7 @@
     "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^7.9.4",
     "reactflow": "^11.11.4",
-    "vite": "^8.0.8"
+    "sirv": "^3.0.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -70,6 +70,7 @@
     "rollup-plugin-visualizer": "^6.0.4",
     "size-limit": "^11.2.0",
     "tailwindcss": "^4.2.2",
+    "vite": "^8.0.8",
     "vite-plugin-lib-inject-css": "^2.2.2"
   }
 }

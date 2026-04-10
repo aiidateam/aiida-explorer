@@ -5,6 +5,8 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { select } from "@inquirer/prompts";
+import sirv from "sirv";
+import { createServer } from "http";
 
 let open;
 
@@ -118,20 +120,24 @@ function startRestApi(profile) {
 }
 
 function startFrontend() {
-  console.log("Starting frontend (Vite preview)...");
+  console.log("Starting frontend...");
 
-  const viteBin = path.join(__dirname, "node_modules", ".bin", "vite");
+  const distPath = path.join(__dirname, "dist", "app");
 
-  const proc = spawn(viteBin, ["preview", "--port", FRONTEND_PORT], {
-    cwd: __dirname,
-    stdio: "ignore",
+  const serve = sirv(distPath, {
+    single: true,
+    gzip: true,
   });
 
-  proc.on("exit", (code) => {
-    console.log(`\nFrontend exited with code ${code}`);
+  const server = createServer((req, res) => {
+    serve(req, res);
   });
 
-  return proc;
+  server.listen(4173, () => {
+    console.log("Frontend ready: http://localhost:4173");
+  });
+
+  return server;
 }
 
 /* ---------------------------
