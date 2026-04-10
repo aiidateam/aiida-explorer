@@ -118,13 +118,13 @@ function startRestApi(profile) {
 }
 
 function startFrontend() {
-  console.log("🌐 Starting frontend (Vite preview)...");
+  console.log("Starting frontend (Vite preview)...");
 
   const viteBin = path.join(__dirname, "node_modules", ".bin", "vite");
 
   const proc = spawn(viteBin, ["preview", "--port", FRONTEND_PORT], {
     cwd: __dirname,
-    stdio: "inherit",
+    stdio: "ignore",
   });
 
   proc.on("exit", (code) => {
@@ -151,13 +151,16 @@ async function main() {
   restProc = startRestApi(selectedProfile);
   frontendProc = startFrontend();
 
+  console.log("\n---------------------");
+  console.log("\nWaiting for backend to initialise");
+  console.log("\n---------------------");
+
   setTimeout(() => {
     const apiUrl = `http://localhost:${REST_PORT}/api/v4`;
 
     const url =
       `http://localhost:${FRONTEND_PORT}/` +
       `?api_url=${encodeURIComponent(apiUrl)}`;
-
     console.log("\nOpening browser...\n");
     open(url);
   }, 5000);
