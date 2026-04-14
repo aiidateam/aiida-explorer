@@ -32,6 +32,8 @@ export default defineConfig(({ mode }) => {
             ...Object.keys(packageJson.peerDependencies),
             "react/jsx-runtime",
             "react/jsx-dev-runtime",
+            "react-dom",
+            "reactflow", // apparently reactflow needs to be here?
           ],
         },
         outDir: "dist/lib",
