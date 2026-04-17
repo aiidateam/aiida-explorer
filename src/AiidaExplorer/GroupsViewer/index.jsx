@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
@@ -8,6 +14,8 @@ import DataTable from "../components/DataTable";
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";
 import useMediaQuery from "../hooks/useMediaQuery";
+
+import VirtualizedTable from "../components/VirtualizedTable";
 
 // column label mappings
 const columnLabels = {
@@ -101,7 +109,9 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchNode, setSearchNode] = useState(""); // new state for search
-  const limit = 200;
+  const limit = 5000;
+
+  const isFetchingRef = useRef(false);
 
   // responsive
   const isSmallScreen = useMediaQuery("(max-width: 790px)");
@@ -122,9 +132,15 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
 
   // fetch nodes
   const fetchNodes = useCallback(
-    async (offsetValue = 0, customLimit = limit) => {
+    async (customOffset = null, customLimit = limit) => {
+      if (isFetchingRef.current) return;
+
+      isFetchingRef.current = true;
       setLoading(true);
       setError(null);
+
+      const effectiveOffset = customOffset ?? offset;
+
       try {
         const nodeTypes = getFlattenedNodeTypes(selectedTypes, aiidaTypes);
 
@@ -132,30 +148,32 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           groups: selectedGroups,
           nodeTypes,
           limit: customLimit,
-          offset: offsetValue,
+          offset: effectiveOffset,
         });
 
         const result = await fetchFromQueryBuilder(restApiUrl, postMsg);
         const nodes = result.node || [];
 
         setRawTableData((prev) =>
-          offsetValue === 0 ? nodes : [...prev, ...nodes],
+          effectiveOffset === 0 ? nodes : [...prev, ...nodes],
         );
-        setOffset(offsetValue + nodes.length);
+
+        setOffset(effectiveOffset + customLimit);
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to fetch nodes");
       } finally {
         setLoading(false);
+        isFetchingRef.current = false;
       }
     },
-    [restApiUrl, selectedGroups, selectedTypes],
+    [restApiUrl, selectedGroups, selectedTypes, offset],
   );
 
   // auto-fetch initial nodes
   useEffect(() => {
     if (rawTableData.length === 0) {
-      fetchNodes(0, 1000);
+      fetchNodes(0, 5000);
     }
   }, [groups, rawTableData.length, fetchNodes]);
 
@@ -171,6 +189,8 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
       setSearchNode(""); // clear input after navigation
     }
   };
+
+  console.log("columnstorender,", columnsToRender);
 
   return (
     <div className="ae:flex ae:flex-col ae:lg:flex-row ae:gap-4 ae:overflow-auto ae:w-full ae:items-start">
@@ -231,7 +251,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
                 onClick={() => fetchNodes(offset)}
                 className="explorerButton ae:bg-slate-500 ae:hover:bg-slate-700 ae:text-white"
               >
-                Load next 200
+                Load next 5000
               </button>
             )}
           </div>
@@ -268,20 +288,29 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
         )}
 
         {!loading && !error && (
-          <DataTable
-            columns={columnsToRender}
-            data={tableData}
-            maxWidth={"3000px"}
-            sortableCols={["Unique ID", "Label", "Type", "Created", "Modified"]}
-            renderIfMissing
-            breakableCols={[
-              "Unique ID",
-              "Label",
-              "Type",
-              "Created",
-              "Modified",
-            ]}
-          />
+          <div className="pt-2">
+            <VirtualizedTable
+              columns={columnsToRender}
+              data={tableData}
+              maxWidth={"3000px"}
+              sortableCols={[
+                "Unique ID",
+                "Label",
+                "Type",
+                "Created",
+                "Modified",
+              ]}
+              renderIfMissing
+              columnWidths={{
+                "Unique ID": 25,
+                Label: 15,
+                Type: 15,
+                Created: 12,
+                Modified: 12,
+                "": 7,
+              }}
+            />
+          </div>
         )}
       </div>
     </div>
