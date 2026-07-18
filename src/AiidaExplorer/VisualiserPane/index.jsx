@@ -86,7 +86,7 @@ export default function VisualiserPane({
     <div className="ae:w-full ae:h-full ae:flex ae:flex-col ae:overflow-hidden">
       {/* Shortened Metadata */}
       <div className="ae:px-4 ae:py-3 ae:md:py-2 ae:bg-slate-50">
-        <FormattedMetaData nodeData={selectedNode.data} userData={userData} />
+        <FormattedMetaData nodeData={selectedNode.data} userData={userData} restApiUrl={restApiUrl} />
       </div>
 
       {/* Tabs */}

@@ -113,6 +113,68 @@ export async function fetchFromQueryBuilder(restApiUrl, postMsg) {
 }
 
 // --------------------------
+// NODE GROUPS
+// --------------------------
+
+/**
+ * Fetch all groups that a node belongs to.
+ *
+ * Uses `uuid: {"like": "PREFIX%"}` instead of `uuid: {"eq": ...}` because
+ * the AiiDA REST API returns 500 on `eq` filters inside join queries.
+ *
+ * @param {string} restApiUrl
+ * @param {string} uuid
+ * @returns {Promise<Array<{label: string, type_string: string}>>}
+ */
+export async function fetchNodeGroups(restApiUrl, uuid) {
+  if (!restApiUrl || !uuid) return [];
+  const prefix = uuid.split("-")[0];
+  const query = {
+    path: [
+      {
+        entity_type: "",
+        orm_base: "node",
+        tag: "node",
+        joining_keyword: null,
+        joining_value: null,
+        edge_tag: null,
+        outerjoin: false,
+      },
+      {
+        entity_type: "group.core",
+        orm_base: "group",
+        tag: "g",
+        joining_keyword: "with_node",
+        joining_value: "node",
+        edge_tag: "e",
+        outerjoin: false,
+      },
+    ],
+    filters: {
+      node: { uuid: { like: `${prefix}%` } },
+      g: { type_string: { like: "%" } },
+      e: {},
+    },
+    project: { g: ["label", "type_string"], node: ["uuid"], e: [] },
+    project_map: {},
+    order_by: [],
+    limit: 100,
+    offset: 0,
+    distinct: true,
+  };
+
+  const result = await fetchFromQueryBuilder(restApiUrl, query);
+  const groups = result.g || [];
+  const nodes = result.node || [];
+
+  // The result arrays are parallel — pair them and filter to exact UUID match
+  // Exclude import groups (e.g. "core.import") as they are auto-generated noise
+  return groups
+    .filter((g, i) => nodes[i]?.uuid === uuid && !g.type_string?.startsWith("core.import"))
+    .map((g) => ({ label: g.label, type_string: g.type_string }));
+}
+
+// --------------------------
 // NODE API HITS
 // --------------------------
 

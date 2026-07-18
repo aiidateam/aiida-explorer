@@ -1,9 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function FormattedMetaData({ nodeData, userData }) {
+import { fetchNodeGroups } from "../api";
+
+export default function FormattedMetaData({ nodeData, userData, restApiUrl }) {
   const users = userData?.users || [];
   const aiida = nodeData?.aiida;
   const [isOpen, setIsOpen] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!aiida?.uuid || !restApiUrl) {
+      setGroups([]);
+      return;
+    }
+
+    let cancelled = false;
+    setGroupsLoading(true);
+
+    fetchNodeGroups(restApiUrl, aiida.uuid).then((result) => {
+      if (!cancelled) {
+        setGroups(result);
+        setGroupsLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [restApiUrl, aiida?.uuid]);
 
   if (!aiida) {
     return (
@@ -68,6 +93,23 @@ export default function FormattedMetaData({ nodeData, userData }) {
               )}
             </div>
           )}
+          <div>
+              <span className="ae:font-medium">Groups:</span>{" "}
+              {groupsLoading && "loading..."}
+              {!groupsLoading && groups.length === 0 && "None"}
+              {!groupsLoading &&
+                groups.map((g, i) => (
+                  <span key={g.label}>
+                    {g.label}
+                    {g.type_string !== "core" && (
+                      <span className="ae:text-gray-500">
+                        {" "}({g.type_string})
+                      </span>
+                    )}
+                    {i < groups.length - 1 ? ", " : ""}
+                  </span>
+                ))}
+            </div>
         </div>
       </div>
     </div>
