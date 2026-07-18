@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import React, {
   useEffect,
   useState,
@@ -5,17 +6,16 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { fetchGroups, fetchFromQueryBuilder } from "../api";
 import TypeCheckboxTree from "./TypeCheckboxTree";
+import UtilitiesPane from "./UtilitiesPane";
 import { getFlattenedNodeTypes, aiidaTypes, buildQuery } from "./utils";
 import DataTable from "../components/DataTable";
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";
-import useMediaQuery from "../hooks/useMediaQuery";
-
 import VirtualizedTable from "../components/VirtualizedTable";
+import useMediaQuery from "../hooks/useMediaQuery";
 
 // column label mappings
 const columnLabels = {
@@ -236,6 +236,8 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
             </span>
           </label>
         ))}
+
+        <UtilitiesPane restApiUrl={restApiUrl} />
       </div>
 
       {/* Right table */}
