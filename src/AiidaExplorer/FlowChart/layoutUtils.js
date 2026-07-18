@@ -1,5 +1,7 @@
 import { Position } from "reactflow";
 
+import { categorizeNodeType } from "../utils";
+
 // --- Categorize and sort helper ---
 export function sortByCtimeDescending(a, b) {
   const at = new Date(a?.data?.aiida?.ctime || 0);
@@ -13,15 +15,15 @@ export function sortByLabel(a, b) {
 
 export function categorizeNodes(nodes) {
   const calculation = nodes
-    .filter((n) => n.data?.node_type.includes("calculation"))
+    .filter((n) => categorizeNodeType(n.data?.node_type) === "calculation")
     .sort(sortByCtimeDescending);
 
   const workflow = nodes
-    .filter((n) => n.data?.node_type.includes("workflow"))
+    .filter((n) => categorizeNodeType(n.data?.node_type) === "workflow")
     .sort(sortByCtimeDescending);
 
   const data = nodes
-    .filter((n) => n.data?.node_type.includes("data"))
+    .filter((n) => categorizeNodeType(n.data?.node_type) === "data")
     .sort(sortByLabel);
 
   return { calculation, workflow, data };

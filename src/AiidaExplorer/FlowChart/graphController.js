@@ -1,5 +1,6 @@
 import { Position } from "reactflow";
 
+import { categorizeNodeType } from "../utils";
 import { categorizeNodes } from "./layoutUtils";
 
 export function layoutGraphDefault(
@@ -68,7 +69,8 @@ export function layoutGraphDefault(
       const type = node.data?.node_type || "";
 
       // render dashed if workflow or processnode.
-      if (type.includes("workflow") || type.includes("process")) {
+      const category = categorizeNodeType(type);
+      if (category === "workflow" || category === "calculation") {
         style.strokeDasharray = "5,5"; // dashed for workflow/process
       }
 

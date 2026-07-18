@@ -2,6 +2,7 @@ import React, { memo } from "react";
 import { Handle, Position, useViewport } from "reactflow";
 
 import { getNodeDisplay } from "./nodeUtils";
+import { categorizeNodeType } from "../../utils";
 
 /**
  * Returns Tailwind CSS classes for a node based on its type, selection, and position.
@@ -18,13 +19,14 @@ function getNodeColorClasses(type, selected = false) {
   let textClass = "ae:text-black";
   let borderStyle = "ae:transition-all";
 
-  if (type?.startsWith("process.workflow")) {
+  const category = categorizeNodeType(type);
+  if (category === "workflow") {
     bgClass = "ae:bg-orange-300";
     borderStyle = "ae:border-orange-400 ae:shadow-md";
-  } else if (type?.startsWith("process")) {
+  } else if (category === "calculation") {
     bgClass = "ae:bg-red-300";
     borderStyle = "ae:border-red-400 ae:shadow-md";
-  } else if (type?.startsWith("data")) {
+  } else if (category === "data") {
     bgClass = "ae:bg-green-300";
     borderStyle = "ae:border-green-400 ae:shadow-md";
   }
@@ -69,7 +71,7 @@ function HorizontalNode({ data, selected }) {
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
     selected,
-    data.pos
+    data.pos,
   );
 
   const uuid = data.aiida.uuid.split("-")[0];
