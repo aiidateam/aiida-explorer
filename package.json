@@ -43,13 +43,15 @@
     "bands-visualiser": "^0.0.2",
     "brillouinzone-visualizer": "^0.4.3",
     "inquirer": "^13.4.1",
+    "js-yaml": "^4.3.0",
     "mathjs": "^15.2.0",
     "mc-react-structure-visualizer": "^0.8.3",
     "open": "^11.0.0",
     "plotly.js-basic-dist-min": "^3.1.2",
+    "postcss": "^8.5.19",
     "react-json-view-lite": "^2.5.0",
     "react-resizable-panels": "^3.0.6",
-    "react-router-dom": "^7.9.4",
+    "react-router-dom": "^7.18.1",
     "reactflow": "^11.11.4"
   },
   "peerDependencies": {

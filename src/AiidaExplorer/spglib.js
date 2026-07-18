@@ -1,9 +1,15 @@
 import init, { analyze_cell } from "@spglib/moyo-wasm";
 import wasmUrl from "@spglib/moyo-wasm/moyo_wasm_bg.wasm?url";
 
+let initPromise = null;
+
+function ensureInit() {
+  if (!initPromise) initPromise = init(wasmUrl);
+  return initPromise;
+}
+
 export async function analyzeCrystal(lattice, positions, numbers) {
-  // Initialize WASM
-  await init(wasmUrl);
+  await ensureInit();
 
   const basis = lattice.flat();
 

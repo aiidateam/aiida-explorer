@@ -1,29 +1,6 @@
 import React, { useState, useMemo } from "react";
 
-// SortIcon component svg that accepts tailwind classNames.
-function SortIcon({ direction = "asc", size = 14, className = "" }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className={`${className} ae:transform ${
-        direction === "asc" ? "rotate-180" : ""
-      }`}
-    >
-      <path
-        d="M6 9l6 6 6-6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+import { SortIcon } from "./Icons";
 
 // Custom built table sorting feature - Since AGgrid basically has all the functionality of this should be switched to AGgrid...
 // TODO - investigate whether AGgrid is a better alternative.
