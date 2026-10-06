@@ -1,6 +1,7 @@
 {
   "name": "aiida-explorer",
   "version": "0.6.0",
+  "packageManager": "pnpm@11.5.3",
   "homepage": "https://aiidateam.github.io/aiida-explorer",
   "repository": {
     "type": "git",
