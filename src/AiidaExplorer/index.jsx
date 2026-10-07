@@ -9,7 +9,8 @@ import {
 } from "@tanstack/react-query";
 
 import {
-  fetchGraphByNodeId,
+  fetchNeighbourhood,
+  buildCenterNode,
   smartFetchData,
   fetchLinkCounts,
   fetchUsers,
@@ -22,6 +23,11 @@ import Overlay, { OverlayProvider } from "./components/Overlay";
 import Spinner from "./components/Spinner";
 import ErrorDisplay from "./components/Error";
 import FlowChart from "./FlowChart";
+import { downloadGraphSnapshot } from "./FlowChart/downloadSnapshot";
+import {
+  expandSide,
+  highlightPathEdges,
+} from "./FlowChart/graphController";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
 import useContainerMediaQuery from "./hooks/useContainerMediaQuery";
@@ -73,6 +79,7 @@ function AiidaExplorerInner({
   defaultRootNode = "", // uncontrolled fallback
   onRootNodeChange = () => {},
   fullscreenToggle = false,
+  autoLinkCounts = true, // set false to skip background link-count fetches
 }) {
   // Controlled vs uncontrolled pattern managed by a custom hook
   // If parent specifies rootNode, that is used as the source of truth,
@@ -174,18 +181,61 @@ function AiidaExplorerInner({
     setLoading(true);
 
     async function loadGraph() {
-      const { nodes: fetchedNodes, edges: fetchedEdges } =
-        await fetchGraphByNodeId(restApiUrl, rootNodeId, breadcrumbs.at(-1));
+      // Navigation uses the same mechanism as +/-: fresh root, then expand
+      // both sides onto it. No separate layout path, no desync.
+      const neighbourhood = await fetchNeighbourhood(restApiUrl, rootNodeId);
 
       if (!mounted) return;
+      if (!neighbourhood) {
+        setNodes([]);
+        setEdges([]);
+        setLoading(false);
+        return;
+      }
 
-      const nodesWithExtras = fetchedNodes.map((n) => ({
-        ...n,
-        data: { ...n.data },
-      }));
+      const { rootNode, linksIn, linksOut } = neighbourhood;
+      const center = buildCenterNode(
+        rootNode,
+        linksIn.length,
+        linksOut.length,
+      );
 
-      setNodes(nodesWithExtras);
-      setEdges(fetchedEdges);
+      expansionMap.current = {};
+      setExpandedKeys([]);
+      setExpandingKeys([]);
+
+      let cur = { nodes: [center], edges: [] };
+      const resIn = expandSide(cur.nodes, cur.edges, center, "in", linksIn);
+      const resOut = expandSide(
+        resIn.nodes,
+        resIn.edges,
+        center,
+        "out",
+        linksOut,
+      );
+      expansionMap.current[`${center.aiidaUUID}:in`] = {
+        nodeIds: resIn.addedNodeIds,
+        edgeIds: resIn.addedEdgeIds,
+      };
+      expansionMap.current[`${center.aiidaUUID}:out`] = {
+        nodeIds: resOut.addedNodeIds,
+        edgeIds: resOut.addedEdgeIds,
+      };
+      setExpandedKeys([
+        `${center.aiidaUUID}:in`,
+        `${center.aiidaUUID}:out`,
+      ]);
+      cur = { nodes: resOut.nodes, edges: resOut.edges };
+
+      const lastNode = breadcrumbs.at(-1);
+      setNodes(cur.nodes);
+      setEdges(
+        highlightPathEdges(
+          cur.edges,
+          lastNode?.aiidaUUID,
+          center.aiidaUUID,
+        ),
+      );
 
       // Wait until next React render to ensure nodes are placed
       requestAnimationFrame(() => {
@@ -195,7 +245,7 @@ function AiidaExplorerInner({
         // zoom out
         instance.fitView({ padding: 2.0 });
 
-        const centralNode = nodesWithExtras.find(
+        const centralNode = cur.nodes.find(
           (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
         );
         if (centralNode?.position) {
@@ -220,19 +270,19 @@ function AiidaExplorerInner({
         }
       });
 
-      const rootNode = nodesWithExtras.find(
+      const selectedRoot = cur.nodes.find(
         (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
       );
-      if (rootNode) {
-        const enrichedNode = await ensureNodeData(rootNode);
+      if (selectedRoot) {
+        const enrichedNode = await ensureNodeData(selectedRoot);
         setSelectedNode(enrichedNode);
       }
 
       if (
         stripSyntheticId(breadcrumbs[breadcrumbs.length - 1]?.id) !==
-        stripSyntheticId(rootNode?.id)
+        stripSyntheticId(selectedRoot?.id)
       ) {
-        setBreadcrumbs((prev) => [...prev, rootNode].slice(-MAX_BREADCRUMBS));
+        setBreadcrumbs((prev) => [...prev, selectedRoot].slice(-MAX_BREADCRUMBS));
       }
       setLoading(false);
     }
@@ -242,6 +292,27 @@ function AiidaExplorerInner({
       mounted = false;
     };
   }, [rootNodeId, restApiUrl, downloadFormats, users]);
+
+  // --- Background link counts for nodes missing them (toggle: autoLinkCounts) ---
+  useEffect(() => {
+    if (!autoLinkCounts || nodes.length === 0) return;
+    if (
+      !nodes.some(
+        (n) =>
+          typeof n.data?.parentCount !== "number" ||
+          typeof n.data?.childCount !== "number",
+      )
+    )
+      return;
+
+    let cancelled = false;
+    fetchLinkCounts(restApiUrl, nodes).then((updatedNodes) => {
+      if (!cancelled) setNodes(updatedNodes);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [nodes, restApiUrl, autoLinkCounts]);
 
   const ensureNodeData = async (node) => {
     const nodeId = stripSyntheticId(node.id);
@@ -270,6 +341,120 @@ function AiidaExplorerInner({
   const handleDoubleClick = async (node) => {
     setRootNodeId(stripSyntheticId(node.id));
   };
+
+  // --- PNG snapshot of the whole graph (including off-screen nodes) ---
+  const handleSnapshot = useCallback(async () => {
+    const viewport = appRef.current?.querySelector(".react-flow__viewport");
+    const measured = reactFlowInstanceRef.current?.toObject()?.nodes;
+    if (!viewport || !measured?.length) return;
+    try {
+      await downloadGraphSnapshot(
+        viewport,
+        measured,
+        `aiida-graph-${stripSyntheticId(rootNodeId).slice(0, 8)}.png`,
+      );
+    } catch (err) {
+      console.error("Snapshot failed:", err);
+    }
+  }, [rootNodeId]);
+  // --- Collapse everything back to the root node ---
+  const handleCollapseAll = useCallback(() => {
+    expandGen.current += 1; // invalidate in-flight expansions
+    const root = nodes.find(
+      (n) => stripSyntheticId(n.id) === stripSyntheticId(rootNodeId),
+    );
+    setNodes(root ? [root] : []);
+    setEdges([]);
+    expansionMap.current = {};
+    setExpandedKeys([]);
+    setExpandingKeys([]);
+  }, [nodes, rootNodeId]);
+
+  // --- Incremental per-side expand/collapse, merged on stable aiidaUUID ---
+  const expansionMap = useRef({});
+  const expandGen = useRef(0);
+  const [expandedKeys, setExpandedKeys] = useState([]);
+  const [expandingKeys, setExpandingKeys] = useState([]);
+
+  const handleToggleExpand = useCallback(
+    async (syntheticId, side) => {
+      if (side !== "in" && side !== "out") return;
+      const target = nodes.find((n) => n.id === syntheticId);
+      if (!target) return;
+      const uuid = target.aiidaUUID ?? stripSyntheticId(target.id);
+      const key = `${uuid}:${side}`;
+      if (expandingKeys.includes(key)) return;
+
+      // Collapse: remove exactly what this side-expansion added.
+      if (expandedKeys.includes(key)) {
+        const added = expansionMap.current[key] ?? {
+          nodeIds: [],
+          edgeIds: [],
+        };
+        const removedEdgeIds = new Set(added.edgeIds);
+        edges.forEach((e) => {
+          if (
+            added.nodeIds.includes(e.source) ||
+            added.nodeIds.includes(e.target)
+          )
+            removedEdgeIds.add(e.id);
+        });
+        const keptEdges = edges.filter((e) => !removedEdgeIds.has(e.id));
+        const liveNodeIds = new Set();
+        keptEdges.forEach((e) => {
+          liveNodeIds.add(e.source);
+          liveNodeIds.add(e.target);
+        });
+        setEdges(keptEdges);
+        setNodes((nds) =>
+          nds.filter(
+            (n) =>
+              n.id === target.id ||
+              !added.nodeIds.includes(n.id) ||
+              liveNodeIds.has(n.id),
+          ),
+        );
+        delete expansionMap.current[key];
+        setExpandedKeys((keys) => keys.filter((k) => k !== key));
+        return;
+      }
+
+      setExpandingKeys((keys) => [...keys, key]);
+      const gen = expandGen.current;
+      try {
+        const neighbourhood = await fetchNeighbourhood(restApiUrl, uuid);
+        if (!neighbourhood || expandGen.current !== gen) return;
+        // Only the requested side; also refreshes this node's counts.
+        const links =
+          side === "in" ? neighbourhood.linksIn : neighbourhood.linksOut;
+
+        const res = expandSide(nodes, edges, target, side, links);
+        expansionMap.current[key] = {
+          nodeIds: res.addedNodeIds,
+          edgeIds: res.addedEdgeIds,
+        };
+        setNodes([
+          ...res.nodes.map((n) =>
+            n.id === target.id
+              ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    parentCount: neighbourhood.linksIn.length,
+                    childCount: neighbourhood.linksOut.length,
+                  },
+                }
+              : n,
+          ),
+        ]);
+        setEdges(res.edges);
+        setExpandedKeys((keys) => [...keys, key]);
+      } finally {
+        setExpandingKeys((keys) => keys.filter((k) => k !== key));
+      }
+    },
+    [nodes, edges, expandedKeys, expandingKeys, restApiUrl],
+  );
 
   // --- Breadcrumb click ---
   const handleBreadcrumbClick = async (node, idx) => {
@@ -350,6 +535,8 @@ function AiidaExplorerInner({
                 const updatedNodes = await fetchLinkCounts(restApiUrl, nodes);
                 setNodes(updatedNodes);
               }}
+              onCollapseAll={handleCollapseAll}
+              onSnapshot={handleSnapshot}
               onHelp={() => setActiveOverlay("helpview")}
               onFullscreen={() => toggleFullScreen(appRef.current)}
               disableGetCounts={nodes.length === 0}
@@ -366,6 +553,9 @@ function AiidaExplorerInner({
                 selectedNode={selectedNode}
                 onNodeSelect={handleNodeSelect}
                 onNodeDoubleSelect={handleDoubleClick}
+                onToggleExpand={handleToggleExpand}
+                expandedKeys={expandedKeys}
+                expandingKeys={expandingKeys}
                 onInit={(instance) => {
                   reactFlowInstanceRef.current = instance;
                 }}

@@ -27,6 +27,9 @@ export default function FlowChart({
   selectedNode,
   onNodeSelect,
   onNodeDoubleSelect,
+  onToggleExpand,
+  expandedKeys = [],
+  expandingKeys = [],
   onInit,
 }) {
   // TODO - stop spam firing this when held down.
@@ -34,22 +37,35 @@ export default function FlowChart({
     (event, node) => {
       if (onNodeSelect) onNodeSelect(node);
     },
-    [onNodeSelect]
+    [onNodeSelect],
   );
 
   const handleNodeDoubleClick = useCallback(
     (event, node) => {
       if (onNodeDoubleSelect) onNodeDoubleSelect(node);
     },
-    [onNodeDoubleSelect]
+    [onNodeDoubleSelect],
   );
 
-  // map nodes and mark the selected one
-  const mappedNodes = nodes.map((n) => ({
-    ...n,
-    type: "custom",
-    selected: selectedNode?.id === n.id,
-  }));
+  // map nodes and mark the selected one, attaching per-side expand state
+  const mappedNodes = nodes.map((n) => {
+    const aiidaUUID = n.aiidaUUID ?? n.id;
+    const sideState = (keys) =>
+      ["in", "out"].filter((s) => keys.includes(`${aiidaUUID}:${s}`));
+    return {
+      ...n,
+      type: "custom",
+      selected: selectedNode?.id === n.id,
+      data: {
+        ...n.data,
+        expandedSides: sideState(expandedKeys),
+        expandingSides: sideState(expandingKeys),
+        onToggleExpand: onToggleExpand
+          ? (side) => onToggleExpand(n.id, side)
+          : undefined,
+      },
+    };
+  });
 
   return (
     <div className="ae:w-full ae:h-full">
@@ -72,6 +88,7 @@ export default function FlowChart({
         nodesDraggable={true}
         nodesConnectable={false}
         onInit={onInit}
+        minZoom={0.2}
       >
         <Controls />
         <Background variant="dots" gap={12} size={1} />

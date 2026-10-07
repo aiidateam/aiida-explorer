@@ -47,26 +47,36 @@ function HorizontalNode({ data, selected }) {
 
   const baseNodeStyle = `ae:min-w-[150px] ae:text-center ae:py-1.5 ae:rounded ae:border-3`;
 
-  // counts styling
+  // counts styling (left = inputs, right = outputs; also the expand toggles)
   // ----------
   const showCounts = zoom > 1.2; // only show counts when zoomed in
-  const countSize = showCounts ? "ae:text-[8px]" : "ae:text-[10px]";
+  const expandedSides = data.expandedSides ?? [];
+  const expandingSides = data.expandingSides ?? [];
 
   const baseCountStyle = `
   ae:absolute
-  ae:top-1/3
-  ae:bottom-1/3
+  ae:top-0
+  ae:bottom-0
   ae:flex
   ae:items-center
-  ${countSize}
+  ae:text-[10px]
   ae:text-slate-600
   ae:font-light
-  ${showCounts ? "" : "ae:hidden"}
+  ae:cursor-pointer
+  ae:hover:bg-gray-500/50
+  ae:z-10
 `;
 
-  const leftCountStyle = `${baseCountStyle} ae:left-0 ae:ml-0.5 ae:pr-1 ae:pl-0.5 ae:bg-gray-400/50 ae:rounded-r-sm`;
-
-  const rightCountStyle = `${baseCountStyle} ae:right-0 ae:mr-0.5 ae:pl-1 ae:pr-0.5 ae:bg-gray-400/50 ae:rounded-l-sm`;
+  const pillLabel = (side, count) => {
+    const sign = expandingSides.includes(side)
+      ? "…"
+      : expandedSides.includes(side)
+        ? "−"
+        : "+";
+    const shown =
+      count == null ? "" : ` ${count > 99 ? "99+" : count}`;
+    return `${sign}${showCounts ? shown : ""}`;
+  };
 
   const { bgClass, textClass, borderStyle } = getNodeColorClasses(
     data.node_type,
@@ -102,13 +112,41 @@ function HorizontalNode({ data, selected }) {
     <div className={`${baseNodeStyle} ${bgClass} ${textClass} ${borderStyle}`}>
       {/* text strings. */}
 
-      {/* {linkCountLabel} */}
-      <div className={leftCountStyle}>
-        {data.parentCount > 99 ? "99+" : (data.parentCount ?? "")}
-      </div>
-      <div className={rightCountStyle}>
-        {data.childCount > 99 ? "99+" : (data.childCount ?? "")}
-      </div>
+      {/* expand/collapse inputs (left) and outputs (right) */}
+      {data.parentCount !== 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            data.onToggleExpand?.("in");
+          }}
+          title={
+            expandedSides.includes("in")
+              ? "Collapse inputs"
+              : "Expand inputs"
+          }
+          className={`${baseCountStyle} ae:left-0 ae:ml-0.5 ae:pr-1 ae:pl-0.5 ae:bg-gray-400/50 ae:rounded-r-sm`}
+        >
+          {pillLabel("in", data.parentCount)}
+        </button>
+      )}
+      {data.childCount !== 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            data.onToggleExpand?.("out");
+          }}
+          title={
+            expandedSides.includes("out")
+              ? "Collapse outputs"
+              : "Expand outputs"
+          }
+          className={`${baseCountStyle} ae:right-0 ae:mr-0.5 ae:pl-1 ae:pr-0.5 ae:bg-gray-400/50 ae:rounded-l-sm`}
+        >
+          {pillLabel("out", data.childCount)}
+        </button>
+      )}
       {textHtml}
       {/* node handles - margin modified to make arrows line up nicely.*/}
       <Handle

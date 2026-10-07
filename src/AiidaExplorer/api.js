@@ -1,5 +1,3 @@
-import { layoutGraphDefault } from "./FlowChart/graphController";
-
 const SYNTHETIC_MARKER = "_ae_";
 
 /**
@@ -400,60 +398,63 @@ export async function smartFetchData(restApiUrl, node, downloadFormats = null) {
  * Fetch a node and all its immediate input nodes, returning
  * nodes and edges suitable for React Flow.
  */
-export async function fetchGraphByNodeId(restApiUrl, nodeId, lastNode) {
+/**
+ * Builds a ReactFlow node object for a linked AiiDA node (no layout).
+ * @param {object} link - linked node record ({ uuid, node_type, link_label })
+ * @param {number} pos - 1 = input (left), -1 = output (right), 0 = center
+ */
+export function buildGraphNode(link, pos) {
+  return {
+    id: generateSyntheticId(link.uuid),
+    aiidaUUID: link.uuid,
+    data: {
+      label: link.node_type.split(".").filter(Boolean).pop(),
+      node_type: link.node_type,
+      pos,
+      link_label: link.link_label,
+      aiida: link,
+    },
+  };
+}
+
+/**
+ * Fetches a node's neighbourhood without laying anything out.
+ * @returns {{ rootNode, linksIn, linksOut }}
+ */
+export async function fetchNeighbourhood(restApiUrl, nodeId) {
   const rootNodeRaw = await fetchNodeById(restApiUrl, nodeId);
   const rootNode = rootNodeRaw.data.nodes[0];
-  if (!rootNode) return { nodes: [], edges: [] };
+  if (!rootNode) return null;
 
   const { incoming, outgoing } = await fetchLinks(restApiUrl, nodeId);
 
-  const linksIn = incoming?.data?.incoming || [];
-  const linksOut = outgoing?.data?.outgoing || [];
+  return {
+    rootNode,
+    linksIn: incoming?.data?.incoming || [],
+    linksOut: outgoing?.data?.outgoing || [],
+  };
+}
 
-  const allNodes = [
-    {
-      id: generateSyntheticId(rootNode.uuid),
-      aiidaUUID: rootNode.uuid,
-      data: {
-        label: rootNode.node_type.split(".").filter(Boolean).pop(),
-        node_type: rootNode.node_type,
-        pos: 0,
-        aiida: rootNode,
-        parentCount: linksIn.length,
-        childCount: linksOut.length,
-      },
+/**
+ * Builds the center (root) node object for a fresh navigation.
+ */
+export function buildCenterNode(
+  rootNode,
+  parentCount,
+  childCount,
+  position = { x: 0, y: 0 },
+) {
+  return {
+    id: generateSyntheticId(rootNode.uuid),
+    aiidaUUID: rootNode.uuid,
+    position,
+    data: {
+      label: rootNode.node_type.split(".").filter(Boolean).pop(),
+      node_type: rootNode.node_type,
+      pos: 0,
+      aiida: rootNode,
+      parentCount,
+      childCount,
     },
-    ...linksIn.map((l) => ({
-      id: generateSyntheticId(l.uuid),
-      aiidaUUID: l.uuid,
-      data: {
-        label: l.node_type.split(".").filter(Boolean).pop(),
-        node_type: l.node_type,
-        pos: 1,
-        link_label: l.link_label,
-        aiida: l,
-      },
-    })),
-    ...linksOut.map((l) => ({
-      id: generateSyntheticId(l.uuid),
-      aiidaUUID: l.uuid,
-      data: {
-        label: l.node_type.split(".").filter(Boolean).pop(),
-        node_type: l.node_type,
-        pos: -1,
-        link_label: l.link_label,
-        aiida: l,
-      },
-    })),
-  ];
-
-  // No need to remove duplicates anymore — each node has a unique synthetic ID
-  const { nodes, edges } = layoutGraphDefault(
-    allNodes.find((n) => n.data.pos === 0),
-    allNodes.filter((n) => n.data.pos === 1),
-    allNodes.filter((n) => n.data.pos === -1),
-    lastNode,
-  );
-
-  return { nodes, edges };
+  };
 }
