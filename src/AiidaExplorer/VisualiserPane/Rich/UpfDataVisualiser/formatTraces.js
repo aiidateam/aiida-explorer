@@ -1,20 +1,22 @@
 // functions for producing plots from upfData.
 // TODO - investigate whether these are accurate w.r.t. reality.
 
-export function getRadialFunctionsTraces(upfDataObject) {
-  if (
-    !upfDataObject ||
-    !upfDataObject.atomic_wave_functions ||
-    !upfDataObject.radial_grid
-  )
-    return [];
+// NOTE: candidate to upstream to matsci-parse — it owns the UPF data model
+// but has no plot-trace helpers yet. This maps AiiDA's server-parsed
+// pseudo_potential JSON straight to Plotly traces.
+export function getWavefunctionTraces(
+  upfDataObject,
+  { key, detailKey, detailLabel },
+) {
+  const functions = upfDataObject?.[key];
+  if (!upfDataObject || !functions || !upfDataObject.radial_grid) return [];
 
-  const traces = upfDataObject.atomic_wave_functions.map((wf) => {
+  return functions.map((wf) => {
     const label = wf.label ?? "";
     const ang = wf.angular_momentum != null ? `(ℓ=${wf.angular_momentum}` : "";
-    const occ =
-      wf.occupation != null
-        ? `, occ=${wf.occupation})`
+    const detail =
+      wf[detailKey] != null
+        ? `, ${detailLabel}=${wf[detailKey]})`
         : wf.angular_momentum != null
           ? ")"
           : "";
@@ -24,41 +26,9 @@ export function getRadialFunctionsTraces(upfDataObject) {
       y: wf.radial_function,
       type: "scatter",
       mode: "lines",
-      name: `${label} ${ang}${occ}`,
+      name: `${label} ${ang}${detail}`,
     };
   });
-
-  return traces;
-}
-
-export function getBetaProjectorsTraces(upfDataObject) {
-  if (
-    !upfDataObject ||
-    !upfDataObject.beta_projectors ||
-    !upfDataObject.radial_grid
-  )
-    return [];
-
-  const traces = upfDataObject.beta_projectors.map((wf) => {
-    const label = wf.label ?? "";
-    const ang = wf.angular_momentum != null ? `(ℓ=${wf.angular_momentum}` : "";
-    const cutoff =
-      wf.ultrasoft_cutoff_radius != null
-        ? `, cutoff=${wf.ultrasoft_cutoff_radius})`
-        : wf.angular_momentum != null
-          ? ")"
-          : "";
-
-    return {
-      x: upfDataObject.radial_grid,
-      y: wf.radial_function,
-      type: "scatter",
-      mode: "lines",
-      name: `${label} ${ang}${cutoff}`,
-    };
-  });
-
-  return traces;
 }
 
 export function getChargeDensitiesTraces(upfDataObject) {

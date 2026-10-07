@@ -7,8 +7,7 @@ import SimplePlot from "../../../components/SimplePlot";
 import Spinner from "../../../components/Spinner";
 
 import {
-  getRadialFunctionsTraces,
-  getBetaProjectorsTraces,
+  getWavefunctionTraces,
   getChargeDensitiesTraces,
 } from "./formatTraces";
 
@@ -33,8 +32,16 @@ export default function UpfDataVisualiser({ nodeData }) {
 
       return {
         header: data.header,
-        orbital: getRadialFunctionsTraces(data),
-        beta: getBetaProjectorsTraces(data),
+        orbital: getWavefunctionTraces(data, {
+          key: "atomic_wave_functions",
+          detailKey: "occupation",
+          detailLabel: "occ",
+        }),
+        beta: getWavefunctionTraces(data, {
+          key: "beta_projectors",
+          detailKey: "ultrasoft_cutoff_radius",
+          detailLabel: "cutoff",
+        }),
         charge: getChargeDensitiesTraces(data),
       };
     },

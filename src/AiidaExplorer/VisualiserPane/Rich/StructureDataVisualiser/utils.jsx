@@ -1,4 +1,7 @@
 // js for calculating very basic lattice information.
+import { createLattice, lengths } from "matsci-parse";
+
+// Kept local: matsci-parse exposes volume on Structure only, not on lattices.
 export function getVol(nodeData, round = 4) {
   const cross = (u, v) => [
     u[1] * v[2] - u[2] * v[1],
@@ -13,10 +16,9 @@ export function getVol(nodeData, round = 4) {
 }
 
 export function formatLattice(nodeData) {
-  const cell = nodeData.attributes.cell;
-  const a = Math.hypot(...cell[0]);
-  const b = Math.hypot(...cell[1]);
-  const c = Math.hypot(...cell[2]);
+  const [a, b, c] = lengths(
+    createLattice(nodeData.attributes.cell.flat()),
+  );
   return { a, b, c };
 }
 
@@ -44,6 +46,8 @@ export function countNumberOfAtoms(hillFormula) {
   return num;
 }
 
+// Kept local: uses AiiDA kind masses (lib falls back to periodic table)
+// with different units/rounding.
 export function calculateDensity(sites, volume, kinds) {
   // Map kind name to its mass
   const kindMassMap = {};

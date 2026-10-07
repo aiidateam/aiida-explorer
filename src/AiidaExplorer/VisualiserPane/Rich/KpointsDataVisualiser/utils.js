@@ -1,3 +1,9 @@
+import {
+  createLattice,
+  reciprocalLattice as reciprocalLatticeVectors,
+  lengths,
+} from "matsci-parse";
+
 // Helper to round array of objects.
 export const RoundVals = (arr, decimals = 4, skipKeys = []) =>
   arr.map((obj) =>
@@ -21,23 +27,19 @@ export function reciprocalLattice(cell) {
       [0, 0, 1],
     ];
 
-  const [a1, a2, a3] = cell;
-
-  const cross = (u, v) => [
-    u[1] * v[2] - u[2] * v[1],
-    u[2] * v[0] - u[0] * v[2],
-    u[0] * v[1] - u[1] * v[0],
+  // matsci-parse stores basis row-major (rows = lattice vectors, same as
+  // AiiDA cell) and its physics reciprocal includes 2π — same as below.
+  const d = reciprocalLatticeVectors(createLattice(cell.flat())).basis.data;
+  return [
+    [d[0], d[1], d[2]],
+    [d[3], d[4], d[5]],
+    [d[6], d[7], d[8]],
   ];
+}
 
-  const dot = (u, v) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
-
-  const volume = dot(a1, cross(a2, a3));
-
-  const b1 = cross(a2, a3).map((x) => (2 * Math.PI * x) / volume);
-  const b2 = cross(a3, a1).map((x) => (2 * Math.PI * x) / volume);
-  const b3 = cross(a1, a2).map((x) => (2 * Math.PI * x) / volume);
-
-  return [b1, b2, b3];
+export function latticeLengths(cell) {
+  const [a, b, c] = lengths(createLattice(cell.flat()));
+  return { a, b, c };
 }
 
 // Static columns for tables.

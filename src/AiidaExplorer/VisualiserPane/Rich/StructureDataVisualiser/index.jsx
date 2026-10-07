@@ -1,9 +1,7 @@
-import { useMemo, useEffect, useState, useCallback } from "react";
-
-import { inv, multiply } from "mathjs";
-import StructureVisualizer from "mc-react-structure-visualizer";
-
 import { useQuery } from "@tanstack/react-query";
+import { fromStructureData, getSymmetry } from "matsci-parse";
+import StructureVisualizer from "mc-react-structure-visualizer";
+import { useMemo, useEffect, useState } from "react";
 
 import { StructDownloadButton } from "./StructDownloadButton";
 import {
@@ -17,7 +15,6 @@ import DataTable from "../../../components/DataTable";
 import ErrorDisplay from "../../../components/Error";
 import { DownloadIcon } from "../../../components/Icons";
 import Spinner from "../../../components/Spinner";
-import { analyzeCrystal } from "../../../spglib";
 
 // StructureData has the 'derivedProps' key, cifData does not and we have to handle such case.
 // TODO - add the full js method for multiple file types here. it seems quite cheap and probably a good use case
@@ -26,7 +23,6 @@ import { analyzeCrystal } from "../../../spglib";
 // TODO - move spglib rendering and calc into its own component and make this more of a wrapper/layout component.
 export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const aiidaCifPath = nodeData.downloadByFormat?.cif;
-  const [spgLib, setSpgLib] = useState(null);
 
   // --- Fetch CIF text ---
   const {
@@ -65,22 +61,59 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
   const dimensionality =
     nodeData.derived_properties?.dimensionality?.dim || null;
 
-  // --- Assign incremental atomic numbers ---
-  const kindMap = useMemo(() => {
-    const map = {};
-    let nextNumber = 1;
-    sites.forEach((s) => {
-      const key = s.kind_name?.trim();
-      if (key && !(key in map)) map[key] = nextNumber++;
-    });
-    return map;
-  }, [sites]);
+  // --- Symmetry analysis via matsci-parse (AiiDA adapter + moyo under the hood) ---
+  const [symmetry, setSymmetry] = useState(null);
+  const spgLib = symmetry?.calculationResults ?? null;
 
-  // --- Reverse mapping for rendering ---
-  const reverseKindMap = useMemo(
-    () => Object.fromEntries(Object.entries(kindMap).map(([k, v]) => [v, k])),
-    [kindMap],
-  );
+  useEffect(() => {
+    if (!lattice || sites.length === 0 || kinds.length === 0) return;
+
+    let cancelled = false;
+    try {
+      const structure = fromStructureData({
+        cell: lattice,
+        kinds: kinds.map((k) => ({ ...k, name: k.name?.trim?.() ?? k.name })),
+        sites: sites.map((s) => ({
+          ...s,
+          kind_name: s.kind_name?.trim?.() ?? s.kind_name,
+        })),
+      });
+      getSymmetry(structure, 5e-3)
+        .then((result) => {
+          if (!cancelled) setSymmetry(result);
+        })
+        .catch(console.error);
+    } catch (err) {
+      console.error(err);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [lattice, sites, kinds]);
+
+  // --- Prepare standard cell table (fractional coordinates) ---
+  const stdCellData = useMemo(() => {
+    if (!symmetry?.conventional) return [];
+    return symmetry.conventional.sites.map((site, i) => ({
+      "#": i + 1,
+      "Kind Name": site.species.symbol || "Unknown",
+      "x [frac]": site.frac[0].toFixed(4),
+      "y [frac]": site.frac[1].toFixed(4),
+      "z [frac]": site.frac[2].toFixed(4),
+    }));
+  }, [symmetry]);
+
+  // --- Prepare primitive cell table (fractional coordinates) ---
+  const primCellData = useMemo(() => {
+    if (!symmetry?.primitive) return [];
+    return symmetry.primitive.sites.map((site, i) => ({
+      "#": i + 1,
+      "Kind Name": site.species.symbol || "Unknown",
+      "x [frac]": site.frac[0].toFixed(4),
+      "y [frac]": site.frac[1].toFixed(4),
+      "z [frac]": site.frac[2].toFixed(4),
+    }));
+  }, [symmetry]);
 
   // --- Prepare atomic sites table (Å positions) ---
   const atomicSites = useMemo(
@@ -102,44 +135,6 @@ export default function StructureDataVisualiser({ nodeData, restApiUrl }) {
     if (dimensionality !== 3) return null;
     return calculateDensity(sites, volume, kinds);
   }, [dimensionality, sites, volume, kinds]);
-
-  // --- spglib analysis ---
-  useEffect(() => {
-    if (!lattice || sites.length === 0 || kinds.length === 0) return;
-
-    // Convert positions to fractional coordinates
-    const latticeMatrix = inv(lattice);
-    const fracPositions = sites.map((s) => multiply(s.position, latticeMatrix));
-    const numbers = sites.map((s) => kindMap[s.kind_name.trim()]);
-
-    analyzeCrystal(lattice, fracPositions, numbers)
-      .then(setSpgLib)
-      .catch(console.error);
-  }, [lattice, sites, kinds, kindMap]);
-
-  // --- Prepare standard cell table (fractional coordinates) ---
-  const stdCellData = useMemo(() => {
-    if (!spgLib?.std_cell) return [];
-    return spgLib.std_cell.positions.map((pos, i) => ({
-      "#": i + 1,
-      "Kind Name": reverseKindMap[spgLib.std_cell.numbers[i]] || "Unknown",
-      "x [frac]": pos[0].toFixed(4),
-      "y [frac]": pos[1].toFixed(4),
-      "z [frac]": pos[2].toFixed(4),
-    }));
-  }, [spgLib, reverseKindMap]);
-
-  // --- Prepare standard cell table (fractional coordinates) ---
-  const primCellData = useMemo(() => {
-    if (!spgLib?.prim_std_cell) return [];
-    return spgLib.prim_std_cell.positions.map((pos, i) => ({
-      "#": i + 1,
-      "Kind Name": reverseKindMap[spgLib.prim_std_cell.numbers[i]] || "Unknown",
-      "x [frac]": pos[0].toFixed(4),
-      "y [frac]": pos[1].toFixed(4),
-      "z [frac]": pos[2].toFixed(4),
-    }));
-  }, [spgLib, reverseKindMap]);
 
   if (isLoading)
     return (
