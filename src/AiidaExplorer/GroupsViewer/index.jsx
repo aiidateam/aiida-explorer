@@ -200,7 +200,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
   return (
     <div
       ref={rootRef}
-      className="ae:@container ae:flex ae:flex-col ae:@lg:flex-row ae:gap-4 ae:overflow-auto ae:w-full ae:items-start"
+      className="ae:flex ae:flex-col ae:lg:flex-row ae:gap-4 ae:overflow-auto ae:w-full ae:items-start"
     >
       {/* Left panel */}
       <div className="ae:min-w-[250px] ae:max-w-[400px] ae:flex-shrink-0 ae:bg-slate-50 ae:p-2 ae:px-3 ae:rounded">
@@ -250,7 +250,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
 
       {/* Right table */}
       <div className="ae:flex-1 ae:bg-white ae:rounded ae:gap-2">
-        <div className="ae:flex ae:flex-col ae:@lg:flex-row ae:@lg:items-center ae:gap-2">
+        <div className="ae:flex ae:flex-col ae:lg:flex-row ae:lg:items-center ae:gap-2">
           {/* Left side: node count + load more */}
           <div className="ae:flex-1 ae:flex ae:items-center ae:gap-2 ae:py-2">
             <div className="ae:text-xl ae:font-medium">
@@ -267,7 +267,7 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
           </div>
 
           {/* Right side: search with label */}
-          <div className="ae:flex ae:flex-col ae:@sm:flex-row ae:items-start ae:@sm:items-center ae:gap-2 ae:py-1 ae:w-full ae:@lg:w-auto">
+          <div className="ae:flex ae:flex-col ae:sm:flex-row ae:items-start ae:sm:items-center ae:gap-2 ae:py-1 ae:w-full ae:lg:w-auto">
             <span className="ae:font-medium">Navigate via UUID:</span>
             <input
               type="text"
