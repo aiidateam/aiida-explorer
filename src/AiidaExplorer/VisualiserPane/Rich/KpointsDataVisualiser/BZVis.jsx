@@ -2,7 +2,6 @@ import { createBZVisualizer } from "brillouinzone-visualizer";
 import React, { useState, useEffect, useRef } from "react";
 
 import BZControls from "./BZControls";
-import useContainerBucket from "../../../hooks/useContainerBucket";
 
 export default function BZVisualizer({ data }) {
   const containerRef = useRef(null);
@@ -13,7 +12,19 @@ export default function BZVisualizer({ data }) {
   const [showBVectors, setShowBVectors] = useState(true);
   const [showAxes, setShowAxes] = useState(true);
 
-  const widthBucket = useContainerBucket(containerRef, 50);
+  const [widthBucket, setWidthBucket] = useState(0);
+
+  // Rebuild the visualiser when this panel's width changes (was a hook).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () =>
+      setWidthBucket(Math.floor(el.getBoundingClientRect().width / 50));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;

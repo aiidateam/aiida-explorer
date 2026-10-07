@@ -25,7 +25,6 @@ import FlowChart from "./FlowChart";
 import GroupsViewer from "./GroupsViewer";
 import HelpViewer from "./HelpViewer";
 import useContainerMediaQuery from "./hooks/useContainerMediaQuery";
-import useMediaQuery from "./hooks/useMediaQuery";
 import useRootNode from "./hooks/useRootNode";
 import TopControls from "./TopBar";
 import VisualiserPane from "./VisualiserPane";
@@ -87,7 +86,6 @@ function AiidaExplorerInner({
   const appRef = useRef(null);
   const overlayContainerRef = useRef(null);
   const reactFlowInstanceRef = useRef(null);
-  const isWideScreen = useMediaQuery("(min-width: 1000px)");
   const queryClient = useQueryClient();
 
   // dynamic container media querying.
@@ -97,6 +95,9 @@ function AiidaExplorerInner({
     { name: "medium", predicate: (w) => w >= 700 && w < 1200 },
     { name: "large", predicate: (w) => w >= 1200 },
   ]);
+
+  // Panel direction follows the container, not the viewport (embed-safe).
+  const isWideScreen = sizeCategory === "medium" || sizeCategory === "large";
 
   // Prefetching important hits
   // --- Prefetch users and downloadFormats on mount ---

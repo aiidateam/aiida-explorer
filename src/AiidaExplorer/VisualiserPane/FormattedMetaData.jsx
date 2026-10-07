@@ -50,16 +50,16 @@ export default function FormattedMetaData({ nodeData, userData, restApiUrl }) {
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="explorerHeadingBig">{nodeData.label || ""}</div>
-        <span className="ae:lg:hidden ae:transition-transform ae:duration-200">
+        <span className="ae:@lg:hidden ae:transition-transform ae:duration-200">
           {isOpen ? "▲" : "▼"}
         </span>
       </div>
 
       {/* Metadata content */}
       <div
-        className={`${isOpen ? "ae:block" : "ae:hidden"} ae:mt-1 ae:lg:block ae:lg:mt-2`}
+        className={`${isOpen ? "ae:block" : "ae:hidden"} ae:mt-1 ae:@lg:block ae:@lg:mt-2`}
       >
-        <div className="ae:space-y-1 ae:px-1 ae:text-xs ae:lg:text-sm">
+        <div className="ae:space-y-1 ae:px-1 ae:text-xs ae:@lg:text-sm">
           {aiida.uuid && (
             <div>
               <span className="ae:font-medium">UUID:</span> {aiida.uuid}
