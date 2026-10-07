@@ -42,6 +42,7 @@
     "@uiw/react-json-view": "^2.0.0-alpha.39",
     "bands-visualiser": "^0.0.2",
     "brillouinzone-visualizer": "^0.4.3",
+    "html-to-image": "^1.11.13",
     "jszip": "^3.10.1",
     "matsci-parse": "^0.17.0",
     "mc-react-structure-visualizer": "^0.8.3",

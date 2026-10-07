@@ -4,11 +4,27 @@ import {
   QuestionIcon,
   BugIcon,
   FullscreenIcon,
+  SnapshotIcon,
 } from "../components/Icons";
+
+function ToolbarButton({ icon, label, className = "", ...props }) {
+  return (
+    <button
+      type="button"
+      className={`explorerButton ae:flex ae:items-center ae:gap-1 ${className}`}
+      {...props}
+    >
+      {icon}
+      <span className="ae:hidden ae:@sm:inline">{label}</span>
+    </button>
+  );
+}
 
 export default function TopControls({
   onFindNode,
   onGetLinkCounts,
+  onCollapseAll,
+  onSnapshot,
   onHelp,
   onDebug,
   onFullscreen,
@@ -17,59 +33,66 @@ export default function TopControls({
   debugMode = false,
   fullscreenToggle = false,
 }) {
-  const textStyle = "ae:hidden ae:@sm:inline";
-
   return (
     // Mark this as a container for Tailwind container queries
     <div className="ae:@container ae:w-full ae:shadow-md ae:bg-slate-100 ae:border-b ae:px-4 ae:py-2 ae:flex ae:justify-between ae:items-center ae:z-50">
       {/* Left side buttons */}
       <div className="ae:flex ae:gap-2">
-        <button
-          className="explorerButton ae:flex ae:items-center ae:gap-1"
+        <ToolbarButton
           onClick={onFindNode}
-        >
-          <GroupIcon className="ae:w-5 ae:h-5" />
-          <span className={textStyle}>Find Node</span>
-        </button>
+          icon={<GroupIcon className="ae:w-5 ae:h-5" />}
+          label="Find Node"
+        />
 
-        <button
-          className="explorerButton ae:flex ae:items-center ae:gap-1"
+        <ToolbarButton
           onClick={onGetLinkCounts}
           disabled={disableGetCounts || isLoading}
-        >
-          <LinksIcon className="ae:w-5 ae:h-5" />
-          <span className={textStyle}>Get Link Counts</span>
-        </button>
+          icon={<LinksIcon className="ae:w-5 ae:h-5" />}
+          label="Get Link Counts"
+        />
+
+        <ToolbarButton
+          onClick={onCollapseAll}
+          title="Collapse all expansions back to the root node"
+          icon={
+            <span className="ae:text-sm ae:font-medium ae:leading-none">
+              −
+            </span>
+          }
+          label="Collapse All"
+        />
+
+        <ToolbarButton
+          onClick={onSnapshot}
+          title="Download a PNG snapshot of the whole graph"
+          icon={<SnapshotIcon className="ae:w-5 ae:h-5" />}
+          label="Save Graph"
+        />
       </div>
 
       {/* Right side buttons */}
       <div className="ae:flex ae:gap-2">
-        <button
-          className="explorerButton ae:flex ae:items-center ae:gap-1"
+        <ToolbarButton
           onClick={onHelp}
-        >
-          <QuestionIcon className="ae:w-5 ae:h-5" />
-          <span className={textStyle}>Help</span>
-        </button>
+          icon={<QuestionIcon className="ae:w-5 ae:h-5" />}
+          label="Help"
+        />
 
         {debugMode && onDebug && (
-          <button
-            className="explorerButton ae:flex ae:items-center ae:gap-1 ae:text-red-600"
+          <ToolbarButton
             onClick={onDebug}
-          >
-            <BugIcon className="ae:w-5 ae:h-5" />
-            <span className={textStyle}>Debug</span>
-          </button>
+            className="ae:text-red-600"
+            icon={<BugIcon className="ae:w-5 ae:h-5" />}
+            label="Debug"
+          />
         )}
 
         {fullscreenToggle && onFullscreen && (
-          <button
-            className="explorerButton ae:flex ae:items-center ae:gap-1"
+          <ToolbarButton
             onClick={onFullscreen}
-          >
-            <FullscreenIcon className="ae:w-5 ae:h-5" />
-            <span className={textStyle}>Fullscreen</span>
-          </button>
+            icon={<FullscreenIcon className="ae:w-5 ae:h-5" />}
+            label="Fullscreen"
+          />
         )}
       </div>
     </div>

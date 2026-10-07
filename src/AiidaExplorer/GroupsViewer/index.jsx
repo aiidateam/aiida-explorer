@@ -15,7 +15,12 @@ import DataTable from "../components/DataTable";
 import ErrorDisplay from "../components/Error";
 import Spinner from "../components/Spinner";
 import VirtualizedTable from "../components/VirtualizedTable";
-import useMediaQuery from "../hooks/useMediaQuery";
+import useContainerMediaQuery from "../hooks/useContainerMediaQuery";
+
+// Compact layout below this container width (was a 790px viewport query).
+const COMPACT_QUERIES = [
+  { name: "compact", predicate: (w) => w < 790 },
+];
 
 // column label mappings
 const columnLabels = {
@@ -113,8 +118,10 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
 
   const isFetchingRef = useRef(false);
 
-  // responsive
-  const isSmallScreen = useMediaQuery("(max-width: 790px)");
+  // responsive to this panel's width, not the viewport
+  const rootRef = useRef(null);
+  const sizeCategory = useContainerMediaQuery(rootRef, COMPACT_QUERIES);
+  const isSmallScreen = sizeCategory === "compact";
 
   // columns based on screen
   const columnsToRender = isSmallScreen
@@ -190,10 +197,11 @@ export default function GroupsViewer({ restApiUrl, setRootNodeId }) {
     }
   };
 
-  console.log("columnstorender,", columnsToRender);
-
   return (
-    <div className="ae:flex ae:flex-col ae:lg:flex-row ae:gap-4 ae:overflow-auto ae:w-full ae:items-start">
+    <div
+      ref={rootRef}
+      className="ae:flex ae:flex-col ae:lg:flex-row ae:gap-4 ae:overflow-auto ae:w-full ae:items-start"
+    >
       {/* Left panel */}
       <div className="ae:min-w-[250px] ae:max-w-[400px] ae:flex-shrink-0 ae:bg-slate-50 ae:p-2 ae:px-3 ae:rounded">
         {/* Top header + button */}
